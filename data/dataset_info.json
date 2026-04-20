@@ -38,6 +38,76 @@
       "assistant_tag": "assistant"
     }
   },
+  "egocross": {
+    "file_name": "/share/home/group9/data/egocross/train.json",
+    "formatting": "sharegpt",
+    "columns": {
+      "messages": "messages",
+      "images": "images"
+    },
+    "tags": {
+      "role_tag": "role",
+      "content_tag": "content",
+      "user_tag": "user",
+      "assistant_tag": "assistant"
+    }
+  },
+  "egocross_animal": {
+    "file_name": "/share/home/group9/data/egocross/train_animal.json",
+    "formatting": "sharegpt",
+    "columns": {
+      "messages": "messages",
+      "images": "images"
+    },
+    "tags": {
+      "role_tag": "role",
+      "content_tag": "content",
+      "user_tag": "user",
+      "assistant_tag": "assistant"
+    }
+  },
+  "egocross_industry": {
+    "file_name": "/share/home/group9/data/egocross/train_industry.json",
+    "formatting": "sharegpt",
+    "columns": {
+      "messages": "messages",
+      "images": "images"
+    },
+    "tags": {
+      "role_tag": "role",
+      "content_tag": "content",
+      "user_tag": "user",
+      "assistant_tag": "assistant"
+    }
+  },
+  "egocross_xsports": {
+    "file_name": "/share/home/group9/data/egocross/train_xsports.json",
+    "formatting": "sharegpt",
+    "columns": {
+      "messages": "messages",
+      "images": "images"
+    },
+    "tags": {
+      "role_tag": "role",
+      "content_tag": "content",
+      "user_tag": "user",
+      "assistant_tag": "assistant"
+    }
+  },
+  "egocross_surgery": {
+    "file_name": "/share/home/group9/data/egocross/train_surgery.json",
+    "formatting": "sharegpt",
+    "columns": {
+      "messages": "messages",
+      "images": "images"
+    },
+    "tags": {
+      "role_tag": "role",
+      "content_tag": "content",
+      "user_tag": "user",
+      "assistant_tag": "assistant"
+    }
+  },
   "mllm_audio_demo": {
     "file_name": "mllm_audio_demo.json",
     "formatting": "sharegpt",
