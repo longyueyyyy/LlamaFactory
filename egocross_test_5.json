@@ -1,0 +1,107 @@
+[
+  {
+    "id": 1,
+    "dataset": "CholecTrack20",
+    "primary_category": "Counting",
+    "question_type": "object counting",
+    "question_text": "How many distinct types of surgical instruments were fully or partially visible in the video segment from 0.00s to 10.00s?",
+    "options": [
+      "A: 4",
+      "B: 3",
+      "C: 1",
+      "D: 2"
+    ],
+    "original_video_fps": 25.0,
+    "video_path": [
+      "/egocross_testbed/CholecTrack20/generated/VID01/frames/oc_q1/frame_00000.jpg",
+      "/egocross_testbed/CholecTrack20/generated/VID01/frames/oc_q1/frame_00001.jpg",
+      "/egocross_testbed/CholecTrack20/generated/VID01/frames/oc_q1/frame_00002.jpg",
+      "/egocross_testbed/CholecTrack20/generated/VID01/frames/oc_q1/frame_00003.jpg",
+      "/egocross_testbed/CholecTrack20/generated/VID01/frames/oc_q1/frame_00004.jpg"
+    ]
+  },
+  {
+    "id": 2,
+    "dataset": "CholecTrack20",
+    "primary_category": "Localization",
+    "question_type": "object spatial localization",
+    "question_text": "Approximately in which region of the view was the 'irrigator' (operated by main surgeon right hand) located around timestamp 2.76s?",
+    "options": [
+      "A: bottom-center",
+      "B: top-center",
+      "C: center-right",
+      "D: top-right"
+    ],
+    "original_video_fps": 25.0,
+    "video_path": [
+      "/egocross_testbed/CholecTrack20/generated/VID01/frames/osl_q2/frame_00000.jpg",
+      "/egocross_testbed/CholecTrack20/generated/VID01/frames/osl_q2/frame_00001.jpg",
+      "/egocross_testbed/CholecTrack20/generated/VID01/frames/osl_q2/frame_00002.jpg",
+      "/egocross_testbed/CholecTrack20/generated/VID01/frames/osl_q2/frame_00003.jpg",
+      "/egocross_testbed/CholecTrack20/generated/VID01/frames/osl_q2/frame_00004.jpg"
+    ]
+  },
+  {
+    "id": 3,
+    "dataset": "CholecTrack20",
+    "primary_category": "Localization",
+    "question_type": "object spatial localization",
+    "question_text": "Approximately in which region of the view was the 'hook' (operated by main surgeon right hand) located around timestamp 9.33s?",
+    "options": [
+      "A: bottom-right",
+      "B: bottom-center",
+      "C: top-left",
+      "D: center"
+    ],
+    "original_video_fps": 25.0,
+    "video_path": [
+      "/egocross_testbed/CholecTrack20/generated/VID01/frames/osl_q3/frame_00000.jpg",
+      "/egocross_testbed/CholecTrack20/generated/VID01/frames/osl_q3/frame_00001.jpg",
+      "/egocross_testbed/CholecTrack20/generated/VID01/frames/osl_q3/frame_00002.jpg",
+      "/egocross_testbed/CholecTrack20/generated/VID01/frames/osl_q3/frame_00003.jpg",
+      "/egocross_testbed/CholecTrack20/generated/VID01/frames/osl_q3/frame_00004.jpg"
+    ]
+  },
+  {
+    "id": 4,
+    "dataset": "CholecTrack20",
+    "primary_category": "Counting",
+    "question_type": "object counting",
+    "question_text": "How many distinct types of surgical instruments were fully or partially visible in the video segment from 0.00s to 10.00s?",
+    "options": [
+      "A: 2",
+      "B: 4",
+      "C: 1",
+      "D: 3"
+    ],
+    "original_video_fps": 25.0,
+    "video_path": [
+      "/egocross_testbed/CholecTrack20/generated/VID01/frames/oc_q4/frame_00000.jpg",
+      "/egocross_testbed/CholecTrack20/generated/VID01/frames/oc_q4/frame_00001.jpg",
+      "/egocross_testbed/CholecTrack20/generated/VID01/frames/oc_q4/frame_00002.jpg",
+      "/egocross_testbed/CholecTrack20/generated/VID01/frames/oc_q4/frame_00003.jpg",
+      "/egocross_testbed/CholecTrack20/generated/VID01/frames/oc_q4/frame_00004.jpg"
+    ]
+  },
+  {
+    "id": 5,
+    "dataset": "CholecTrack20",
+    "primary_category": "Identification",
+    "question_type": "dominant held-object identification",
+    "question_text": "Which tool was the main surgeon left hand predominantly interacting with in the video segment from 0.00s to 10.00s?",
+    "options": [
+      "A: hook",
+      "B: grasper",
+      "C: specimen-bag",
+      "D: irrigator"
+    ],
+    "original_video_fps": 25.0,
+    "video_path": [
+      "/egocross_testbed/CholecTrack20/generated/VID01/frames/dhoi_q5/frame_00000.jpg",
+      "/egocross_testbed/CholecTrack20/generated/VID01/frames/dhoi_q5/frame_00001.jpg",
+      "/egocross_testbed/CholecTrack20/generated/VID01/frames/dhoi_q5/frame_00002.jpg",
+      "/egocross_testbed/CholecTrack20/generated/VID01/frames/dhoi_q5/frame_00003.jpg",
+      "/egocross_testbed/CholecTrack20/generated/VID01/frames/dhoi_q5/frame_00004.jpg"
+    ]
+  }
+]
