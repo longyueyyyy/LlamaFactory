@@ -127,6 +127,32 @@ coverage: 1.0
 
 这个 baseline 要保留，不要覆盖。后续所有实验都应新建输出文件。
 
+## 5.1 已完成推理实验汇总
+
+| 实验名 | 脚本 | Prompt | vLLM max_model_len | max_frames | max_tokens | Overall | Surgery | Industry | XSports | Animal | coverage | 输出目录 |
+|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| baseline_max8 | `generate_egocross_submission.py` | 直接输出答案 | 32768 | 8 | 8 | 0.480669 | 0.515901 | 0.400000 | 0.414634 | 0.622951 | 1.0 | `egocross_outputs/baseline_max8/` |
+| cot_49k_256 | `generate_egocross_submission_cot_test.py` | 普通 CoT | 49152 | 8 | 256 | 0.444096 | 0.508834 | 0.342857 | 0.418699 | 0.513661 | 1.0 | `egocross_outputs/full_sft_32k_200k_max8_cot_49k_256/` |
+| shortcot_49k_512 | `generate_egocross_submission_shortcot_test.py` | 短 CoT | 49152 | 8 | 512 | 0.459770 | 0.515901 | 0.375510 | 0.414634 | 0.546448 | 1.0 | `egocross_outputs/full_sft_32k_200k_max8_shortcot_49k_512/` |
+
+当前结论：
+
+```text
+直接答案 baseline 仍然最高。
+普通 CoT 256 明显下降，主要问题是思维链输出偏长，部分样本在 max_tokens=256 内没有输出 Final answer。
+缺少最终答案时，脚本会从输出中抽取答案或 fallback 到 A，容易污染预测。
+Short CoT 512 比普通 CoT 256 更好，但仍低于直接答案 baseline。
+```
+
+因此，后续如果继续做 CoT，建议优先：
+
+```text
+1. 继续缩短 prompt，让模型更快输出 Final answer。
+2. 检查 *_raw_cot.json 中 no_final_answer 的比例。
+3. 不只增加 max_tokens，因为更长输出会显著变慢，也可能增加无关解释。
+4. 考虑使用带思维链标注的 enhanced 训练数据重新 SFT，而不是只在推理时强行 CoT。
+```
+
 ## 6. 当前已有脚本
 
 ### 6.1 baseline 脚本
@@ -411,7 +437,8 @@ python generate_egocross_submission_cot_test.py \
 python generate_egocross_submission_cot_test.py \
   --template submission_template.json \
   --max-frames 8 \
-  --output submission_full_sft_32k_200k_max8_cot_49k.json
+  --max-tokens 256 \
+  --output submission_full_sft_32k_200k_max8_cot_49k_256.json
 ```
 
 注意：`49152` 可能减少上下文超限，但也可能更吃显存或触发 vLLM 多图 bug。它是新实验，不应替代 baseline。
@@ -517,6 +544,40 @@ PY
 ```
 
 如果 `no_final_answer` 很多，说明 prompt 仍然不够强，或者输出仍被截断。此时应继续缩短 prompt，而不是只增加 `max_tokens`。
+
+普通 CoT 256 的检查文件：
+
+```bash
+python - <<'PY'
+import json
+p = "egocross_outputs/full_sft_32k_200k_max8_cot_49k_256/submission_full_sft_32k_200k_max8_cot_49k_256_raw_cot.json"
+with open(p) as f:
+    data = json.load(f)
+errs = [x for x in data if str(x.get("raw_output", "")).startswith("ERROR:")]
+no_final = [x for x in data if "FINAL ANSWER" not in str(x.get("raw_output", "")).upper()]
+print("num:", len(data))
+print("errors:", len(errs))
+print("no_final_answer:", len(no_final))
+print("first no_final:", no_final[:1])
+PY
+```
+
+Short CoT 512 的检查文件：
+
+```bash
+python - <<'PY'
+import json
+p = "egocross_outputs/full_sft_32k_200k_max8_shortcot_49k_512/submission_full_sft_32k_200k_max8_shortcot_49k_512_raw_cot.json"
+with open(p) as f:
+    data = json.load(f)
+errs = [x for x in data if str(x.get("raw_output", "")).startswith("ERROR:")]
+no_final = [x for x in data if "FINAL ANSWER" not in str(x.get("raw_output", "")).upper()]
+print("num:", len(data))
+print("errors:", len(errs))
+print("no_final_answer:", len(no_final))
+print("first no_final:", no_final[:1])
+PY
+```
 
 ## 12. 打包提交
 
