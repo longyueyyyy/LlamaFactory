@@ -1,0 +1,6 @@
+num: 12
+empty: 0
+invalid: 0
+answer_dist: A=2 B=2 C=7 D=1
+domain_dist: XSports=12
+status_dist: ok_after_frame_retry=12

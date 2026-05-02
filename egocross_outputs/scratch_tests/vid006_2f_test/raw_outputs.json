@@ -1,0 +1,326 @@
+[
+  {
+    "id": 723,
+    "question_id": "",
+    "dataset": "ExtrameSportFPV",
+    "answer": "B",
+    "status": "ok_after_frame_retry",
+    "prompt_mode": "direct",
+    "max_frames": 8,
+    "used_max_frames": 4,
+    "frame_attempts": [
+      {
+        "max_frames": 8,
+        "status": "context_length_error",
+        "error": "Error code: 400 - {'error': {'message': \"Input length (40884) exceeds model's maximum context length (32768).\", 'type': 'BadRequestError', 'param': None, 'code': 400}}"
+      },
+      {
+        "max_frames": 4,
+        "status": "ok",
+        "answer": "B",
+        "raw_output": "B",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What extreme sport is being performed in the video segment?\nA) A: Parkour\nB) B: Mountain Bike\nC) C: Skiing\nD) D: Jetski\nAnswer:"
+      }
+    ],
+    "vote": false,
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What extreme sport is being performed in the video segment?\nA) A: Parkour\nB) B: Mountain Bike\nC) C: Skiing\nD) D: Jetski\nAnswer:",
+    "raw_output": "B"
+  },
+  {
+    "id": 724,
+    "question_id": "",
+    "dataset": "ExtrameSportFPV",
+    "answer": "C",
+    "status": "ok_after_frame_retry",
+    "prompt_mode": "direct",
+    "max_frames": 8,
+    "used_max_frames": 4,
+    "frame_attempts": [
+      {
+        "max_frames": 8,
+        "status": "context_length_error",
+        "error": "Error code: 400 - {'error': {'message': \"Input length (40888) exceeds model's maximum context length (32768).\", 'type': 'BadRequestError', 'param': None, 'code': 400}}"
+      },
+      {
+        "max_frames": 4,
+        "status": "ok",
+        "answer": "C",
+        "raw_output": "C",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What action is being performed in the video segment from 4s to 6s?\nA) A: Climb\nB) B: Spin\nC) C: Jump\nD) D: Fly\nAnswer:"
+      }
+    ],
+    "vote": false,
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What action is being performed in the video segment from 4s to 6s?\nA) A: Climb\nB) B: Spin\nC) C: Jump\nD) D: Fly\nAnswer:",
+    "raw_output": "C"
+  },
+  {
+    "id": 725,
+    "question_id": "",
+    "dataset": "ExtrameSportFPV",
+    "answer": "C",
+    "status": "ok_after_frame_retry",
+    "prompt_mode": "direct",
+    "max_frames": 8,
+    "used_max_frames": 4,
+    "frame_attempts": [
+      {
+        "max_frames": 8,
+        "status": "context_length_error",
+        "error": "Error code: 400 - {'error': {'message': \"Input length (40887) exceeds model's maximum context length (32768).\", 'type': 'BadRequestError', 'param': None, 'code': 400}}"
+      },
+      {
+        "max_frames": 4,
+        "status": "ok",
+        "answer": "C",
+        "raw_output": "C",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What action is being performed in the video segment from 6s to 8s?\nA) A: Spin\nB) B: Flip\nC) C: Jump\nD) D: Fly\nAnswer:"
+      }
+    ],
+    "vote": false,
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What action is being performed in the video segment from 6s to 8s?\nA) A: Spin\nB) B: Flip\nC) C: Jump\nD) D: Fly\nAnswer:",
+    "raw_output": "C"
+  },
+  {
+    "id": 726,
+    "question_id": "",
+    "dataset": "ExtrameSportFPV",
+    "answer": "A",
+    "status": "ok_after_frame_retry",
+    "prompt_mode": "direct",
+    "max_frames": 8,
+    "used_max_frames": 4,
+    "frame_attempts": [
+      {
+        "max_frames": 8,
+        "status": "context_length_error",
+        "error": "Error code: 400 - {'error': {'message': \"Input length (40887) exceeds model's maximum context length (32768).\", 'type': 'BadRequestError', 'param': None, 'code': 400}}"
+      },
+      {
+        "max_frames": 4,
+        "status": "ok",
+        "answer": "A",
+        "raw_output": "A",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What action is being performed in the video segment from 2s to 4s?\nA) A: Jump\nB) B: Roll\nC) C: Spin\nD) D: Flip\nAnswer:"
+      }
+    ],
+    "vote": false,
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What action is being performed in the video segment from 2s to 4s?\nA) A: Jump\nB) B: Roll\nC) C: Spin\nD) D: Flip\nAnswer:",
+    "raw_output": "A"
+  },
+  {
+    "id": 727,
+    "question_id": "",
+    "dataset": "ExtrameSportFPV",
+    "answer": "C",
+    "status": "ok_after_frame_retry",
+    "prompt_mode": "direct",
+    "max_frames": 8,
+    "used_max_frames": 4,
+    "frame_attempts": [
+      {
+        "max_frames": 8,
+        "status": "context_length_error",
+        "error": "Error code: 400 - {'error': {'message': \"Input length (65395) exceeds model's maximum context length (32768).\", 'type': 'BadRequestError', 'param': None, 'code': 400}}"
+      },
+      {
+        "max_frames": 4,
+        "status": "ok",
+        "answer": "C",
+        "raw_output": "C",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What sequence of actions is performed in the time segment from 0s to 37s?\nA) A: Right → Run → Fly\nB) B: Leftright → Bumpyforward → Flip\nC) C: Left → Forward → Jump\nD) D: Right → Walk → Fly\nAnswer:"
+      }
+    ],
+    "vote": false,
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What sequence of actions is performed in the time segment from 0s to 37s?\nA) A: Right → Run → Fly\nB) B: Leftright → Bumpyforward → Flip\nC) C: Left → Forward → Jump\nD) D: Right → Walk → Fly\nAnswer:",
+    "raw_output": "C"
+  },
+  {
+    "id": 728,
+    "question_id": "",
+    "dataset": "ExtrameSportFPV",
+    "answer": "C",
+    "status": "ok_after_frame_retry",
+    "prompt_mode": "direct",
+    "max_frames": 8,
+    "used_max_frames": 4,
+    "frame_attempts": [
+      {
+        "max_frames": 8,
+        "status": "context_length_error",
+        "error": "Error code: 400 - {'error': {'message': \"Input length (65404) exceeds model's maximum context length (32768).\", 'type': 'BadRequestError', 'param': None, 'code': 400}}"
+      },
+      {
+        "max_frames": 4,
+        "status": "ok",
+        "answer": "C",
+        "raw_output": "C",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What sequence of actions is performed in the time segment from 4s to 14s?\nA) A: Run → Curveleft → Curveright\nB) B: Forward → Right → Leftright\nC) C: Bumpyforward → Curveright → Curveright\nD) D: Walk → Curveright → Left\nAnswer:"
+      }
+    ],
+    "vote": false,
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What sequence of actions is performed in the time segment from 4s to 14s?\nA) A: Run → Curveleft → Curveright\nB) B: Forward → Right → Leftright\nC) C: Bumpyforward → Curveright → Curveright\nD) D: Walk → Curveright → Left\nAnswer:",
+    "raw_output": "C"
+  },
+  {
+    "id": 729,
+    "question_id": "",
+    "dataset": "ExtrameSportFPV",
+    "answer": "C",
+    "status": "ok_after_frame_retry",
+    "prompt_mode": "direct",
+    "max_frames": 8,
+    "used_max_frames": 4,
+    "frame_attempts": [
+      {
+        "max_frames": 8,
+        "status": "context_length_error",
+        "error": "Error code: 400 - {'error': {'message': \"Input length (65381) exceeds model's maximum context length (32768).\", 'type': 'BadRequestError', 'param': None, 'code': 400}}"
+      },
+      {
+        "max_frames": 4,
+        "status": "ok",
+        "answer": "C",
+        "raw_output": "C",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: At what approximate time does the 'jump' action begin in this video segment?\nA) A: 1s\nB) B: 11s\nC) C: 5s\nD) D: 13s\nAnswer:"
+      }
+    ],
+    "vote": false,
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: At what approximate time does the 'jump' action begin in this video segment?\nA) A: 1s\nB) B: 11s\nC) C: 5s\nD) D: 13s\nAnswer:",
+    "raw_output": "C"
+  },
+  {
+    "id": 730,
+    "question_id": "",
+    "dataset": "ExtrameSportFPV",
+    "answer": "C",
+    "status": "ok_after_frame_retry",
+    "prompt_mode": "direct",
+    "max_frames": 8,
+    "used_max_frames": 4,
+    "frame_attempts": [
+      {
+        "max_frames": 8,
+        "status": "context_length_error",
+        "error": "Error code: 400 - {'error': {'message': \"Input length (65388) exceeds model's maximum context length (32768).\", 'type': 'BadRequestError', 'param': None, 'code': 400}}"
+      },
+      {
+        "max_frames": 4,
+        "status": "ok",
+        "answer": "C",
+        "raw_output": "C",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: At what approximate time does the 'jump' action begin in this video segment?\nA) A: 8.8s\nB) B: 6.8s\nC) C: 2.6s\nD) D: 11.3s\nAnswer:"
+      }
+    ],
+    "vote": false,
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: At what approximate time does the 'jump' action begin in this video segment?\nA) A: 8.8s\nB) B: 6.8s\nC) C: 2.6s\nD) D: 11.3s\nAnswer:",
+    "raw_output": "C"
+  },
+  {
+    "id": 731,
+    "question_id": "",
+    "dataset": "ExtrameSportFPV",
+    "answer": "C",
+    "status": "ok_after_frame_retry",
+    "prompt_mode": "direct",
+    "max_frames": 8,
+    "used_max_frames": 4,
+    "frame_attempts": [
+      {
+        "max_frames": 8,
+        "status": "context_length_error",
+        "error": "Error code: 400 - {'error': {'message': \"Input length (65391) exceeds model's maximum context length (32768).\", 'type': 'BadRequestError', 'param': None, 'code': 400}}"
+      },
+      {
+        "max_frames": 4,
+        "status": "ok",
+        "answer": "C",
+        "raw_output": "C",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: At what approximate time does the 'curveright' action begin in this video segment?\nA) A: 3.6s\nB) B: 8.8s\nC) C: 10.9s\nD) D: 12.2s\nAnswer:"
+      }
+    ],
+    "vote": false,
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: At what approximate time does the 'curveright' action begin in this video segment?\nA) A: 3.6s\nB) B: 8.8s\nC) C: 10.9s\nD) D: 12.2s\nAnswer:",
+    "raw_output": "C"
+  },
+  {
+    "id": 732,
+    "question_id": "",
+    "dataset": "ExtrameSportFPV",
+    "answer": "D",
+    "status": "ok_after_frame_retry",
+    "prompt_mode": "direct",
+    "max_frames": 8,
+    "used_max_frames": 4,
+    "frame_attempts": [
+      {
+        "max_frames": 8,
+        "status": "context_length_error",
+        "error": "Error code: 400 - {'error': {'message': \"Input length (65371) exceeds model's maximum context length (32768).\", 'type': 'BadRequestError', 'param': None, 'code': 400}}"
+      },
+      {
+        "max_frames": 4,
+        "status": "ok",
+        "answer": "D",
+        "raw_output": "D",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Based on the video segment, what is the next direction of movement?\nA) A: Left\nB) B: Curve right\nC) C: Curve left\nD) D: Forward\nAnswer:"
+      }
+    ],
+    "vote": false,
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Based on the video segment, what is the next direction of movement?\nA) A: Left\nB) B: Curve right\nC) C: Curve left\nD) D: Forward\nAnswer:",
+    "raw_output": "D"
+  },
+  {
+    "id": 733,
+    "question_id": "",
+    "dataset": "ExtrameSportFPV",
+    "answer": "B",
+    "status": "ok_after_frame_retry",
+    "prompt_mode": "direct",
+    "max_frames": 8,
+    "used_max_frames": 4,
+    "frame_attempts": [
+      {
+        "max_frames": 8,
+        "status": "context_length_error",
+        "error": "Error code: 400 - {'error': {'message': \"Input length (65373) exceeds model's maximum context length (32768).\", 'type': 'BadRequestError', 'param': None, 'code': 400}}"
+      },
+      {
+        "max_frames": 4,
+        "status": "ok",
+        "answer": "B",
+        "raw_output": "B",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Based on the video segment, what is the next direction of movement?\nA) A: Right\nB) B: Curve right\nC) C: Left then right\nD) D: Curve left\nAnswer:"
+      }
+    ],
+    "vote": false,
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Based on the video segment, what is the next direction of movement?\nA) A: Right\nB) B: Curve right\nC) C: Left then right\nD) D: Curve left\nAnswer:",
+    "raw_output": "B"
+  },
+  {
+    "id": 734,
+    "question_id": "",
+    "dataset": "ExtrameSportFPV",
+    "answer": "A",
+    "status": "ok_after_frame_retry",
+    "prompt_mode": "direct",
+    "max_frames": 8,
+    "used_max_frames": 4,
+    "frame_attempts": [
+      {
+        "max_frames": 8,
+        "status": "context_length_error",
+        "error": "Error code: 400 - {'error': {'message': \"Input length (65371) exceeds model's maximum context length (32768).\", 'type': 'BadRequestError', 'param': None, 'code': 400}}"
+      },
+      {
+        "max_frames": 4,
+        "status": "ok",
+        "answer": "A",
+        "raw_output": "A",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Based on the video segment, what is the next direction of movement?\nA) A: Forward\nB) B: Curve left\nC) C: Left\nD) D: Curve right\nAnswer:"
+      }
+    ],
+    "vote": false,
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Based on the video segment, what is the next direction of movement?\nA) A: Forward\nB) B: Curve left\nC) C: Left\nD) D: Curve right\nAnswer:",
+    "raw_output": "A"
+  }
+]

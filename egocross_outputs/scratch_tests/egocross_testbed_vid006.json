@@ -1,0 +1,278 @@
+[
+  {
+    "id": 723,
+    "dataset": "ExtrameSportFPV",
+    "primary_category": "Identification",
+    "question_type": "sport identification",
+    "question_text": "What extreme sport is being performed in the video segment?",
+    "options": [
+      "A: Parkour",
+      "B: Mountain Bike",
+      "C: Skiing",
+      "D: Jetski"
+    ],
+    "original_video_fps": 30.0,
+    "video_path": [
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/si_q1/frame_00000.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/si_q1/frame_00001.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/si_q1/frame_00002.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/si_q1/frame_00003.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/si_q1/frame_00004.jpg"
+    ]
+  },
+  {
+    "id": 724,
+    "dataset": "ExtrameSportFPV",
+    "primary_category": "Identification",
+    "question_type": "special action identification",
+    "question_text": "What action is being performed in the video segment from 4s to 6s?",
+    "options": [
+      "A: Climb",
+      "B: Spin",
+      "C: Jump",
+      "D: Fly"
+    ],
+    "original_video_fps": 30.0,
+    "video_path": [
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/sai_q2/frame_00000.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/sai_q2/frame_00001.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/sai_q2/frame_00002.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/sai_q2/frame_00003.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/sai_q2/frame_00004.jpg"
+    ]
+  },
+  {
+    "id": 725,
+    "dataset": "ExtrameSportFPV",
+    "primary_category": "Identification",
+    "question_type": "special action identification",
+    "question_text": "What action is being performed in the video segment from 6s to 8s?",
+    "options": [
+      "A: Spin",
+      "B: Flip",
+      "C: Jump",
+      "D: Fly"
+    ],
+    "original_video_fps": 30.0,
+    "video_path": [
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/sai_q3/frame_00000.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/sai_q3/frame_00001.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/sai_q3/frame_00002.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/sai_q3/frame_00003.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/sai_q3/frame_00004.jpg"
+    ]
+  },
+  {
+    "id": 726,
+    "dataset": "ExtrameSportFPV",
+    "primary_category": "Identification",
+    "question_type": "special action identification",
+    "question_text": "What action is being performed in the video segment from 2s to 4s?",
+    "options": [
+      "A: Jump",
+      "B: Roll",
+      "C: Spin",
+      "D: Flip"
+    ],
+    "original_video_fps": 30.0,
+    "video_path": [
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/sai_q4/frame_00000.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/sai_q4/frame_00001.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/sai_q4/frame_00002.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/sai_q4/frame_00003.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/sai_q4/frame_00004.jpg"
+    ]
+  },
+  {
+    "id": 727,
+    "dataset": "ExtrameSportFPV",
+    "primary_category": "Identification",
+    "question_type": "action sequence identification",
+    "question_text": "What sequence of actions is performed in the time segment from 0s to 37s?",
+    "options": [
+      "A: Right → Run → Fly",
+      "B: Leftright → Bumpyforward → Flip",
+      "C: Left → Forward → Jump",
+      "D: Right → Walk → Fly"
+    ],
+    "original_video_fps": 30.0,
+    "video_path": [
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/asi_q5/frame_00000.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/asi_q5/frame_00001.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/asi_q5/frame_00002.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/asi_q5/frame_00003.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/asi_q5/frame_00004.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/asi_q5/frame_00005.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/asi_q5/frame_00006.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/asi_q5/frame_00007.jpg"
+    ]
+  },
+  {
+    "id": 728,
+    "dataset": "ExtrameSportFPV",
+    "primary_category": "Identification",
+    "question_type": "action sequence identification",
+    "question_text": "What sequence of actions is performed in the time segment from 4s to 14s?",
+    "options": [
+      "A: Run → Curveleft → Curveright",
+      "B: Forward → Right → Leftright",
+      "C: Bumpyforward → Curveright → Curveright",
+      "D: Walk → Curveright → Left"
+    ],
+    "original_video_fps": 30.0,
+    "video_path": [
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/asi_q6/frame_00000.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/asi_q6/frame_00001.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/asi_q6/frame_00002.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/asi_q6/frame_00003.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/asi_q6/frame_00004.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/asi_q6/frame_00005.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/asi_q6/frame_00006.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/asi_q6/frame_00007.jpg"
+    ]
+  },
+  {
+    "id": 729,
+    "dataset": "ExtrameSportFPV",
+    "primary_category": "Localization",
+    "question_type": "action temporal localization",
+    "question_text": "At what approximate time does the 'jump' action begin in this video segment?",
+    "options": [
+      "A: 1s",
+      "B: 11s",
+      "C: 5s",
+      "D: 13s"
+    ],
+    "original_video_fps": 30.0,
+    "video_path": [
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/atl_q7/frame_00000.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/atl_q7/frame_00001.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/atl_q7/frame_00002.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/atl_q7/frame_00003.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/atl_q7/frame_00004.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/atl_q7/frame_00005.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/atl_q7/frame_00006.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/atl_q7/frame_00007.jpg"
+    ]
+  },
+  {
+    "id": 730,
+    "dataset": "ExtrameSportFPV",
+    "primary_category": "Localization",
+    "question_type": "action temporal localization",
+    "question_text": "At what approximate time does the 'jump' action begin in this video segment?",
+    "options": [
+      "A: 8.8s",
+      "B: 6.8s",
+      "C: 2.6s",
+      "D: 11.3s"
+    ],
+    "original_video_fps": 30.0,
+    "video_path": [
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/atl_q8/frame_00000.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/atl_q8/frame_00001.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/atl_q8/frame_00002.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/atl_q8/frame_00003.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/atl_q8/frame_00004.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/atl_q8/frame_00005.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/atl_q8/frame_00006.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/atl_q8/frame_00007.jpg"
+    ]
+  },
+  {
+    "id": 731,
+    "dataset": "ExtrameSportFPV",
+    "primary_category": "Localization",
+    "question_type": "action temporal localization",
+    "question_text": "At what approximate time does the 'curveright' action begin in this video segment?",
+    "options": [
+      "A: 3.6s",
+      "B: 8.8s",
+      "C: 10.9s",
+      "D: 12.2s"
+    ],
+    "original_video_fps": 30.0,
+    "video_path": [
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/atl_q9/frame_00000.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/atl_q9/frame_00001.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/atl_q9/frame_00002.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/atl_q9/frame_00003.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/atl_q9/frame_00004.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/atl_q9/frame_00005.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/atl_q9/frame_00006.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/atl_q9/frame_00007.jpg"
+    ]
+  },
+  {
+    "id": 732,
+    "dataset": "ExtrameSportFPV",
+    "primary_category": "Prediction",
+    "question_type": "next direction prediction",
+    "question_text": "Based on the video segment, what is the next direction of movement?",
+    "options": [
+      "A: Left",
+      "B: Curve right",
+      "C: Curve left",
+      "D: Forward"
+    ],
+    "original_video_fps": 30.0,
+    "video_path": [
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/ndp_q10/frame_00000.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/ndp_q10/frame_00001.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/ndp_q10/frame_00002.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/ndp_q10/frame_00003.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/ndp_q10/frame_00004.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/ndp_q10/frame_00005.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/ndp_q10/frame_00006.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/ndp_q10/frame_00007.jpg"
+    ]
+  },
+  {
+    "id": 733,
+    "dataset": "ExtrameSportFPV",
+    "primary_category": "Prediction",
+    "question_type": "next direction prediction",
+    "question_text": "Based on the video segment, what is the next direction of movement?",
+    "options": [
+      "A: Right",
+      "B: Curve right",
+      "C: Left then right",
+      "D: Curve left"
+    ],
+    "original_video_fps": 30.0,
+    "video_path": [
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/ndp_q11/frame_00000.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/ndp_q11/frame_00001.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/ndp_q11/frame_00002.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/ndp_q11/frame_00003.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/ndp_q11/frame_00004.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/ndp_q11/frame_00005.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/ndp_q11/frame_00006.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/ndp_q11/frame_00007.jpg"
+    ]
+  },
+  {
+    "id": 734,
+    "dataset": "ExtrameSportFPV",
+    "primary_category": "Prediction",
+    "question_type": "next direction prediction",
+    "question_text": "Based on the video segment, what is the next direction of movement?",
+    "options": [
+      "A: Forward",
+      "B: Curve left",
+      "C: Left",
+      "D: Curve right"
+    ],
+    "original_video_fps": 30.0,
+    "video_path": [
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/ndp_q12/frame_00000.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/ndp_q12/frame_00001.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/ndp_q12/frame_00002.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/ndp_q12/frame_00003.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/ndp_q12/frame_00004.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/ndp_q12/frame_00005.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/ndp_q12/frame_00006.jpg",
+      "/egocross_testbed/ExtrameSportFPV/generated/VID006/frames/ndp_q12/frame_00007.jpg"
+    ]
+  }
+]
