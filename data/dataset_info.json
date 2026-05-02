@@ -108,6 +108,20 @@
       "assistant_tag": "assistant"
     }
   },
+  "egocross_weighted_answer_only_i4_x4": {
+    "file_name": "/share/home/group9/data/egocross/train_weighted_answer_only_i4_x4.json",
+    "formatting": "sharegpt",
+    "columns": {
+      "messages": "messages",
+      "images": "images"
+    },
+    "tags": {
+      "role_tag": "role",
+      "content_tag": "content",
+      "user_tag": "user",
+      "assistant_tag": "assistant"
+    }
+  },
   "mllm_audio_demo": {
     "file_name": "mllm_audio_demo.json",
     "formatting": "sharegpt",
