@@ -1,12 +1,26 @@
 import argparse
 import base64
 import json
-import os
 import re
 import time
 from pathlib import Path
 
-from openai import OpenAI
+
+DOMAIN_BY_DATASET = {
+    "CholecTrack20": "Surgery",
+    "EgoSurgery": "Surgery",
+    "ENIGMA": "Industry",
+    "ExtrameSportFPV": "XSports",
+    "EgoPet": "Animal",
+}
+
+DOMAIN_HINT_BY_DATASET = {
+    "CholecTrack20": "laparoscopic surgery instrument and anatomy video",
+    "EgoSurgery": "first-person surgery video",
+    "ENIGMA": "industrial assembly egocentric video",
+    "ExtrameSportFPV": "first-person extreme sports video",
+    "EgoPet": "pet-mounted first-person animal video",
+}
 
 
 def encode_image(path: str) -> str:
@@ -36,7 +50,7 @@ def normalize_options(options):
     return str(options)
 
 
-def extract_answer(text: str) -> str:
+def extract_answer(text: str):
     text = text.strip().upper()
     match = re.search(r"\b([ABCD])\b", text)
     if match:
@@ -44,7 +58,41 @@ def extract_answer(text: str) -> str:
     match = re.search(r"([ABCD])", text)
     if match:
         return match.group(1)
-    return "A"
+    return None
+
+
+def row_key(row, fallback_idx=None):
+    if row.get("id") is not None:
+        return ("id", str(row["id"]))
+    if row.get("question_id"):
+        return ("question_id", str(row["question_id"]))
+    return ("idx", str(fallback_idx))
+
+
+def load_submission(path):
+    if not path:
+        return None
+
+    with open(path, encoding="utf-8") as f:
+        rows = json.load(f)
+
+    return {row_key(row, idx): row for idx, row in enumerate(rows, start=1)}
+
+
+def parse_dataset_selectors(value):
+    if not value:
+        return None
+
+    selectors = {item.strip().lower() for item in value.split(",") if item.strip()}
+    return selectors or None
+
+
+def selected_dataset(dataset, selectors):
+    if not selectors:
+        return True
+
+    domain = DOMAIN_BY_DATASET.get(dataset, dataset)
+    return dataset.lower() in selectors or domain.lower() in selectors
 
 
 def resolve_frame_path(testbed_dir: Path, dataset: str, frame_path: str) -> str:
@@ -77,9 +125,30 @@ def resolve_frame_path(testbed_dir: Path, dataset: str, frame_path: str) -> str:
 
 
 
-def build_prompt(sample):
+def build_prompt(sample, prompt_mode):
     question = sample.get("question_text", "")
     options = normalize_options(sample.get("options", ""))
+    dataset = sample.get("dataset", "")
+
+    if prompt_mode == "strict_direct":
+        return (
+            "Return exactly one character: A, B, C, or D.\n"
+            "Do not output any other words, punctuation, or explanation.\n\n"
+            f"Question: {question}\n"
+            f"{options}\n"
+            "Answer:"
+        )
+
+    if prompt_mode == "domain_direct":
+        hint = DOMAIN_HINT_BY_DATASET.get(dataset, "egocentric video")
+        return (
+            "Answer this multiple-choice question from the provided frames.\n"
+            f"Domain hint: {hint}.\n"
+            "Return only one letter: A, B, C, or D. Do not explain.\n\n"
+            f"Question: {question}\n"
+            f"{options}\n"
+            "Answer:"
+        )
 
     return (
         "Answer the multiple-choice question using only one letter: A, B, C, or D.\n"
@@ -99,8 +168,25 @@ def main():
     parser.add_argument("--base-url", default="http://127.0.0.1:8000/v1")
     parser.add_argument("--model", default="egocross")
     parser.add_argument("--max-frames", type=int, default=0, help="0 means use all frames")
+    parser.add_argument("--max-tokens", type=int, default=8)
+    parser.add_argument("--prompt-mode", choices=["direct", "strict_direct", "domain_direct"], default="direct")
+    parser.add_argument(
+        "--only-datasets",
+        default=None,
+        help="Comma-separated dataset names or domain aliases to run, e.g. ENIGMA,ExtrameSportFPV or Industry,XSports.",
+    )
+    parser.add_argument(
+        "--fallback-submission",
+        default=None,
+        help="Full submission used for skipped samples and API/parse failures.",
+    )
+    parser.add_argument("--raw-output", default=None)
     parser.add_argument("--sleep", type=float, default=0.0)
     args = parser.parse_args()
+
+    selectors = parse_dataset_selectors(args.only_datasets)
+    if selectors and not args.fallback_submission:
+        parser.error("--only-datasets requires --fallback-submission so skipped rows keep valid answers.")
 
     testbed_dir = Path(args.testbed_dir)
     input_json = Path(args.input_json) if args.input_json else testbed_dir / "egocross_testbed_imgs.json"
@@ -114,12 +200,40 @@ def main():
         with open(args.template) as f:
             template = json.load(f)
 
+    fallback = load_submission(args.fallback_submission)
+
+    from openai import OpenAI
+
     client = OpenAI(base_url=args.base_url, api_key="dummy")
     outputs = []
+    raw_outputs = []
 
 
     for idx, sample in enumerate(samples, start=1):
         dataset = sample["dataset"]
+        sample_key = row_key(sample, idx)
+        fallback_row = dict(fallback[sample_key]) if fallback and sample_key in fallback else None
+
+        if not selected_dataset(dataset, selectors):
+            if not fallback_row:
+                raise RuntimeError(f"No fallback row for skipped sample {sample_key}.")
+            outputs.append(fallback_row)
+            raw_outputs.append({
+                "id": fallback_row.get("id", sample.get("id", idx)),
+                "question_id": fallback_row.get("question_id", sample.get("question_id", "")),
+                "dataset": fallback_row.get("dataset", dataset),
+                "answer": fallback_row.get("answer", ""),
+                "prompt_mode": args.prompt_mode,
+                "status": "skipped_fallback",
+                "raw_output": "",
+            })
+            print(
+                f"[{idx}/{len(samples)}] {fallback_row.get('question_id', '')} -> "
+                f"{fallback_row.get('answer', '')} | skipped fallback",
+                flush=True,
+            )
+            continue
+
         frame_paths = sample.get("video_path", [])
 
         if args.max_frames and len(frame_paths) > args.max_frames:
@@ -135,20 +249,34 @@ def main():
                 "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"},
             })
 
-        content.append({"type": "text", "text": build_prompt(sample)})
+        prompt = build_prompt(sample, args.prompt_mode)
+        content.append({"type": "text", "text": prompt})
 
+        status = "ok"
         try:
             resp = client.chat.completions.create(
                 model=args.model,
                 messages=[{"role": "user", "content": content}],
-                max_tokens=8,
+                max_tokens=args.max_tokens,
                 temperature=0,
             )
             raw_answer = resp.choices[0].message.content
             answer = extract_answer(raw_answer)
+            if answer is None:
+                if fallback_row:
+                    answer = fallback_row.get("answer", "A")
+                    status = "parse_fallback"
+                else:
+                    answer = "A"
+                    status = "parse_default_a"
         except Exception as e:
             raw_answer = f"ERROR: {e}"
-            answer = "A"
+            if fallback_row:
+                answer = fallback_row.get("answer", "A")
+                status = "error_fallback"
+            else:
+                answer = "A"
+                status = "error_default_a"
 
         if template:
             row = dict(template[idx - 1])
@@ -162,15 +290,34 @@ def main():
             }
 
         outputs.append(row)
+        raw_outputs.append({
+            "id": row.get("id", sample.get("id", idx)),
+            "question_id": row.get("question_id", sample.get("question_id", "")),
+            "dataset": row.get("dataset", dataset),
+            "answer": answer,
+            "prompt_mode": args.prompt_mode,
+            "status": status,
+            "prompt": prompt,
+            "raw_output": raw_answer,
+        })
 
 
-        print(f"[{idx}/{len(samples)}] {sample.get('question_id', '')} -> {answer} | raw={raw_answer!r}", flush=True)
+        print(
+            f"[{idx}/{len(samples)}] {row.get('question_id', sample.get('question_id', ''))} "
+            f"-> {answer} | status={status} | raw={raw_answer!r}",
+            flush=True,
+        )
 
         if args.sleep:
             time.sleep(args.sleep)
 
     with open(args.output, "w") as f:
         json.dump(outputs, f, indent=2, ensure_ascii=False)
+
+    if args.raw_output:
+        with open(args.raw_output, "w") as f:
+            json.dump(raw_outputs, f, indent=2, ensure_ascii=False)
+        print(f"Saved raw outputs to {args.raw_output}")
 
     print(f"Saved submission to {args.output}")
 

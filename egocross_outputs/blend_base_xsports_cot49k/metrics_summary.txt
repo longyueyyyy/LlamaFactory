@@ -1,0 +1,10 @@
+override XSports from egocross_outputs\full_sft_32k_200k_max8_cot_49k_256\submission_full_sft_32k_200k_max8_cot_49k_256.json: replaced=246 changed=119 Surgery=0 Industry=0 XSports=119 Animal=0
+num: 957
+empty: 0
+invalid: 0
+answer_dist: A=297 B=186 C=289 D=185
+dataset_dist: CholecTrack20=183 ENIGMA=245 EgoPet=183 EgoSurgery=100 ExtrameSportFPV=246
+domain_dist: Animal=183 Industry=245 Surgery=283 XSports=246
+changed_vs_base_total: 119
+changed_vs_base_by_domain: Surgery=0 Industry=0 XSports=119 Animal=0
+changed_vs_base_by_dataset: ExtrameSportFPV=119
