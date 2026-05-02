@@ -211,6 +211,21 @@ def call_model(client, model, content, max_tokens):
     return resp.choices[0].message.content
 
 
+def is_context_length_error(exc):
+    text = str(exc).lower()
+    return "exceeds model" in text and "maximum context length" in text
+
+
+def frame_retry_sequence(max_frames):
+    start = max_frames or 8
+    candidates = [start, 4, 2, 1]
+    sequence = []
+    for value in candidates:
+        if value <= start and value not in sequence:
+            sequence.append(value)
+    return sequence
+
+
 def build_image_content(testbed_dir, sample, max_frames):
     dataset = sample["dataset"]
     content = []
@@ -234,6 +249,43 @@ def infer_once(client, model, testbed_dir, sample, prompt_mode, max_frames, max_
     if display_answer is None:
         return None, raw_output, prompt
     return display_to_original[display_answer], raw_output, prompt
+
+
+def infer_with_frame_retry(client, model, testbed_dir, sample, prompt_mode, max_frames, max_tokens):
+    attempts = []
+    for attempt_frames in frame_retry_sequence(max_frames):
+        try:
+            answer, raw_output, prompt = infer_once(
+                client,
+                model,
+                testbed_dir,
+                sample,
+                prompt_mode,
+                attempt_frames,
+                max_tokens,
+                ["A", "B", "C", "D"],
+            )
+            attempts.append({
+                "max_frames": attempt_frames,
+                "status": "ok" if answer is not None else "parse_failed",
+                "answer": answer,
+                "raw_output": raw_output,
+                "prompt": prompt,
+            })
+            status = "ok" if answer is not None else "parse_failed"
+            if attempt_frames != max_frames:
+                status = f"{status}_after_frame_retry"
+            return answer, raw_output, prompt, attempt_frames, attempts, status
+        except Exception as exc:
+            attempts.append({
+                "max_frames": attempt_frames,
+                "status": "context_length_error" if is_context_length_error(exc) else "error",
+                "error": str(exc),
+            })
+            if not is_context_length_error(exc):
+                raise
+
+    raise RuntimeError("All frame retry attempts exceeded context length.")
 
 
 def vote_infer(client, model, testbed_dir, sample, prompt_mode, max_frames, max_tokens):
@@ -262,6 +314,33 @@ def vote_infer(client, model, testbed_dir, sample, prompt_mode, max_frames, max_
     if count >= 2:
         return answer, attempts, "vote_majority"
     return answer, attempts, "vote_plurality"
+
+
+def vote_with_frame_retry(client, model, testbed_dir, sample, prompt_mode, max_frames, max_tokens):
+    frame_attempts = []
+    for attempt_frames in frame_retry_sequence(max_frames):
+        try:
+            answer, attempts, status = vote_infer(
+                client, model, testbed_dir, sample, prompt_mode, attempt_frames, max_tokens
+            )
+            frame_attempts.append({
+                "max_frames": attempt_frames,
+                "status": status,
+                "attempts": attempts,
+            })
+            if attempt_frames != max_frames:
+                status = f"{status}_after_frame_retry"
+            return answer, frame_attempts, status, attempt_frames
+        except Exception as exc:
+            frame_attempts.append({
+                "max_frames": attempt_frames,
+                "status": "context_length_error" if is_context_length_error(exc) else "error",
+                "error": str(exc),
+            })
+            if not is_context_length_error(exc):
+                raise
+
+    raise RuntimeError("All frame retry attempts exceeded context length.")
 
 
 def fallback_answer(fallback_index, sample, idx):
@@ -388,14 +467,17 @@ def main():
         status = "ok"
         raw_payload = None
         prompt = None
+        used_max_frames = max_frames
+        frame_attempts = []
 
         try:
             if use_vote:
-                answer, raw_payload, status = vote_infer(
+                answer, raw_payload, status, used_max_frames = vote_with_frame_retry(
                     client, args.model, testbed_dir, sample, prompt_mode, max_frames, args.max_tokens
                 )
+                frame_attempts = raw_payload
             else:
-                answer, raw_payload, prompt = infer_once(
+                answer, raw_payload, prompt, used_max_frames, frame_attempts, status = infer_with_frame_retry(
                     client,
                     args.model,
                     testbed_dir,
@@ -403,11 +485,7 @@ def main():
                     prompt_mode,
                     max_frames,
                     args.max_tokens,
-                    ["A", "B", "C", "D"],
                 )
-                if answer is None:
-                    status = "parse_failed"
-
             if answer is None:
                 fallback = fallback_answer(fallback_index, sample, idx)
                 if fallback is not None:
@@ -436,6 +514,8 @@ def main():
             "status": status,
             "prompt_mode": prompt_mode,
             "max_frames": max_frames,
+            "used_max_frames": used_max_frames,
+            "frame_attempts": frame_attempts,
             "vote": use_vote,
             "prompt": prompt,
             "raw_output": raw_payload,
@@ -443,7 +523,7 @@ def main():
         processed += 1
         print(
             f"[{idx}/{len(samples)}] {row.get('question_id', '')} -> {answer} "
-            f"| {prompt_mode} max{max_frames} status={status}",
+            f"| {prompt_mode} max{used_max_frames}/{max_frames} status={status}",
             flush=True,
         )
         if args.sleep:
