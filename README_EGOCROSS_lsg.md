@@ -592,13 +592,13 @@ submission.zip
 
 ```bash
 cp submission_full_sft_32k_200k_max8_cot_test.json predictions.json
-zip submission_cot_max8.zip predictions.json
+zip submission.zip predictions.json
 ```
 
 如果平台要求 zip 名必须是 `submission.zip`：
 
 ```bash
-cp submission_cot_max8.zip submission.zip
+cp submission.zip submission.zip
 ```
 
 ## 13. 重要原则

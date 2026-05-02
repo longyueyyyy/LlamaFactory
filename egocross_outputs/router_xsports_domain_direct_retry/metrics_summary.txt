@@ -1,0 +1,8 @@
+num: 957
+empty: 0
+invalid: 0
+answer_dist: A=245 B=193 C=337 D=182
+domain_dist: Animal=183 Industry=245 Surgery=283 XSports=246
+status_dist: error_fallback=246 skipped_fallback=711
+changed_vs_fallback_total: 0
+changed_vs_fallback_by_domain: Surgery=0 Industry=0 XSports=0 Animal=0
