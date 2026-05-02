@@ -90,6 +90,30 @@ def parse_routes(route_args, default_prompt_mode, default_max_frames):
     return choose
 
 
+def parse_frame_routes(route_args):
+    routes = []
+    for item in route_args or []:
+        if "=" not in item:
+            raise ValueError(f"Frame route must use SUBSTRING=max_frames: {item}")
+        selector, value = item.split("=", 1)
+        selector = selector.strip()
+        if not selector:
+            raise ValueError(f"Empty frame route selector: {item}")
+        routes.append((selector.lower(), int(value)))
+    return routes
+
+
+def apply_frame_routes(sample, max_frames, frame_routes):
+    question_id = str(sample.get("question_id", "")).lower()
+    sample_id = str(sample.get("id", "")).lower()
+    dataset = str(sample.get("dataset", "")).lower()
+    haystack = " ".join([question_id, sample_id, dataset])
+    for selector, routed_frames in frame_routes:
+        if selector in haystack:
+            return routed_frames
+    return max_frames
+
+
 def parse_options(options):
     parsed = []
     if isinstance(options, dict):
@@ -410,6 +434,12 @@ def main():
         default=[],
         help="Dataset/domain route: DOMAIN=prompt_mode[:max_frames], e.g. XSports=domain_direct:8.",
     )
+    parser.add_argument(
+        "--frame-route",
+        action="append",
+        default=[],
+        help="Question-id/dataset substring max-frame override, e.g. ExtrameSportFPV_VID006=2.",
+    )
     parser.add_argument("--max-tokens", type=int, default=8)
     parser.add_argument("--only-datasets", default=None)
     parser.add_argument("--fallback-submission", default=None)
@@ -431,6 +461,7 @@ def main():
     selectors = parse_selectors(args.only_datasets)
     vote_selectors = parse_selectors(args.vote_domains)
     choose_route = parse_routes(args.route, args.default_prompt_mode, args.default_max_frames)
+    frame_routes = parse_frame_routes(args.frame_route)
 
     if (selectors or args.limit) and not fallback_index:
         raise SystemExit("--only-datasets and --limit require --fallback-submission to keep a full valid output.")
@@ -463,6 +494,7 @@ def main():
             continue
 
         prompt_mode, max_frames = choose_route(dataset)
+        max_frames = apply_frame_routes(sample, max_frames, frame_routes)
         use_vote = bool(vote_selectors) and selector_matches(dataset, vote_selectors)
         status = "ok"
         raw_payload = None

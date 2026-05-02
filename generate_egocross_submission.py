@@ -95,6 +95,20 @@ def selected_dataset(dataset, selectors):
     return dataset.lower() in selectors or domain.lower() in selectors
 
 
+def is_context_length_error(exc):
+    text = str(exc).lower()
+    return "exceeds model" in text and "maximum context length" in text
+
+
+def frame_retry_sequence(max_frames):
+    start = max_frames or 8
+    sequence = []
+    for value in [start, 4, 2, 1]:
+        if value <= start and value not in sequence:
+            sequence.append(value)
+    return sequence
+
+
 def resolve_frame_path(testbed_dir: Path, dataset: str, frame_path: str) -> str:
     raw = str(frame_path).replace("\\", "/")
 
@@ -123,6 +137,26 @@ def resolve_frame_path(testbed_dir: Path, dataset: str, frame_path: str) -> str:
         + "; ".join(str(c) for c in candidates)
     )
 
+
+def sample_frame_paths(frame_paths, max_frames):
+    if max_frames and len(frame_paths) > max_frames:
+        step = len(frame_paths) / max_frames
+        return [frame_paths[int(i * step)] for i in range(max_frames)]
+    return list(frame_paths)
+
+
+def build_content(testbed_dir, sample, frame_paths, prompt):
+    content = []
+    for frame_path in frame_paths:
+        abs_path = resolve_frame_path(testbed_dir, sample["dataset"], frame_path)
+        img_b64 = encode_image(abs_path)
+        content.append({
+            "type": "image_url",
+            "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"},
+        })
+
+    content.append({"type": "text", "text": prompt})
+    return content
 
 
 def build_prompt(sample, prompt_mode):
@@ -181,6 +215,7 @@ def main():
         help="Full submission used for skipped samples and API/parse failures.",
     )
     parser.add_argument("--raw-output", default=None)
+    parser.add_argument("--frame-retry", action="store_true", help="Retry context-length errors with fewer frames.")
     parser.add_argument("--sleep", type=float, default=0.0)
     args = parser.parse_args()
 
@@ -236,39 +271,49 @@ def main():
 
         frame_paths = sample.get("video_path", [])
 
-        if args.max_frames and len(frame_paths) > args.max_frames:
-            step = len(frame_paths) / args.max_frames
-            frame_paths = [frame_paths[int(i * step)] for i in range(args.max_frames)]
-
-        content = []
-        for frame_path in frame_paths:
-            abs_path = resolve_frame_path(testbed_dir, dataset, frame_path)
-            img_b64 = encode_image(abs_path)
-            content.append({
-                "type": "image_url",
-                "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"},
-            })
-
         prompt = build_prompt(sample, args.prompt_mode)
-        content.append({"type": "text", "text": prompt})
 
         status = "ok"
+        used_max_frames = args.max_frames
+        attempts = []
         try:
-            resp = client.chat.completions.create(
-                model=args.model,
-                messages=[{"role": "user", "content": content}],
-                max_tokens=args.max_tokens,
-                temperature=0,
-            )
-            raw_answer = resp.choices[0].message.content
-            answer = extract_answer(raw_answer)
-            if answer is None:
-                if fallback_row:
-                    answer = fallback_row.get("answer", "A")
-                    status = "parse_fallback"
-                else:
-                    answer = "A"
-                    status = "parse_default_a"
+            retry_frames = frame_retry_sequence(args.max_frames) if args.frame_retry else [args.max_frames]
+            for attempt_frames in retry_frames:
+                used_max_frames = attempt_frames
+                try:
+                    selected_frames = sample_frame_paths(frame_paths, attempt_frames)
+                    content = build_content(testbed_dir, sample, selected_frames, prompt)
+                    resp = client.chat.completions.create(
+                        model=args.model,
+                        messages=[{"role": "user", "content": content}],
+                        max_tokens=args.max_tokens,
+                        temperature=0,
+                    )
+                    raw_answer = resp.choices[0].message.content
+                    answer = extract_answer(raw_answer)
+                    attempts.append({
+                        "max_frames": attempt_frames,
+                        "status": "ok" if answer is not None else "parse_failed",
+                    })
+                    if answer is None:
+                        if fallback_row:
+                            answer = fallback_row.get("answer", "A")
+                            status = "parse_fallback"
+                        else:
+                            answer = "A"
+                            status = "parse_default_a"
+                    elif attempt_frames != args.max_frames:
+                        status = "ok_after_frame_retry"
+                    break
+                except Exception as e:
+                    attempts.append({
+                        "max_frames": attempt_frames,
+                        "status": "context_length_error" if is_context_length_error(e) else "error",
+                        "error": str(e),
+                    })
+                    if args.frame_retry and is_context_length_error(e) and attempt_frames != retry_frames[-1]:
+                        continue
+                    raise
         except Exception as e:
             raw_answer = f"ERROR: {e}"
             if fallback_row:
@@ -297,6 +342,9 @@ def main():
             "answer": answer,
             "prompt_mode": args.prompt_mode,
             "status": status,
+            "max_frames": args.max_frames,
+            "used_max_frames": used_max_frames,
+            "frame_attempts": attempts,
             "prompt": prompt,
             "raw_output": raw_answer,
         })
@@ -304,7 +352,7 @@ def main():
 
         print(
             f"[{idx}/{len(samples)}] {row.get('question_id', sample.get('question_id', ''))} "
-            f"-> {answer} | status={status} | raw={raw_answer!r}",
+            f"-> {answer} | max{used_max_frames}/{args.max_frames} | status={status} | raw={raw_answer!r}",
             flush=True,
         )
 
