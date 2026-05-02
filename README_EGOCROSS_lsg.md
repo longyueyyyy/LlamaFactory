@@ -51,10 +51,24 @@ test query 文件：
 /share/home/group9/lsg/LlamaFactory/submission_template.json
 ```
 
-当前最重要的模型：
+当前最重要的 baseline 模型：
 
 ```bash
 /share/home/group9/lsg/LlamaFactory/saves/egocross/qwen3vl4b/full_sft_32k_200k
+```
+
+当前最重要的新模型：
+
+```bash
+/share/home/group9/lsg/LlamaFactory/saves/egocross/qwen3vl4b/weighted_answer_only_full_i4_x4_lr5e6_ep1
+```
+
+当前最佳提交策略：
+
+```text
+Surgery / Animal 使用 baseline 模型结果。
+Industry / XSports 使用 weighted_answer_only_full_i4_x4_lr5e6_ep1 模型结果。
+Codabench Overall = 0.489028。
 ```
 
 ## 3. Conda 环境
@@ -97,6 +111,42 @@ train_runtime = 0:04:43.48
 
 注意：`train_loss` 不是比赛分数，只说明训练完成。比赛分数来自 Codabench test set 评测。
 
+### 4.1 Weighted answer-only Full SFT
+
+已完成一次继续 Full SFT，用于增强弱 domain：
+
+```text
+base model: saves/egocross/qwen3vl4b/full_sft_32k_200k
+training method: Full SFT
+training data: /share/home/group9/data/egocross/train_weighted_answer_only_i4_x4.json
+data construction: original support set, assistant 强制为单字母 A/B/C/D
+domain weights: animal=1, surgery=1, industry=4, xsports=4
+epochs: 1
+learning_rate: 5e-6
+cutoff_len: 32768
+image_max_pixels: 200000
+output model: saves/egocross/qwen3vl4b/weighted_answer_only_full_i4_x4_lr5e6_ep1
+```
+
+直接用新模型全量 direct 推理的 Codabench 得分：
+
+```text
+Overall: 0.481714
+Surgery: 0.501767
+Industry: 0.416327
+XSports: 0.430894
+Animal: 0.606557
+coverage: 1.0
+```
+
+结论：
+
+```text
+weighted Full SFT 确实提升了 Industry / XSports。
+但它损伤了 Surgery / Animal，因此不应直接全 domain 替代 baseline。
+最佳用法是 domain router：弱 domain 用新模型，强 domain 保留 baseline。
+```
+
 ## 5. 已跑通的 baseline 推理与分数
 
 使用 vLLM 加载模型，`max-frames 8`，直接答案 prompt，已经完整跑通 test set 并提交 Codabench。
@@ -135,6 +185,8 @@ coverage: 1.0
 | cot_49k_256 | `generate_egocross_submission_cot_test.py` | 普通 CoT | 49152 | 8 | 256 | 0.444096 | 0.508834 | 0.342857 | 0.418699 | 0.513661 | 1.0 | `egocross_outputs/full_sft_32k_200k_max8_cot_49k_256/` |
 | shortcot_49k_512 | `generate_egocross_submission_shortcot_test.py` | 短 CoT | 49152 | 8 | 512 | 0.459770 | 0.515901 | 0.375510 | 0.414634 | 0.546448 | 1.0 | `egocross_outputs/full_sft_32k_200k_max8_shortcot_49k_512/` |
 | router_domain_direct_lowdomains | `scripts/egocross_router_infer.py` | Industry/XSports domain_direct，其他 baseline fallback | 32768 | 8 | 8 | 0.480669 | 0.515901 | 0.391837 | 0.422764 | 0.622951 | 1.0 | `egocross_outputs/router_domain_direct_lowdomains/` |
+| weighted_full_direct_max8 | `scripts/egocross_router_infer.py` | 新模型 direct，全 domain | 32768/49152 | 8，VID006=2 | 8 | 0.481714 | 0.501767 | 0.416327 | 0.430894 | 0.606557 | 1.0 | `egocross_outputs/weighted_answer_only_full_i4_x4_lr5e6_ep1_direct_max8_vid006_2f/` |
+| router_baseline_strong_weighted_weak | `scripts/egocross_router_infer.py` | Surgery/Animal baseline，Industry/XSports 新模型 | 32768/49152 | 8，VID006=2 | 8 | 0.489028 | 0.515901 | 0.416327 | 0.430894 | 0.622951 | 1.0 | `egocross_outputs/router_baseline_strong_weighted_weak_direct_max8_vid006_2f/` |
 
 当前结论：
 
@@ -144,6 +196,8 @@ coverage: 1.0
 缺少最终答案时，脚本会从输出中抽取答案或 fallback 到 A，容易污染预测。
 Short CoT 512 比普通 CoT 256 更好，但仍低于直接答案 baseline。
 router_domain_direct_lowdomains 的 Overall 与 baseline 持平：XSports 提升 2 题，但 Industry 下降 2 题，互相抵消。
+weighted answer-only Full SFT 让 Industry / XSports 变强，但 Surgery / Animal 变弱。
+当前最佳结果是模型级 domain router：Surgery/Animal 用 baseline，Industry/XSports 用 weighted Full SFT，Overall = 0.489028。
 ```
 
 因此，后续如果继续做 CoT，建议优先：
@@ -157,13 +211,14 @@ router_domain_direct_lowdomains 的 Overall 与 baseline 持平：XSports 提升
 
 ## 5.2 当前最新方向（2026-05-02）
 
-当前最值得继续的是训练而不是继续调长 CoT prompt：
+当前最佳已验证路线是训练 + domain router：
 
 ```text
 从当前最强模型 saves/egocross/qwen3vl4b/full_sft_32k_200k 继续 Full SFT
 训练数据使用原始 support set，强制 assistant answer-only
 Industry / XSports 过采样，提高弱 domain 权重
-先跑 1 epoch、低学习率，避免破坏 Surgery / Animal
+训练后只把新模型用于 Industry / XSports
+Surgery / Animal 保留 baseline 结果
 ```
 
 新增文件：
@@ -184,6 +239,13 @@ xsports=4
 ```
 
 注意：`train_*_enhanced.json` 里有视觉描述和分析，但不保证正确，且输出格式偏长。不要直接作为主训练集，否则模型可能学会长解释，影响最终 A/B/C/D 输出稳定性。若后续使用 enhanced，建议只做短证据蒸馏并过滤最终答案不一致的样本。
+
+当前最佳提交：
+
+```text
+egocross_outputs/router_baseline_strong_weighted_weak_direct_max8_vid006_2f/submission.zip
+Overall: 0.489028
+```
 
 ## 6. 当前已有脚本
 
@@ -440,6 +502,145 @@ max_frames 12 -> 超长后 fallback 8 -> fallback 4 -> fallback 1
 对 vLLM 500 / deepstack token 错误，仍然不建议自动 fallback，优先重启服务。
 对明确的 400 context length 错误，可以安全做同一样本降帧 retry。
 当前 router 脚本已实现 context length retry：8 -> 4 -> 2 -> 1。
+ExtrameSportFPV_VID006 已验证需要显式降帧，推荐 --frame-route VID006=2。
+```
+
+### 8.8.1 vLLM 多模态 cache / mm_hash 问题
+
+现象：
+
+```text
+vLLM 在预处理多模态输入时失败，multimodal cache 中找不到对应 mm_hash。
+请求返回 400 Bad Request，脚本标记为 error_fallback。
+```
+
+推荐启动 vLLM 时关闭多模态 processor cache，并切回旧 engine：
+
+```bash
+VLLM_USE_V1=0 CUDA_VISIBLE_DEVICES=4 python -m vllm.entrypoints.openai.api_server \
+  --model saves/egocross/qwen3vl4b/weighted_answer_only_full_i4_x4_lr5e6_ep1 \
+  --port 8000 \
+  --served-model-name egocross \
+  --trust-remote-code \
+  --max-model-len 32768 \
+  --gpu-memory-utilization 0.85 \
+  --enforce-eager \
+  --mm-processor-cache-gb 0
+```
+
+说明：
+
+```text
+VLLM_USE_V1=0 可绕开部分 vLLM v1 多模态路径问题。
+--mm-processor-cache-gb 0 可避免 mm_hash cache 缺失/不一致。
+```
+
+### 8.8.2 ExtrameSportFPV_VID006 特殊问题
+
+`ExtrameSportFPV_VID006` 是当前 test set 中最麻烦的一组样本，涉及：
+
+```text
+question_id/id 范围：ExtrameSportFPV_VID006_q5 到 q12
+路径位置：/share/home/group9/data/egocross_full/egocross_testbed/ExtrameSportFPV/generated/VID006/frames
+```
+
+遇到过两类问题：
+
+```text
+1. context length 超限：
+   Input length (653xx) exceeds model's maximum context length (49152)
+
+2. vLLM multimodal cache / mm_hash 错误：
+   vLLM 预处理多模态输入时，multimodal cache 里找不到对应 mm_hash，请求返回 400 Bad Request。
+```
+
+原因：
+
+```text
+VID006 的帧视觉 token 异常多。
+即使使用 max_frames=8，也可能达到 65k 左右输入长度，超过 49k 上下文。
+同时，多图请求在 vLLM 的 multimodal cache 路径上容易触发 mm_hash/cache 不一致。
+```
+
+最终稳定解决方案：
+
+```text
+启动 vLLM 时使用：
+VLLM_USE_V1=0
+--enforce-eager
+--mm-processor-cache-gb 0
+
+推理时对 VID006 显式降帧：
+--frame-route VID006=2
+```
+
+注意：
+
+```text
+普通的 8 -> 4 -> 2 -> 1 自动 retry 只能解决明确的 context length 400。
+如果已经触发 mm_hash/cache 错误，最好重启 vLLM，并关闭 mm processor cache。
+对完整 test set，推荐直接显式指定 --frame-route VID006=2，避免先发送 8 帧污染服务状态。
+```
+
+只测试 VID006 的方法：
+
+```bash
+cd /share/home/group9/lsg/LlamaFactory
+
+python - <<'PY'
+import json
+from pathlib import Path
+
+src = Path("/share/home/group9/data/egocross_full/egocross_testbed/egocross_testbed_imgs.json")
+dst = Path("egocross_outputs/scratch_tests/egocross_testbed_vid006.json")
+dst.parent.mkdir(parents=True, exist_ok=True)
+
+data = json.load(open(src))
+
+def hit(x):
+    text = json.dumps(x, ensure_ascii=False)
+    return "VID006" in text and "ExtrameSportFPV" in text
+
+sub = [x for x in data if hit(x)]
+print("total:", len(data))
+print("matched:", len(sub))
+if sub:
+    print("first sample:", json.dumps(sub[0], ensure_ascii=False)[:800])
+
+json.dump(sub, open(dst, "w"), indent=2, ensure_ascii=False)
+print("saved:", dst)
+PY
+```
+
+只跑 VID006 小测试：
+
+```bash
+python scripts/egocross_router_infer.py \
+  --input-json egocross_outputs/scratch_tests/egocross_testbed_vid006.json \
+  --default-prompt-mode direct \
+  --default-max-frames 8 \
+  --frame-route VID006=2 \
+  --base-url http://127.0.0.1:8000/v1 \
+  --output-dir egocross_outputs/scratch_tests/vid006_2f_test
+```
+
+如果 2 帧仍失败，再降到 1 帧：
+
+```bash
+python scripts/egocross_router_infer.py \
+  --input-json egocross_outputs/scratch_tests/egocross_testbed_vid006.json \
+  --default-prompt-mode direct \
+  --default-max-frames 8 \
+  --frame-route VID006=1 \
+  --base-url http://127.0.0.1:8000/v1 \
+  --output-dir egocross_outputs/scratch_tests/vid006_1f_test
+```
+
+已经验证：
+
+```text
+VID006 使用 --frame-route VID006=2 可以跑通。
+当前最佳完整 test set 提交也使用该设置。
 ```
 
 ### 8.9 transformers / Qwen3-VL rope_scaling 兼容问题
@@ -743,18 +944,25 @@ zip submission.zip predictions.json
 可继续尝试：
 
 ```text
-1. 先跑 weighted answer-only Full SFT ep1，验证训练是否提升整体分。
-2. 如果 weighted Full SFT 提升 Industry/XSports 但损伤 Surgery/Animal，降低权重到 industry=3,xsports=3 或降低 learning_rate。
-3. 如果 Full SFT 不涨，再考虑只对 XSports 使用 domain_direct router，Industry 回到 baseline/direct。
+1. 当前最佳是 router_baseline_strong_weighted_weak，Overall = 0.489028，先保留并作为新基线。
+2. 如果继续训练，可尝试 industry=5,xsports=5 或只增强 Industry/XSports，但要继续用 domain router 防止损伤 Surgery/Animal。
+3. 可尝试第二个 weighted Full SFT：learning_rate=3e-6 或 weights industry=3,xsports=5，比较弱 domain 提升和强 domain 损伤。
 4. enhanced 数据只作为后续短证据蒸馏候选，不直接用长解释训练主模型。
-5. 对 ExtrameSportFPV 特别长样本可使用 context length retry 降帧，减少视觉 token。
+5. 对 ExtrameSportFPV 特别长样本继续使用 --frame-route VID006=2。
 ```
 
-当前最可靠基准仍然是：
+当前最可靠 baseline 仍然是：
 
 ```text
 full_sft_32k_200k + direct prompt + max_frames 8
 Codabench Overall = 0.480669
+```
+
+当前最佳提交是：
+
+```text
+router_baseline_strong_weighted_weak_direct_max8_vid006_2f
+Codabench Overall = 0.489028
 ```
 
 ## 15. Weighted answer-only Full SFT 推荐命令
@@ -796,3 +1004,42 @@ saves/egocross/qwen3vl4b/weighted_answer_only_full_i4_x4_lr5e6_ep1
 ```
 
 训练完成后建议先用 direct prompt + max_frames 8 跑完整 test，不要叠加 router/domain prompt。这样可以单独评估“模型本身是否变强”。
+
+## 16. 当前最佳 router 提交流程
+
+前提：vLLM 已启动新模型：
+
+```text
+saves/egocross/qwen3vl4b/weighted_answer_only_full_i4_x4_lr5e6_ep1
+```
+
+只让新模型推理 Industry / XSports，Surgery / Animal 使用 baseline fallback：
+
+```bash
+python scripts/egocross_router_infer.py \
+  --template submission_template.json \
+  --fallback-submission egocross_outputs/baseline_max8/submission_full_sft_32k_200k_max8.json \
+  --only-datasets ENIGMA,ExtrameSportFPV \
+  --default-prompt-mode direct \
+  --default-max-frames 8 \
+  --frame-route VID006=2 \
+  --base-url http://127.0.0.1:8000/v1 \
+  --output-dir egocross_outputs/router_baseline_strong_weighted_weak_direct_max8_vid006_2f
+```
+
+提交文件：
+
+```text
+egocross_outputs/router_baseline_strong_weighted_weak_direct_max8_vid006_2f/submission.zip
+```
+
+Codabench 结果：
+
+```text
+Overall: 0.489028
+Surgery: 0.515901
+Industry: 0.416327
+XSports: 0.430894
+Animal: 0.622951
+coverage: 1.0
+```
