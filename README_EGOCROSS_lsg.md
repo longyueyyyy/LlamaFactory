@@ -373,6 +373,40 @@ curl http://127.0.0.1:8000/v1/models
 
 `--enforce-eager` 很重要。之前 vLLM 在 Qwen3-VL 多图输入上遇到过 deepstack token 对齐问题，使用 eager 模式更稳。
 
+当前更推荐的稳定启动方式：
+
+```bash
+cd /share/home/group9/lsg/LlamaFactory
+conda activate lsg
+export PATH="/share/home/group9/miniconda3/envs/lsg/bin:$PATH"
+
+VLLM_USE_V1=0 CUDA_VISIBLE_DEVICES=4 python -m vllm.entrypoints.openai.api_server \
+  --model saves/egocross/qwen3vl4b/weighted_answer_only_full_i4_x4_lr5e6_ep1 \
+  --port 8000 \
+  --served-model-name egocross \
+  --trust-remote-code \
+  --max-model-len 32768 \
+  --gpu-memory-utilization 0.85 \
+  --enforce-eager \
+  --mm-processor-cache-gb 0
+```
+
+说明：
+
+```text
+VLLM_USE_V1=0：切回 vLLM old engine，绕开部分 v1 多模态路径问题。
+--mm-processor-cache-gb 0：关闭 multimodal processor cache，避免 mm_hash/cache 不一致。
+--enforce-eager：继续保留，Qwen3-VL 多图输入更稳。
+代价是速度可能稍慢，但比赛提交更看重稳定性。
+```
+
+注意：
+
+```text
+这个启动方式不能解决 context length 超限。
+ExtrameSportFPV_VID006 仍然需要推理命令里加 --frame-route VID006=2。
+```
+
 ## 8. 已遇到的重要问题与解决方案
 
 ### 8.1 环境串到系统 Python
@@ -697,6 +731,105 @@ p = "saves/egocross/qwen3vl4b/full_sft_32k_200k"
 cfg = AutoConfig.from_pretrained(p, trust_remote_code=True)
 print("loaded ok")
 print("rope_scaling:", cfg.text_config.rope_scaling)
+PY
+```
+
+重要区别：
+
+```text
+训练阶段（transformers 4.57.x）：text_config.rope_scaling 需要 {"rope_type": "default"}，否则可能 None.get 报错。
+vLLM 推理阶段：text_config.rope_scaling 更稳的形式是 null，否则可能触发 rotary position / q/k shape 不匹配。
+```
+
+因此，如果为了训练改过 `full_sft_32k_200k/config.json`，在用 vLLM 启动 baseline 模型前也需要恢复为 null。
+
+推荐把每个模型目录都保留两份 config 备份：
+
+```text
+config.json.bak_rope_default_for_train  # 训练版：text_config.rope_scaling = {"rope_type": "default"}
+config.json.bak_rope_null               # 推理版：text_config.rope_scaling = null
+```
+
+训练/推理时只切换 `config.json`：
+
+```bash
+# 训练前
+cp config.json.bak_rope_default_for_train config.json
+
+# vLLM 推理前
+cp config.json.bak_rope_null config.json
+```
+
+baseline 模型创建/恢复推理版 config：
+
+```bash
+cd /share/home/group9/lsg/LlamaFactory
+
+cp saves/egocross/qwen3vl4b/full_sft_32k_200k/config.json \
+   saves/egocross/qwen3vl4b/full_sft_32k_200k/config.json.bak_rope_default_for_train
+
+python - <<'PY'
+import json
+from pathlib import Path
+
+p = Path("saves/egocross/qwen3vl4b/full_sft_32k_200k/config.json")
+cfg = json.loads(p.read_text())
+
+if isinstance(cfg.get("text_config"), dict):
+    cfg["text_config"]["rope_scaling"] = None
+
+if "rope_scaling" in cfg:
+    cfg["rope_scaling"] = None
+
+p.write_text(json.dumps(cfg, indent=2, ensure_ascii=False) + "\n")
+print("patched full_sft_32k_200k for vLLM:")
+print("top rope_scaling =", cfg.get("rope_scaling"))
+print("text rope_scaling =", cfg.get("text_config", {}).get("rope_scaling"))
+PY
+
+cp saves/egocross/qwen3vl4b/full_sft_32k_200k/config.json \
+   saves/egocross/qwen3vl4b/full_sft_32k_200k/config.json.bak_rope_null
+```
+
+weighted 新模型创建/恢复推理版 config：
+
+```bash
+cd /share/home/group9/lsg/LlamaFactory
+
+cp saves/egocross/qwen3vl4b/weighted_answer_only_full_i4_x4_lr5e6_ep1/config.json \
+   saves/egocross/qwen3vl4b/weighted_answer_only_full_i4_x4_lr5e6_ep1/config.json.bak_rope_default_for_train
+
+python - <<'PY'
+import json
+from pathlib import Path
+
+p = Path("saves/egocross/qwen3vl4b/weighted_answer_only_full_i4_x4_lr5e6_ep1/config.json")
+cfg = json.loads(p.read_text())
+
+if isinstance(cfg.get("text_config"), dict):
+    cfg["text_config"]["rope_scaling"] = None
+
+if "rope_scaling" in cfg:
+    cfg["rope_scaling"] = None
+
+p.write_text(json.dumps(cfg, indent=2, ensure_ascii=False) + "\n")
+print("patched weighted model for vLLM:")
+print("top rope_scaling =", cfg.get("rope_scaling"))
+print("text rope_scaling =", cfg.get("text_config", {}).get("rope_scaling"))
+PY
+
+cp saves/egocross/qwen3vl4b/weighted_answer_only_full_i4_x4_lr5e6_ep1/config.json \
+   saves/egocross/qwen3vl4b/weighted_answer_only_full_i4_x4_lr5e6_ep1/config.json.bak_rope_null
+```
+
+检查当前目录 config 属于训练版还是推理版：
+
+```bash
+python - <<'PY'
+import json
+cfg = json.load(open("config.json"))
+print("top:", cfg.get("rope_scaling"))
+print("text:", cfg.get("text_config", {}).get("rope_scaling"))
 PY
 ```
 
