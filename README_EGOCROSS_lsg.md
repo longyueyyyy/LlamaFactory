@@ -187,6 +187,8 @@ coverage: 1.0
 | router_domain_direct_lowdomains | `scripts/egocross_router_infer.py` | Industry/XSports domain_direct，其他 baseline fallback | 32768 | 8 | 8 | 0.480669 | 0.515901 | 0.391837 | 0.422764 | 0.622951 | 1.0 | `egocross_outputs/router_domain_direct_lowdomains/` |
 | weighted_full_direct_max8 | `scripts/egocross_router_infer.py` | 新模型 direct，全 domain | 32768/49152 | 8，VID006=2 | 8 | 0.481714 | 0.501767 | 0.416327 | 0.430894 | 0.606557 | 1.0 | `egocross_outputs/weighted_answer_only_full_i4_x4_lr5e6_ep1_direct_max8_vid006_2f/` |
 | router_baseline_strong_weighted_weak | `scripts/egocross_router_infer.py` | Surgery/Animal baseline，Industry/XSports 新模型 | 32768/49152 | 8，VID006=2 | 8 | 0.489028 | 0.515901 | 0.416327 | 0.430894 | 0.622951 | 1.0 | `egocross_outputs/router_baseline_strong_weighted_weak_direct_max8_vid006_2f/` |
+| fewshot_k1_2f_weakdomains | `scripts/egocross_router_infer.py` | Industry/XSports 使用同 domain + question type 的视觉 few-shot，Surgery/Animal fallback | 32768/49152 | 当前题 8，few-shot 每例 2，VID006=2 | 8 | 0.479624 | 0.515901 | 0.412245 | 0.398374 | 0.622951 | 1.0 | few-shot 弱域实验输出目录 |
+| fewshot_shortreason_enhanced_industry | `scripts/egocross_router_infer.py` | Industry 使用 enhanced 蒸馏短推理 + `Answer: X` few-shot，XSports/Surgery/Animal fallback | 32768/49152 | 当前题 8，few-shot 每例 2，VID006=2 | 64 | 0.481714 | 0.515901 | 0.387755 | 0.430894 | 0.622951 | 1.0 | `egocross_outputs/fewshot_shortreason_enhanced_k1_2f_industry_probe/` |
 
 当前结论：
 
@@ -198,6 +200,7 @@ Short CoT 512 比普通 CoT 256 更好，但仍低于直接答案 baseline。
 router_domain_direct_lowdomains 的 Overall 与 baseline 持平：XSports 提升 2 题，但 Industry 下降 2 题，互相抵消。
 weighted answer-only Full SFT 让 Industry / XSports 变强，但 Surgery / Animal 变弱。
 当前最佳结果是模型级 domain router：Surgery/Animal 用 baseline，Industry/XSports 用 weighted Full SFT，Overall = 0.489028。
+few-shot prompt 当前没有带来收益：视觉 few-shot 明显损伤 XSports；enhanced 短推理 few-shot 明显损伤 Industry。
 ```
 
 因此，后续如果继续做 CoT，建议优先：
@@ -206,10 +209,44 @@ weighted answer-only Full SFT 让 Industry / XSports 变强，但 Surgery / Anim
 1. 继续缩短 prompt，让模型更快输出 Final answer。
 2. 检查 *_raw_cot.json 中 no_final_answer 的比例。
 3. 不只增加 max_tokens，因为更长输出会显著变慢，也可能增加无关解释。
-4. 目前不建议直接用 enhanced 长解释做主训练集。优先做 domain-weighted answer-only SFT，让 assistant 仍只输出 A/B/C/D。
+4. 目前不建议直接用 enhanced 长解释做主训练集，也不建议直接把 enhanced 短推理 few-shot 用于提交；优先保留 answer-only / direct prompt 稳定性。
 ```
 
-## 5.2 当前最新方向（2026-05-02）
+## 5.2 Few-shot 实验结论（2026-05-03）
+
+已尝试在当前 test 推理 pipeline 上加入 support/train set few-shot 示例：
+
+```text
+方案 A：Industry / XSports 使用同 domain + question type 的视觉 few-shot 示例，每个示例 2 帧，目标题 8 帧。
+结果：Overall = 0.479624，Industry = 0.412245，XSports = 0.398374。
+结论：Industry 略低于 weighted direct，XSports 明显下降，不适合作为提交策略。
+
+方案 B：Industry 使用 train_*_enhanced 蒸馏一句短 Reasoning，并要求目标输出同样格式：
+Reasoning: ...
+Answer: X
+结果：Overall = 0.481714，Industry = 0.387755，XSports = 0.430894。
+结论：短推理格式没有帮助，反而显著损伤 Industry。即使最终只抽取 Answer 字母，模型仍可能被推理格式带偏。
+```
+
+当前判断：
+
+```text
+1. few-shot 示例和目标视频放在同一个多图 user message 中，可能带来视觉上下文污染。
+2. support set 每个 domain 只有 20 条，同 question type 容易反复选到同一个示例，造成答案字母或题型先验偏置。
+3. weighted answer-only 模型对 direct answer prompt 更稳定，few-shot / short reasoning 都属于分布外 prompt。
+4. XSports 的方向、动作序列、时间定位更依赖目标视频动态，参考视频示例泛化弱，容易误导。
+5. Industry counting/localization 也未从 enhanced 短推理中受益，说明 enhanced 描述即使压缩后仍可能是噪声。
+```
+
+后续建议：
+
+```text
+不要把 few-shot 结果用于正式提交。
+当前最佳仍是 router_baseline_strong_weighted_weak_direct_max8_vid006_2f，Overall = 0.489028。
+如果继续研究 few-shot，建议只做小样本诊断，例如 text-only few-shot、答案字母平衡、或只针对极少数错误类型做手工示例；不要直接全量提交。
+```
+
+## 5.3 当前最佳训练方向（2026-05-02）
 
 当前最佳已验证路线是训练 + domain router：
 
@@ -1080,8 +1117,9 @@ zip submission.zip predictions.json
 1. 当前最佳是 router_baseline_strong_weighted_weak，Overall = 0.489028，先保留并作为新基线。
 2. 如果继续训练，可尝试 industry=5,xsports=5 或只增强 Industry/XSports，但要继续用 domain router 防止损伤 Surgery/Animal。
 3. 可尝试第二个 weighted Full SFT：learning_rate=3e-6 或 weights industry=3,xsports=5，比较弱 domain 提升和强 domain 损伤。
-4. enhanced 数据只作为后续短证据蒸馏候选，不直接用长解释训练主模型。
+4. enhanced 数据已经验证为 few-shot 短推理不稳定，暂不建议用于正式提交 prompt；若继续使用，只做小样本诊断或离线错误分析。
 5. 对 ExtrameSportFPV 特别长样本继续使用 --frame-route VID006=2。
+6. few-shot 当前两轮均未超过 direct/router，后续不要全量盲跑；若继续尝试，优先做 text-only few-shot、答案字母平衡、或错误类型定向示例。
 ```
 
 当前最可靠 baseline 仍然是：
