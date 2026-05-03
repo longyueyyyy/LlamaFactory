@@ -190,10 +190,7 @@ def parse_frame_routes(route_args):
 
 
 def apply_frame_routes(sample, max_frames, frame_routes):
-    question_id = str(sample.get("question_id", "")).lower()
-    sample_id = str(sample.get("id", "")).lower()
-    dataset = str(sample.get("dataset", "")).lower()
-    haystack = " ".join([question_id, sample_id, dataset])
+    haystack = json.dumps(sample, ensure_ascii=False).lower()
     for selector, routed_frames in frame_routes:
         if selector in haystack:
             return routed_frames
