@@ -33,6 +33,12 @@ SUPPORT_FILES = {
     "Industry": "train_industry.json",
     "XSports": "train_xsports.json",
 }
+ENHANCED_SUPPORT_FILES = {
+    "Animal": "train_animal_enhanced.json",
+    "Surgery": "train_surgery_enhanced.json",
+    "Industry": "train_industry_enhanced.json",
+    "XSports": "train_xsports_enhanced.json",
+}
 DOMAIN_ALIASES = {
     "animal": "Animal",
     "surgery": "Surgery",
@@ -239,6 +245,12 @@ def format_options(parsed_options, original_order, strip_labels=False):
 
 def extract_answer(text):
     upper = str(text).strip().upper()
+    answer_matches = re.findall(r"(?:FINAL\s+)?ANSWER\s*[:：]\s*([ABCD])\b", upper)
+    if answer_matches:
+        return answer_matches[-1]
+    last_line_matches = re.findall(r"(?m)^\s*([ABCD])\s*$", upper)
+    if last_line_matches:
+        return last_line_matches[-1]
     match = re.search(r"\b([ABCD])\b", upper)
     if match:
         return match.group(1)
@@ -365,6 +377,46 @@ def extract_strict_answer(text):
     return match.group(1) if match else None
 
 
+def clean_reasoning_text(text, max_words=24):
+    text = re.sub(r"\s+", " ", str(text or "")).strip()
+    text = re.sub(r"^(descriptions? of (the )?pictures?|analysis of options|reasoning consistency)\s*:\s*", "", text, flags=re.I)
+    text = re.sub(r"\b(final\s+)?answer\s*[:：].*$", "", text, flags=re.I).strip()
+    if not text:
+        return ""
+
+    sentence = re.split(r"(?<=[.!?])\s+", text)[0].strip()
+    words = sentence.split()
+    if len(words) > max_words:
+        sentence = " ".join(words[:max_words]).rstrip(" ,;:") + "."
+    return sentence.rstrip()
+
+
+def section_text(text, label):
+    pattern = rf"{re.escape(label)}\s*:\s*(.*?)(?:\n\s*\n|$)"
+    match = re.search(pattern, str(text or ""), flags=re.I | re.S)
+    return match.group(1).strip() if match else ""
+
+
+def enhanced_answer_line(text, answer):
+    pattern = rf"(?im)^\s*{re.escape(answer)}\s*[\):\.\-]?\s*(.+)$"
+    matches = re.findall(pattern, str(text or ""))
+    return matches[-1].strip() if matches else ""
+
+
+def compress_enhanced_reasoning(text, answer, question_type):
+    candidates = [
+        enhanced_answer_line(text, answer),
+        section_text(text, "Reasoning Consistency"),
+        section_text(text, "Descriptions of the pictures"),
+        section_text(text, "Analysis of Options"),
+    ]
+    for candidate in candidates:
+        cleaned = clean_reasoning_text(candidate)
+        if cleaned:
+            return cleaned
+    return EVIDENCE_BY_TYPE.get(question_type, EVIDENCE_BY_TYPE["unknown"])
+
+
 def resolve_support_frame_path(support_dir, frame_path):
     raw = str(frame_path).replace("\\", "/")
     path = Path(raw)
@@ -396,12 +448,31 @@ def infer_domain_from_images(images):
     return ""
 
 
-def build_support_index(support_dir):
+def load_enhanced_reasoning_by_domain(support_dir, use_enhanced):
+    if not use_enhanced:
+        return {domain: {} for domain in SUPPORT_FILES}
+
+    support_dir = Path(support_dir)
+    enhanced = {domain: {} for domain in SUPPORT_FILES}
+    for domain, file_name in ENHANCED_SUPPORT_FILES.items():
+        path = support_dir / file_name
+        if not path.exists():
+            raise FileNotFoundError(f"Few-shot enhanced support file not found: {path}")
+        rows = load_rows(path)
+        for idx, row in enumerate(rows, start=1):
+            messages = row.get("messages") or []
+            assistant_msg = next((msg for msg in messages if msg.get("role") == "assistant"), {})
+            enhanced[domain][idx] = assistant_msg.get("content", "")
+    return enhanced
+
+
+def build_support_index(support_dir, use_enhanced=False):
     support_dir = Path(support_dir)
     if not support_dir.exists():
         raise FileNotFoundError(f"Few-shot support dir not found: {support_dir}")
 
     by_domain = {domain: [] for domain in SUPPORT_FILES}
+    enhanced_by_domain = load_enhanced_reasoning_by_domain(support_dir, use_enhanced)
     for domain, file_name in SUPPORT_FILES.items():
         path = support_dir / file_name
         if not path.exists():
@@ -431,6 +502,8 @@ def build_support_index(support_dir):
                 option_lines, _ = format_options(parsed_options, LETTERS, strip_labels=True)
             else:
                 option_lines = ""
+            enhanced_text = enhanced_by_domain.get(domain, {}).get(idx, "")
+            reasoning = compress_enhanced_reasoning(enhanced_text, answer, question_type) if enhanced_text else ""
             example = {
                 "support_id": f"{domain}:{idx}",
                 "domain": domain,
@@ -440,6 +513,8 @@ def build_support_index(support_dir):
                 "options": options,
                 "option_lines": option_lines,
                 "answer": answer,
+                "reasoning": reasoning,
+                "has_enhanced_reasoning": bool(reasoning),
                 "images": resolved_images,
                 "num_images": len(resolved_images),
                 "tokens": text_tokens(question, options_text(options)),
@@ -499,7 +574,24 @@ def fewshot_evidence(question_type, mode):
     return EVIDENCE_BY_TYPE.get(question_type, EVIDENCE_BY_TYPE["unknown"])
 
 
-def build_fewshot_prompt(target):
+def example_reasoning(example, evidence_mode, output_format):
+    if output_format == "short_reason_answer":
+        return example.get("reasoning") or fewshot_evidence(example["question_type"], "compressed")
+    return fewshot_evidence(example["question_type"], evidence_mode)
+
+
+def build_fewshot_prompt(target, output_format):
+    if output_format == "short_reason_answer":
+        return (
+            "Now answer the target question in the same format as the examples.\n"
+            f"Domain: {target['domain']}. Type: {target['question_type']}.\n"
+            "Use exactly two lines. Keep the reasoning to one short visual sentence.\n"
+            "The second line must be exactly: Answer: X, where X is A, B, C, or D.\n\n"
+            f"Question: {target['question']}\n"
+            f"{target['option_lines']}\n"
+            "Reasoning:"
+        )
+
     return (
         "Now answer the target question.\n"
         f"Domain: {target['domain']}. Type: {target['question_type']}.\n"
@@ -511,23 +603,44 @@ def build_fewshot_prompt(target):
     )
 
 
-def build_fewshot_content(testbed_dir, sample, max_frames, support_index, fewshot_k, fewshot_frames, evidence_mode):
+def build_fewshot_content(
+    testbed_dir,
+    sample,
+    max_frames,
+    support_index,
+    fewshot_k,
+    fewshot_frames,
+    evidence_mode,
+    output_format,
+):
     examples, target = rank_fewshot_examples(support_index, sample, fewshot_k)
-    content = [{
-        "type": "text",
-        "text": (
+    if output_format == "short_reason_answer":
+        guide_text = (
+            "Use the short examples as answer-style guides for this egocentric video QA task. "
+            "Each example has its own frames, a one-sentence visual reasoning line, and the final answer. "
+            "For the target, follow the same two-line format."
+        )
+    else:
+        guide_text = (
             "Use the short examples as answer-style guides for this egocentric video QA task. "
             "Each example has its own frames, question, and correct answer. "
             "For the target, output only A, B, C, or D."
-        ),
+        )
+    content = [{
+        "type": "text",
+        "text": guide_text,
     }]
     selected = []
 
     for ex_idx, example in enumerate(examples, start=1):
         used_images = sample_frames(example["images"], fewshot_frames)
         content.extend(image_content_from_paths(used_images, None))
-        evidence = fewshot_evidence(example["question_type"], evidence_mode)
-        evidence_text = f" Evidence: {evidence}" if evidence else ""
+        reasoning = example_reasoning(example, evidence_mode, output_format)
+        if output_format == "short_reason_answer":
+            answer_block = f"Reasoning: {reasoning}\nAnswer: {example['answer']}"
+        else:
+            evidence_text = f" Evidence: {reasoning}" if reasoning else ""
+            answer_block = f"{evidence_text}\nAnswer: {example['answer']}"
         content.append({
             "type": "text",
             "text": (
@@ -535,8 +648,7 @@ def build_fewshot_content(testbed_dir, sample, max_frames, support_index, fewsho
                 f"Type: {example['question_type']}.\n"
                 f"Question: {example['question']}\n"
                 f"{example['option_lines']}\n"
-                f"{evidence_text}\n"
-                f"Answer: {example['answer']}"
+                f"{answer_block}"
             ),
         })
         selected.append({
@@ -545,13 +657,15 @@ def build_fewshot_content(testbed_dir, sample, max_frames, support_index, fewsho
             "question_type": example["question_type"],
             "question": example["question"],
             "answer": example["answer"],
+            "reasoning": reasoning,
+            "has_enhanced_reasoning": example.get("has_enhanced_reasoning", False),
             "num_images_total": example["num_images"],
             "num_images_used": len(used_images),
             "images_used": used_images,
         })
 
     content.extend(build_image_content(testbed_dir, sample, max_frames))
-    prompt = build_fewshot_prompt(target)
+    prompt = build_fewshot_prompt(target, output_format)
     content.append({"type": "text", "text": prompt})
     return content, prompt, selected, target
 
@@ -649,6 +763,7 @@ def infer_fewshot_once(
     fewshot_k,
     fewshot_frames,
     evidence_mode,
+    output_format,
 ):
     content, prompt, selected, target = build_fewshot_content(
         testbed_dir,
@@ -658,6 +773,7 @@ def infer_fewshot_once(
         fewshot_k,
         fewshot_frames,
         evidence_mode,
+        output_format,
     )
     raw_output = call_model(client, model, content, max_tokens)
     answer = extract_answer(raw_output)
@@ -712,6 +828,7 @@ def infer_fewshot_with_frame_retry(
     fewshot_k,
     fewshot_frames,
     evidence_mode,
+    output_format,
 ):
     attempts = []
     for attempt_frames in frame_retry_sequence(max_frames):
@@ -727,6 +844,7 @@ def infer_fewshot_with_frame_retry(
                 fewshot_k,
                 fewshot_frames,
                 evidence_mode,
+                output_format,
             )
             attempts.append({
                 "max_frames": attempt_frames,
@@ -881,6 +999,8 @@ def write_fewshot_config(output_dir, args, support_index):
         "fewshot_frames": args.fewshot_frames,
         "fewshot_domains": args.fewshot_domains,
         "fewshot_evidence_mode": args.fewshot_evidence_mode,
+        "fewshot_output_format": args.fewshot_output_format,
+        "fewshot_use_enhanced": args.fewshot_use_enhanced,
         "support_index_counts": support_index_summary(support_index),
         "notes": [
             "Few-shot mode is enabled only for samples matching fewshot_domains.",
@@ -926,6 +1046,8 @@ def main():
     parser.add_argument("--fewshot-frames", type=int, default=2, help="Frames per few-shot support example.")
     parser.add_argument("--fewshot-domains", default="Industry,XSports", help="Comma-separated datasets/domains that use few-shot examples.")
     parser.add_argument("--fewshot-evidence-mode", choices=["none", "compressed"], default="compressed")
+    parser.add_argument("--fewshot-output-format", choices=["direct", "short_reason_answer"], default="direct")
+    parser.add_argument("--fewshot-use-enhanced", action="store_true", help="Use train_*_enhanced.json to distill one short reasoning sentence for support examples.")
     parser.add_argument("--fewshot-output-dir-suffix", default="", help="Optional suffix appended to --output-dir for safer experiment naming.")
     args = parser.parse_args()
 
@@ -955,7 +1077,9 @@ def main():
             raise SystemExit("--fewshot-k requires --fewshot-support-dir")
         if args.fewshot_frames < 1:
             raise SystemExit("--fewshot-frames must be >= 1")
-        support_index = build_support_index(args.fewshot_support_dir)
+        if args.fewshot_output_format == "short_reason_answer" and args.max_tokens == 8:
+            args.max_tokens = 64
+        support_index = build_support_index(args.fewshot_support_dir, use_enhanced=args.fewshot_use_enhanced)
         write_fewshot_config(output_dir, args, support_index)
 
     if (selectors or args.limit) and not fallback_index:
@@ -1020,6 +1144,7 @@ def main():
                         args.fewshot_k,
                         args.fewshot_frames,
                         args.fewshot_evidence_mode,
+                        args.fewshot_output_format,
                     )
                 )
                 target_question_type = target["question_type"]
@@ -1079,6 +1204,8 @@ def main():
             "fewshot": use_fewshot,
             "fewshot_k": args.fewshot_k if use_fewshot else 0,
             "fewshot_frames": args.fewshot_frames if use_fewshot else 0,
+            "fewshot_output_format": args.fewshot_output_format if use_fewshot else None,
+            "fewshot_use_enhanced": args.fewshot_use_enhanced if use_fewshot else False,
             "target_question_type": target_question_type,
             "fewshot_examples": fewshot_examples,
             "prompt": prompt,
