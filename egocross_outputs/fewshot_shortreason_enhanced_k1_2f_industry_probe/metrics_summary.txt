@@ -1,0 +1,10 @@
+num: 957
+empty: 0
+invalid: 0
+answer_dist: A=246 B=217 C=287 D=207
+domain_dist: Animal=183 Industry=245 Surgery=283 XSports=246
+status_dist: ok=245 skipped_fallback=712
+fewshot_processed: 245
+fewshot_question_type_dist: counting=64 next_interaction=53 not_visible=32 region_localization=32 temporal_localization=32 tool_interaction=32
+changed_vs_fallback_total: 113
+changed_vs_fallback_by_domain: Surgery=0 Industry=113 XSports=0 Animal=0
