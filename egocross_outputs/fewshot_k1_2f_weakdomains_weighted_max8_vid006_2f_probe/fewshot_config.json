@@ -1,0 +1,18 @@
+{
+  "fewshot_support_dir": "/share/home/group9/data/egocross",
+  "fewshot_k": 1,
+  "fewshot_frames": 2,
+  "fewshot_domains": "Industry,XSports",
+  "fewshot_evidence_mode": "compressed",
+  "support_index_counts": {
+    "Animal": 20,
+    "Industry": 20,
+    "Surgery": 20,
+    "XSports": 20
+  },
+  "notes": [
+    "Few-shot mode is enabled only for samples matching fewshot_domains.",
+    "Support examples are sampled to fewshot_frames images each.",
+    "Target samples still use default-max-frames plus frame-route overrides."
+  ]
+}

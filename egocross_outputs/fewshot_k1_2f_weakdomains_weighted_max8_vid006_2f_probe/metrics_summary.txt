@@ -1,0 +1,7 @@
+num: 957
+empty: 0
+invalid: 0
+answer_dist: A=268 B=203 C=319 D=167
+status_dist: error_fallback=10 ok=479 ok_after_frame_retry=2 skipped_fallback=466
+errors: 10
+changed_vs_fallback_total: 155
