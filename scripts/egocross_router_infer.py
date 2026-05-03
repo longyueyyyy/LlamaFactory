@@ -847,7 +847,11 @@ def summarize(outputs, raw_outputs, fallback_rows):
     lines.append("status_dist: " + " ".join(f"{key}={value}" for key, value in sorted(statuses.items())))
     fewshot_count = sum(1 for row in raw_outputs if row.get("fewshot"))
     if fewshot_count:
-        type_dist = Counter(row.get("target_question_type", "unknown") for row in raw_outputs if row.get("fewshot"))
+        type_dist = Counter(
+            row.get("target_question_type") or "unknown"
+            for row in raw_outputs
+            if row.get("fewshot")
+        )
         lines.append(f"fewshot_processed: {fewshot_count}")
         lines.append("fewshot_question_type_dist: " + " ".join(f"{key}={value}" for key, value in sorted(type_dist.items())))
 
