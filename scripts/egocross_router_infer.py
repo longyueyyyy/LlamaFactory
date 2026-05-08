@@ -25,6 +25,7 @@ DOMAIN_HINT_BY_DATASET = {
     "EgoPet": "pet-mounted first-person animal behavior",
 }
 
+PROMPT_MODES = {"direct", "strict_direct", "domain_direct", "type_direct", "domain_type_direct"}
 VALID_ANSWERS = {"A", "B", "C", "D"}
 LETTERS = ["A", "B", "C", "D"]
 SUPPORT_FILES = {
@@ -99,6 +100,22 @@ EVIDENCE_BY_TYPE = {
     "phase_sequence": "match the surgical phase order.",
     "unknown": "match the visual evidence to the options.",
 }
+PROMPT_HINT_BY_TYPE = {
+    "counting": "For counting, count the requested distinct categories across frames; do not count repeated appearances twice.",
+    "not_visible": "For visibility, choose the option that is absent or not supported by the visible frames.",
+    "region_localization": "For spatial localization, compare the target object's position in the egocentric view.",
+    "temporal_localization": "For temporal localization, compare early, middle, and late frames to choose the closest time.",
+    "next_interaction": "For next-interaction prediction, focus on the latest visible action and object state.",
+    "next_direction": "For movement direction, focus on the motion trend in the latest frames.",
+    "action_identification": "For action identification, match the visible action in the requested interval.",
+    "action_sequence": "For action sequence, match the ordered actions across the sampled frames.",
+    "sport_identification": "For sport identification, use scene context and motion cues.",
+    "animal_identification": "For animal identification, use visible body, face, and scene cues.",
+    "object_interaction": "For object interaction, identify the object being interacted with.",
+    "tool_interaction": "For tool identification, focus on the manipulated instrument or tool.",
+    "phase_sequence": "For phase sequence, match the surgical workflow order.",
+    "unknown": "Match the visual evidence to the options.",
+}
 STOPWORDS = {
     "a", "an", "and", "are", "as", "at", "based", "be", "being", "by", "does",
     "for", "from", "how", "in", "into", "is", "it", "of", "on", "or", "the",
@@ -167,7 +184,7 @@ def parse_routes(route_args, default_prompt_mode, default_max_frames):
         selector, value = item.split("=", 1)
         parts = value.split(":")
         prompt_mode = parts[0]
-        if prompt_mode not in {"direct", "strict_direct", "domain_direct"}:
+        if prompt_mode not in PROMPT_MODES:
             raise ValueError(f"Unsupported prompt mode in route {item}")
         max_frames = default_max_frames if len(parts) == 1 or not parts[1] else int(parts[1])
         routes[selector.strip().lower()] = (prompt_mode, max_frames)
@@ -673,6 +690,8 @@ def build_fewshot_content(
 def build_prompt(sample, prompt_mode, option_lines):
     question = sample.get("question_text", "")
     dataset = sample.get("dataset", "")
+    question_type = normalize_question_type(sample.get("question_type", ""), question)
+    type_hint = PROMPT_HINT_BY_TYPE.get(question_type, PROMPT_HINT_BY_TYPE["unknown"])
 
     if prompt_mode == "strict_direct":
         return (
@@ -683,11 +702,33 @@ def build_prompt(sample, prompt_mode, option_lines):
             "Answer:"
         )
 
+    if prompt_mode == "type_direct":
+        return (
+            f"Question type: {question_type}.\n"
+            f"{type_hint}\n"
+            "Return only A, B, C, or D. Do not explain.\n\n"
+            f"Question: {question}\n"
+            f"{option_lines}\n"
+            "Answer:"
+        )
+
     if prompt_mode == "domain_direct":
         hint = DOMAIN_HINT_BY_DATASET.get(dataset, "egocentric video")
         return (
             f"Domain: {hint}.\n"
             "Answer from the frames. Return only A, B, C, or D.\n\n"
+            f"Question: {question}\n"
+            f"{option_lines}\n"
+            "Answer:"
+        )
+
+    if prompt_mode == "domain_type_direct":
+        domain_hint = DOMAIN_HINT_BY_DATASET.get(dataset, "egocentric video")
+        return (
+            f"Domain: {domain_hint}.\n"
+            f"Question type: {question_type}.\n"
+            f"{type_hint}\n"
+            "Answer from the frames. Return only A, B, C, or D. Do not explain.\n\n"
             f"Question: {question}\n"
             f"{option_lines}\n"
             "Answer:"
@@ -1020,13 +1061,13 @@ def main():
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--base-url", default="http://127.0.0.1:8000/v1")
     parser.add_argument("--model", default="egocross")
-    parser.add_argument("--default-prompt-mode", choices=["direct", "strict_direct", "domain_direct"], default="strict_direct")
+    parser.add_argument("--default-prompt-mode", choices=sorted(PROMPT_MODES), default="strict_direct")
     parser.add_argument("--default-max-frames", type=int, default=8)
     parser.add_argument(
         "--route",
         action="append",
         default=[],
-        help="Dataset/domain route: DOMAIN=prompt_mode[:max_frames], e.g. XSports=domain_direct:8.",
+        help="Dataset/domain route: DOMAIN=prompt_mode[:max_frames], e.g. XSports=domain_type_direct:8.",
     )
     parser.add_argument(
         "--frame-route",
