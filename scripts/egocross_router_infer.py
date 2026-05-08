@@ -719,7 +719,7 @@ def is_context_length_error(exc):
 
 def frame_retry_sequence(max_frames):
     start = max_frames or 8
-    candidates = [start, 4, 2, 1]
+    candidates = [start, 12, 8, 6, 4, 2, 1]
     sequence = []
     for value in candidates:
         if value <= start and value not in sequence:

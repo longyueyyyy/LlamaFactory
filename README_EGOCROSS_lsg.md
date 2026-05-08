@@ -356,7 +356,7 @@ scripts/egocross_router_infer.py
 按 dataset/domain 选择 prompt mode 和 max_frames。
 支持只跑某些 domain，其他样本用 baseline fallback 填满完整 submission。
 支持 raw_outputs.json 和 metrics_summary.txt。
-对明确的 context length 400 错误支持自动降帧 retry：8 -> 4 -> 2 -> 1。
+对明确的 context length 400 错误支持自动降帧 retry：start -> 12 -> 8 -> 6 -> 4 -> 2 -> 1 中不超过 start 的序列。
 ```
 
 已知结果：
@@ -562,7 +562,7 @@ num_tokens=480 > self.deepstack_input_embeds_num_tokens=479
 曾尝试在 CoT 脚本中做：
 
 ```text
-max_frames 12 -> 超长后 fallback 8 -> fallback 4 -> fallback 1
+max_frames 12 -> 超长后 fallback 8 -> fallback 6 -> fallback 4 -> fallback 2 -> fallback 1
 ```
 
 但实际效果不好。原因是 vLLM 遇到前一个超长请求后，有时服务进入不稳定状态，后续较少帧请求也会返回 500。
@@ -572,7 +572,7 @@ max_frames 12 -> 超长后 fallback 8 -> fallback 4 -> fallback 1
 ```text
 对 vLLM 500 / deepstack token 错误，仍然不建议自动 fallback，优先重启服务。
 对明确的 400 context length 错误，可以安全做同一样本降帧 retry。
-当前 router 脚本已实现 context length retry：8 -> 4 -> 2 -> 1。
+当前 router 脚本已实现 context length retry：start -> 12 -> 8 -> 6 -> 4 -> 2 -> 1 中不超过 start 的序列。
 ExtrameSportFPV_VID006 已验证需要显式降帧，推荐 --frame-route VID006=2。
 ```
 
@@ -648,7 +648,8 @@ VLLM_USE_V1=0
 注意：
 
 ```text
-普通的 8 -> 4 -> 2 -> 1 自动 retry 只能解决明确的 context length 400。
+普通的自动 retry 只能解决明确的 context length 400。
+当前 retry 顺序为 start -> 12 -> 8 -> 6 -> 4 -> 2 -> 1 中不超过 start 的序列。
 如果已经触发 mm_hash/cache 错误，最好重启 vLLM，并关闭 mm processor cache。
 对完整 test set，推荐直接显式指定 --frame-route VID006=2，避免先发送 8 帧污染服务状态。
 ```
@@ -1134,6 +1135,37 @@ Codabench Overall = 0.480669
 ```text
 router_baseline_strong_weighted_weak_direct_max8_vid006_2f
 Codabench Overall = 0.489028
+```
+
+## 14.1 外部 GRPO 模型结果（2026-05-09）
+
+同学训练的 GRPO answer 模型路径：
+
+```text
+/share/home/group9/why/rl_grpo_v2/output/egocross_grpo_answer_v7/v3-20260507-113212
+```
+
+已完成一次 direct 推理提交，结果明显超过旧 router：
+
+```text
+Overall: 0.528736
+Surgery: 0.530035
+Industry: 0.534694
+XSports: 0.459350
+Animal: 0.612022
+coverage: 1.0
+```
+
+当前判断：
+
+```text
+这个 GRPO 模型应作为新的主力候选。
+Animal 略低于旧 baseline Animal=0.622951，因此优先尝试 Animal fallback router：
+Surgery / Industry / XSports 使用 GRPO，Animal 使用 baseline。
+下一步可尝试 direct max_frames=12，并对 VID006 显式使用 --frame-route VID006=4。
+router 脚本已更新 context length retry 顺序：start -> 12 -> 8 -> 6 -> 4 -> 2 -> 1 中不超过 start 的序列。
+例如 default-max-frames=12 时，会按 12 -> 8 -> 6 -> 4 -> 2 -> 1 尝试；
+VID006=4 时，会按 4 -> 2 -> 1 尝试。
 ```
 
 ## 15. Weighted answer-only Full SFT 推荐命令
