@@ -1,0 +1,6 @@
+num: 957
+empty: 0
+invalid: 0
+answer_dist: A=167 B=179 C=253 D=358
+domain_dist: Animal=183 Industry=245 Surgery=283 XSports=246
+status_dist: ok=957
