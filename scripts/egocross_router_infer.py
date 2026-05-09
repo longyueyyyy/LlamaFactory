@@ -305,8 +305,13 @@ def resolve_frame_path(testbed_dir, dataset, frame_path):
     )
 
 
-def sample_frames(frame_paths, max_frames):
+def sample_frames(frame_paths, max_frames, sampling="uniform"):
     if max_frames and len(frame_paths) > max_frames:
+        if sampling == "endpoint":
+            if max_frames <= 1:
+                return [frame_paths[-1]]
+            last_idx = len(frame_paths) - 1
+            return [frame_paths[round(i * last_idx / (max_frames - 1))] for i in range(max_frames)]
         step = len(frame_paths) / max_frames
         return [frame_paths[int(i * step)] for i in range(max_frames)]
     return list(frame_paths)
@@ -575,9 +580,9 @@ def rank_fewshot_examples(support_index, sample, k):
     return [candidate for _, _, candidate in scored[:max(k, 0)]], target
 
 
-def image_content_from_paths(frame_paths, max_frames):
+def image_content_from_paths(frame_paths, max_frames, frame_sampling="uniform"):
     content = []
-    for frame_path in sample_frames(frame_paths, max_frames):
+    for frame_path in sample_frames(frame_paths, max_frames, frame_sampling):
         content.append({
             "type": "image_url",
             "image_url": {"url": f"data:image/jpeg;base64,{encode_image(frame_path)}"},
@@ -624,6 +629,7 @@ def build_fewshot_content(
     testbed_dir,
     sample,
     max_frames,
+    frame_sampling,
     support_index,
     fewshot_k,
     fewshot_frames,
@@ -650,7 +656,7 @@ def build_fewshot_content(
     selected = []
 
     for ex_idx, example in enumerate(examples, start=1):
-        used_images = sample_frames(example["images"], fewshot_frames)
+        used_images = sample_frames(example["images"], fewshot_frames, "uniform")
         content.extend(image_content_from_paths(used_images, None))
         reasoning = example_reasoning(example, evidence_mode, output_format)
         if output_format == "short_reason_answer":
@@ -681,7 +687,7 @@ def build_fewshot_content(
             "images_used": used_images,
         })
 
-    content.extend(build_image_content(testbed_dir, sample, max_frames))
+    content.extend(build_image_content(testbed_dir, sample, max_frames, frame_sampling))
     prompt = build_fewshot_prompt(target, output_format)
     content.append({"type": "text", "text": prompt})
     return content, prompt, selected, target
@@ -768,10 +774,10 @@ def frame_retry_sequence(max_frames):
     return sequence
 
 
-def build_image_content(testbed_dir, sample, max_frames):
+def build_image_content(testbed_dir, sample, max_frames, frame_sampling="uniform"):
     dataset = sample["dataset"]
     content = []
-    for frame_path in sample_frames(sample.get("video_path", []), max_frames):
+    for frame_path in sample_frames(sample.get("video_path", []), max_frames, frame_sampling):
         abs_path = resolve_frame_path(testbed_dir, dataset, frame_path)
         content.append({
             "type": "image_url",
@@ -780,10 +786,10 @@ def build_image_content(testbed_dir, sample, max_frames):
     return content
 
 
-def infer_once(client, model, testbed_dir, sample, prompt_mode, max_frames, max_tokens, original_order):
+def infer_once(client, model, testbed_dir, sample, prompt_mode, max_frames, frame_sampling, max_tokens, original_order):
     parsed_options = parse_options(sample.get("options", ""))
     option_lines, display_to_original = format_options(parsed_options, original_order)
-    content = build_image_content(testbed_dir, sample, max_frames)
+    content = build_image_content(testbed_dir, sample, max_frames, frame_sampling)
     prompt = build_prompt(sample, prompt_mode, option_lines)
     content.append({"type": "text", "text": prompt})
     raw_output = call_model(client, model, content, max_tokens)
@@ -799,6 +805,7 @@ def infer_fewshot_once(
     testbed_dir,
     sample,
     max_frames,
+    frame_sampling,
     max_tokens,
     support_index,
     fewshot_k,
@@ -810,6 +817,7 @@ def infer_fewshot_once(
         testbed_dir,
         sample,
         max_frames,
+        frame_sampling,
         support_index,
         fewshot_k,
         fewshot_frames,
@@ -821,7 +829,7 @@ def infer_fewshot_once(
     return answer, raw_output, prompt, selected, target
 
 
-def infer_with_frame_retry(client, model, testbed_dir, sample, prompt_mode, max_frames, max_tokens):
+def infer_with_frame_retry(client, model, testbed_dir, sample, prompt_mode, max_frames, frame_sampling, max_tokens):
     attempts = []
     for attempt_frames in frame_retry_sequence(max_frames):
         try:
@@ -832,6 +840,7 @@ def infer_with_frame_retry(client, model, testbed_dir, sample, prompt_mode, max_
                 sample,
                 prompt_mode,
                 attempt_frames,
+                frame_sampling,
                 max_tokens,
                 ["A", "B", "C", "D"],
             )
@@ -864,6 +873,7 @@ def infer_fewshot_with_frame_retry(
     testbed_dir,
     sample,
     max_frames,
+    frame_sampling,
     max_tokens,
     support_index,
     fewshot_k,
@@ -877,10 +887,11 @@ def infer_fewshot_with_frame_retry(
             answer, raw_output, prompt, selected, target = infer_fewshot_once(
                 client,
                 model,
-                testbed_dir,
-                sample,
-                attempt_frames,
-                max_tokens,
+                        testbed_dir,
+                        sample,
+                        attempt_frames,
+                        frame_sampling,
+                        max_tokens,
                 support_index,
                 fewshot_k,
                 fewshot_frames,
@@ -912,7 +923,7 @@ def infer_fewshot_with_frame_retry(
     raise RuntimeError("All frame retry attempts exceeded context length.")
 
 
-def vote_infer(client, model, testbed_dir, sample, prompt_mode, max_frames, max_tokens):
+def vote_infer(client, model, testbed_dir, sample, prompt_mode, max_frames, frame_sampling, max_tokens):
     orders = [
         ["A", "B", "C", "D"],
         ["B", "C", "D", "A"],
@@ -921,7 +932,7 @@ def vote_infer(client, model, testbed_dir, sample, prompt_mode, max_frames, max_
     attempts = []
     for order in orders:
         answer, raw_output, prompt = infer_once(
-            client, model, testbed_dir, sample, prompt_mode, max_frames, max_tokens, order
+            client, model, testbed_dir, sample, prompt_mode, max_frames, frame_sampling, max_tokens, order
         )
         attempts.append({
             "order": order,
@@ -940,12 +951,12 @@ def vote_infer(client, model, testbed_dir, sample, prompt_mode, max_frames, max_
     return answer, attempts, "vote_plurality"
 
 
-def vote_with_frame_retry(client, model, testbed_dir, sample, prompt_mode, max_frames, max_tokens):
+def vote_with_frame_retry(client, model, testbed_dir, sample, prompt_mode, max_frames, frame_sampling, max_tokens):
     frame_attempts = []
     for attempt_frames in frame_retry_sequence(max_frames):
         try:
             answer, attempts, status = vote_infer(
-                client, model, testbed_dir, sample, prompt_mode, attempt_frames, max_tokens
+                client, model, testbed_dir, sample, prompt_mode, attempt_frames, frame_sampling, max_tokens
             )
             frame_attempts.append({
                 "max_frames": attempt_frames,
@@ -1042,6 +1053,7 @@ def write_fewshot_config(output_dir, args, support_index):
         "fewshot_evidence_mode": args.fewshot_evidence_mode,
         "fewshot_output_format": args.fewshot_output_format,
         "fewshot_use_enhanced": args.fewshot_use_enhanced,
+        "frame_sampling": args.frame_sampling,
         "support_index_counts": support_index_summary(support_index),
         "notes": [
             "Few-shot mode is enabled only for samples matching fewshot_domains.",
@@ -1076,6 +1088,12 @@ def main():
         help="Question-id/dataset substring max-frame override, e.g. ExtrameSportFPV_VID006=2.",
     )
     parser.add_argument("--max-tokens", type=int, default=8)
+    parser.add_argument(
+        "--frame-sampling",
+        choices=["uniform", "endpoint"],
+        default="uniform",
+        help="Frame sampling strategy. endpoint includes the last frame when downsampling.",
+    )
     parser.add_argument("--only-datasets", default=None)
     parser.add_argument("--fallback-submission", default=None)
     parser.add_argument("--vote-domains", default=None, help="Comma-separated domains/datasets using 3-way option-order voting.")
@@ -1180,6 +1198,7 @@ def main():
                         testbed_dir,
                         sample,
                         max_frames,
+                        args.frame_sampling,
                         args.max_tokens,
                         support_index,
                         args.fewshot_k,
@@ -1198,7 +1217,7 @@ def main():
                 })
             elif use_vote:
                 answer, raw_payload, status, used_max_frames = vote_with_frame_retry(
-                    client, args.model, testbed_dir, sample, prompt_mode, max_frames, args.max_tokens
+                    client, args.model, testbed_dir, sample, prompt_mode, max_frames, args.frame_sampling, args.max_tokens
                 )
                 frame_attempts = raw_payload
             else:
@@ -1209,6 +1228,7 @@ def main():
                     sample,
                     prompt_mode,
                     max_frames,
+                    args.frame_sampling,
                     args.max_tokens,
                 )
             if answer is None:
@@ -1240,6 +1260,7 @@ def main():
             "prompt_mode": prompt_mode,
             "max_frames": max_frames,
             "used_max_frames": used_max_frames,
+            "frame_sampling": args.frame_sampling,
             "frame_attempts": frame_attempts,
             "vote": use_vote,
             "fewshot": use_fewshot,

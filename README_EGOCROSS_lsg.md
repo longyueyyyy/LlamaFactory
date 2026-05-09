@@ -359,6 +359,15 @@ scripts/egocross_router_infer.py
 对明确的 context length 400 错误支持自动降帧 retry：start -> 12 -> 8 -> 6 -> 4 -> 2 -> 1 中不超过 start 的序列。
 ```
 
+当前支持的 frame sampling：
+
+```text
+uniform：默认旧行为，均匀取 max_frames 帧，但不保证包含最后一帧。
+endpoint：降采样时固定包含最后一帧；max_frames>=2 时包含首帧和尾帧，中间均匀取样。
+
+endpoint 适合诊断 next direction / next interaction / temporal localization 这类依赖片段末尾状态的问题。
+```
+
 当前支持的 prompt mode：
 
 ```text
@@ -1124,6 +1133,7 @@ zip submission.zip predictions.json
 7. 比赛合规：不要通过反复提交 hidden test、观察榜单/domain 分数来反推标签、定位错误样本或调整 router/fallback/prompt。
 8. 最终策略应在提交前固定，依据公开 support/validation、训练日志、格式稳定性、coverage、运行错误率等非 hidden-label 信号决定。
 9. 报告中不要描述“根据 hidden 榜单反馈调整策略”。可以描述为“基于 support set 与鲁棒性诊断选择固定推理策略，hidden test 仅用于最终评估”。
+10. 若要尝试 prompt / frame / vote 变体，应先在 support/validation 上预先选定固定策略；不要把 hidden 分数当作开发集。
 
 ## 14. 后续可能优化方向
 
@@ -1177,8 +1187,9 @@ coverage: 1.0
 这个 GRPO 模型应作为新的主力候选。
 后续不要根据 hidden leaderboard 的 domain 分数反推 fallback 或继续调策略。
 若要尝试 router/fallback，必须先在公开 support/validation 上固定规则，再一次性应用到 test。
-更合规的高耗时尝试是单模型全域固定推理增强，例如 domain_type_direct + option-order voting。
-可尝试 max_frames=12，并对 VID006 显式使用 --frame-route VID006=4。
+更合规的高耗时尝试是单模型全域固定推理增强，例如 endpoint 采帧或预先固定的 option-order voting。
+复杂 prompt（domain_type_direct / type_direct）可能让 answer-only GRPO 模型偏离训练分布，正式提交前应先用 support/validation 验证。
+可尝试 direct prompt + endpoint sampling + max_frames=8 或 12，并对 VID006 显式使用 --frame-route VID006=4。
 router 脚本已更新 context length retry 顺序：start -> 12 -> 8 -> 6 -> 4 -> 2 -> 1 中不超过 start 的序列。
 例如 default-max-frames=12 时，会按 12 -> 8 -> 6 -> 4 -> 2 -> 1 尝试；
 VID006=4 时，会按 4 -> 2 -> 1 尝试。
@@ -1187,19 +1198,15 @@ VID006=4 时，会按 4 -> 2 -> 1 尝试。
 推荐挂跑命令（单 GRPO 模型、全域固定策略、不使用 fallback）：
 
 ```bash
-nohup python scripts/egocross_router_infer.py \
+python scripts/egocross_router_infer.py \
   --template submission_template.json \
-  --vote-domains Surgery,Industry,XSports,Animal \
-  --route Surgery=domain_type_direct:12 \
-  --route Industry=domain_type_direct:12 \
-  --route XSports=domain_type_direct:12 \
-  --route Animal=domain_type_direct:12 \
   --default-prompt-mode direct \
-  --default-max-frames 12 \
+  --default-max-frames 8 \
+  --frame-sampling endpoint \
   --frame-route VID006=4 \
   --base-url http://127.0.0.1:8000/v1 \
-  --output-dir egocross_outputs/why_grpo_all_domain_domain_type_direct_vote_max12_vid006_4f \
-  > logs/why_grpo_all_domain_domain_type_direct_vote_max12_vid006_4f.log 2>&1 &
+  --output-dir egocross_outputs/why_grpo_direct_endpoint_max8_vid006_4f \
+  2>&1 | tee logs/why_grpo_direct_endpoint_max8_vid006_4f.log
 ```
 
 ## 15. Weighted answer-only Full SFT 推荐命令
