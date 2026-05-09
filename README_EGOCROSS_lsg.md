@@ -1,426 +1,122 @@
-# EgoCross Progress README
+# EgoCross Experiment README
 
-本文档用于交接当前 EgoCross 实验进度。阅读后应能理解目前做了什么、哪些配置已经验证、哪些问题踩过坑、下一步该怎么继续。
+本文档是 EgoCross 项目的当前交接记录。目标是让后续接手者快速知道：当前最强方案、服务器路径、合规边界、关键脚本、已经尝试过的方向，以及哪些文件不能覆盖。
 
-## 1. 当前任务目标
+## 1. 项目概况
 
-我们在参加 EgoCross egocentric video QA 比赛。任务形式是：
+任务形式：
 
 ```text
 多帧第一视角视频帧 + 多选题文本 -> 输出 A/B/C/D
 ```
 
-目前目标不是继续搭环境，而是：
+最终提交只需要：
 
 ```text
-使用已经 Full SFT 训练好的 Qwen3-VL-4B 模型
-对 test set 批量推理
-生成 Codabench 可提交的 predictions.json / submission.zip
-并继续尝试 CoT / 思维链 prompt 是否能提高分数
+submission.zip
+└── predictions.json
 ```
 
-## 2. 服务器关键路径
+`predictions.json` 每题只填一个答案字母，不提交解释、CoT 或中间证据。
 
-代码目录：
+## 2. 比赛合规规则
 
-```bash
-/share/home/group9/lsg/LlamaFactory
-```
-
-训练 support set：
-
-```bash
-/share/home/group9/data/egocross
-```
-
-test set：
-
-```bash
-/share/home/group9/data/egocross_full/egocross_testbed
-```
-
-test query 文件：
-
-```bash
-/share/home/group9/data/egocross_full/egocross_testbed/egocross_testbed_imgs.json
-```
-
-官方提交模板：
-
-```bash
-/share/home/group9/lsg/LlamaFactory/submission_template.json
-```
-
-当前最重要的 baseline 模型：
-
-```bash
-/share/home/group9/lsg/LlamaFactory/saves/egocross/qwen3vl4b/full_sft_32k_200k
-```
-
-当前最重要的新模型：
-
-```bash
-/share/home/group9/lsg/LlamaFactory/saves/egocross/qwen3vl4b/weighted_answer_only_full_i4_x4_lr5e6_ep1
-```
-
-当前最佳提交策略：
+必须遵守：
 
 ```text
-Surgery / Animal 使用 baseline 模型结果。
-Industry / XSports 使用 weighted_answer_only_full_i4_x4_lr5e6_ep1 模型结果。
-Codabench Overall = 0.489028。
+Do not attempt to infer hidden labels by probing, reverse engineering, or exploiting evaluation behavior.
+Manual per-example labeling of hidden test data is prohibited.
 ```
 
-## 3. Conda 环境
+本项目执行规则：
 
-当前使用 conda 环境：
+```text
+1. 不通过反复提交 hidden test、观察榜单/domain 分数来反推标签、定位错误样本或调整 router/fallback/prompt。
+2. 不手工标注 hidden test 样本。
+3. 推理策略应在提交前固定，依据公开 support/validation、训练日志、格式稳定性、coverage、运行错误率等非 hidden-label 信号决定。
+4. 报告中不要写“根据 hidden 榜单反馈调整策略”。可写“基于 support set 与鲁棒性诊断选择固定推理策略，hidden test 仅用于最终评估”。
+```
+
+历史 Codabench 分数只作为实验记录。后续不要把 hidden 榜单当开发集。
+
+## 3. 服务器路径
 
 ```bash
-conda activate lsg
+CODE=/share/home/group9/lsg/LlamaFactory
+SUPPORT=/share/home/group9/data/egocross
+TESTBED=/share/home/group9/data/egocross_full/egocross_testbed
+TEST_JSON=/share/home/group9/data/egocross_full/egocross_testbed/egocross_testbed_imgs.json
+TEMPLATE=/share/home/group9/lsg/LlamaFactory/submission_template.json
 ```
 
-多卡/torchrun 曾经遇到过环境串到系统 Python 的问题，所以每次建议执行：
-
-```bash
-export PATH="/share/home/group9/miniconda3/envs/lsg/bin:$PATH"
-```
-
-这个命令的作用是保证 `python`、`torchrun`、`llamafactory-cli` 优先使用 `lsg` 环境里的版本。
-
-## 4. 已完成的训练
-
-已经完成一次 Full SFT：
+重要模型：
 
 ```text
-base model: Qwen/Qwen3-VL-4B-Instruct
-training method: Full SFT
-training data: /share/home/group9/data/egocross/train.json
-epochs: 2
-cutoff_len: 32768
-image_max_pixels: 200000
-output model: saves/egocross/qwen3vl4b/full_sft_32k_200k
+baseline:
+saves/egocross/qwen3vl4b/full_sft_32k_200k
+
+weighted answer-only SFT:
+saves/egocross/qwen3vl4b/weighted_answer_only_full_i4_x4_lr5e6_ep1
+
+external GRPO candidate:
+/share/home/group9/why/rl_grpo_v2/output/egocross_grpo_answer_v7/v3-20260507-113212
 ```
 
-训练完成日志中关键指标：
+本地数据镜像在仓库同级：
 
 ```text
-train_loss = 4.7132
-epoch = 2.0
-train_runtime = 0:04:43.48
+../data_local/egocross
 ```
 
-注意：`train_loss` 不是比赛分数，只说明训练完成。比赛分数来自 Codabench test set 评测。
+本地镜像只用于非破坏性检查和脚本调试。训练/推理命令里的服务器路径不要假设本地可用。
 
-### 4.1 Weighted answer-only Full SFT
+## 4. 当前最强候选
 
-已完成一次继续 Full SFT，用于增强弱 domain：
+当前最强方案：
 
 ```text
-base model: saves/egocross/qwen3vl4b/full_sft_32k_200k
-training method: Full SFT
-training data: /share/home/group9/data/egocross/train_weighted_answer_only_i4_x4.json
-data construction: original support set, assistant 强制为单字母 A/B/C/D
-domain weights: animal=1, surgery=1, industry=4, xsports=4
-epochs: 1
-learning_rate: 5e-6
-cutoff_len: 32768
-image_max_pixels: 200000
-output model: saves/egocross/qwen3vl4b/weighted_answer_only_full_i4_x4_lr5e6_ep1
+model: /share/home/group9/why/rl_grpo_v2/output/egocross_grpo_answer_v7/v3-20260507-113212
+prompt: direct
+frame_sampling: tail_dense
+max_frames: 12
+frame_route: VID006=4
+router/fallback: none
+output: egocross_outputs/why_grpo_direct_tail_dense_max12_vid006_4f
 ```
 
-直接用新模型全量 direct 推理的 Codabench 得分：
+分数记录：
 
 ```text
-Overall: 0.481714
-Surgery: 0.501767
-Industry: 0.416327
-XSports: 0.430894
-Animal: 0.606557
+Overall: 0.536050
+Surgery: 0.533569
+Industry: 0.538776
+XSports: 0.459350
+Animal: 0.639344
 coverage: 1.0
 ```
 
-结论：
+当前建议：先保留这版作为提交候选，不继续基于 hidden 榜单反馈做细调。
 
-```text
-weighted Full SFT 确实提升了 Industry / XSports。
-但它损伤了 Surgery / Animal，因此不应直接全 domain 替代 baseline。
-最佳用法是 domain router：弱 domain 用新模型，强 domain 保留 baseline。
-```
+## 5. 当前最佳运行命令
 
-## 5. 已跑通的 baseline 推理与分数
-
-使用 vLLM 加载模型，`max-frames 8`，直接答案 prompt，已经完整跑通 test set 并提交 Codabench。
-
-baseline 设置：
-
-```text
-model: saves/egocross/qwen3vl4b/full_sft_32k_200k
-vLLM max_model_len: 32768
-vLLM enforce_eager: true
-max_frames: 8
-prompt: direct answer, only A/B/C/D
-script: generate_egocross_submission.py
-output: submission_full_sft_32k_200k_max8.json
-```
-
-Codabench 得分：
-
-```text
-Overall: 0.480669
-acc: 0.480669
-Surgery: 0.515901
-Industry: 0.400000
-XSports: 0.414634
-Animal: 0.622951
-coverage: 1.0
-```
-
-这个 baseline 要保留，不要覆盖。后续所有实验都应新建输出文件。
-
-## 5.1 已完成推理实验汇总
-
-| 实验名 | 脚本 | Prompt | vLLM max_model_len | max_frames | max_tokens | Overall | Surgery | Industry | XSports | Animal | coverage | 输出目录 |
-|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| baseline_max8 | `generate_egocross_submission.py` | 直接输出答案 | 32768 | 8 | 8 | 0.480669 | 0.515901 | 0.400000 | 0.414634 | 0.622951 | 1.0 | `egocross_outputs/baseline_max8/` |
-| cot_49k_256 | `generate_egocross_submission_cot_test.py` | 普通 CoT | 49152 | 8 | 256 | 0.444096 | 0.508834 | 0.342857 | 0.418699 | 0.513661 | 1.0 | `egocross_outputs/full_sft_32k_200k_max8_cot_49k_256/` |
-| shortcot_49k_512 | `generate_egocross_submission_shortcot_test.py` | 短 CoT | 49152 | 8 | 512 | 0.459770 | 0.515901 | 0.375510 | 0.414634 | 0.546448 | 1.0 | `egocross_outputs/full_sft_32k_200k_max8_shortcot_49k_512/` |
-| router_domain_direct_lowdomains | `scripts/egocross_router_infer.py` | Industry/XSports domain_direct，其他 baseline fallback | 32768 | 8 | 8 | 0.480669 | 0.515901 | 0.391837 | 0.422764 | 0.622951 | 1.0 | `egocross_outputs/router_domain_direct_lowdomains/` |
-| weighted_full_direct_max8 | `scripts/egocross_router_infer.py` | 新模型 direct，全 domain | 32768/49152 | 8，VID006=2 | 8 | 0.481714 | 0.501767 | 0.416327 | 0.430894 | 0.606557 | 1.0 | `egocross_outputs/weighted_answer_only_full_i4_x4_lr5e6_ep1_direct_max8_vid006_2f/` |
-| router_baseline_strong_weighted_weak | `scripts/egocross_router_infer.py` | Surgery/Animal baseline，Industry/XSports 新模型 | 32768/49152 | 8，VID006=2 | 8 | 0.489028 | 0.515901 | 0.416327 | 0.430894 | 0.622951 | 1.0 | `egocross_outputs/router_baseline_strong_weighted_weak_direct_max8_vid006_2f/` |
-| fewshot_k1_2f_weakdomains | `scripts/egocross_router_infer.py` | Industry/XSports 使用同 domain + question type 的视觉 few-shot，Surgery/Animal fallback | 32768/49152 | 当前题 8，few-shot 每例 2，VID006=2 | 8 | 0.479624 | 0.515901 | 0.412245 | 0.398374 | 0.622951 | 1.0 | few-shot 弱域实验输出目录 |
-| fewshot_shortreason_enhanced_industry | `scripts/egocross_router_infer.py` | Industry 使用 enhanced 蒸馏短推理 + `Answer: X` few-shot，XSports/Surgery/Animal fallback | 32768/49152 | 当前题 8，few-shot 每例 2，VID006=2 | 64 | 0.481714 | 0.515901 | 0.387755 | 0.430894 | 0.622951 | 1.0 | `egocross_outputs/fewshot_shortreason_enhanced_k1_2f_industry_probe/` |
-
-当前结论：
-
-```text
-直接答案 baseline 仍然最高。
-普通 CoT 256 明显下降，主要问题是思维链输出偏长，部分样本在 max_tokens=256 内没有输出 Final answer。
-缺少最终答案时，脚本会从输出中抽取答案或 fallback 到 A，容易污染预测。
-Short CoT 512 比普通 CoT 256 更好，但仍低于直接答案 baseline。
-router_domain_direct_lowdomains 的 Overall 与 baseline 持平：XSports 提升 2 题，但 Industry 下降 2 题，互相抵消。
-weighted answer-only Full SFT 让 Industry / XSports 变强，但 Surgery / Animal 变弱。
-当前最佳结果是模型级 domain router：Surgery/Animal 用 baseline，Industry/XSports 用 weighted Full SFT，Overall = 0.489028。
-few-shot prompt 当前没有带来收益：视觉 few-shot 明显损伤 XSports；enhanced 短推理 few-shot 明显损伤 Industry。
-```
-
-因此，后续如果继续做 CoT，建议优先：
-
-```text
-1. 继续缩短 prompt，让模型更快输出 Final answer。
-2. 检查 *_raw_cot.json 中 no_final_answer 的比例。
-3. 不只增加 max_tokens，因为更长输出会显著变慢，也可能增加无关解释。
-4. 目前不建议直接用 enhanced 长解释做主训练集，也不建议直接把 enhanced 短推理 few-shot 用于提交；优先保留 answer-only / direct prompt 稳定性。
-```
-
-## 5.2 Few-shot 实验结论（2026-05-03）
-
-已尝试在当前 test 推理 pipeline 上加入 support/train set few-shot 示例：
-
-```text
-方案 A：Industry / XSports 使用同 domain + question type 的视觉 few-shot 示例，每个示例 2 帧，目标题 8 帧。
-结果：Overall = 0.479624，Industry = 0.412245，XSports = 0.398374。
-结论：Industry 略低于 weighted direct，XSports 明显下降，不适合作为提交策略。
-
-方案 B：Industry 使用 train_*_enhanced 蒸馏一句短 Reasoning，并要求目标输出同样格式：
-Reasoning: ...
-Answer: X
-结果：Overall = 0.481714，Industry = 0.387755，XSports = 0.430894。
-结论：短推理格式没有帮助，反而显著损伤 Industry。即使最终只抽取 Answer 字母，模型仍可能被推理格式带偏。
-```
-
-当前判断：
-
-```text
-1. few-shot 示例和目标视频放在同一个多图 user message 中，可能带来视觉上下文污染。
-2. support set 每个 domain 只有 20 条，同 question type 容易反复选到同一个示例，造成答案字母或题型先验偏置。
-3. weighted answer-only 模型对 direct answer prompt 更稳定，few-shot / short reasoning 都属于分布外 prompt。
-4. XSports 的方向、动作序列、时间定位更依赖目标视频动态，参考视频示例泛化弱，容易误导。
-5. Industry counting/localization 也未从 enhanced 短推理中受益，说明 enhanced 描述即使压缩后仍可能是噪声。
-```
-
-后续建议：
-
-```text
-不要把 few-shot 结果用于正式提交。
-当前最佳仍是 router_baseline_strong_weighted_weak_direct_max8_vid006_2f，Overall = 0.489028。
-如果继续研究 few-shot，建议只做小样本诊断，例如 text-only few-shot、答案字母平衡、或只针对极少数错误类型做手工示例；不要直接全量提交。
-```
-
-## 5.3 当前最佳训练方向（2026-05-02）
-
-当前最佳已验证路线是训练 + domain router：
-
-```text
-从当前最强模型 saves/egocross/qwen3vl4b/full_sft_32k_200k 继续 Full SFT
-训练数据使用原始 support set，强制 assistant answer-only
-Industry / XSports 过采样，提高弱 domain 权重
-训练后只把新模型用于 Industry / XSports
-Surgery / Animal 保留 baseline 结果
-```
-
-新增文件：
-
-```text
-scripts/prepare_egocross_weighted_answer_only.py
-configs/egocross_weighted_answer_only_full_ep1.yaml
-data/dataset_info.json 中新增 egocross_weighted_answer_only_i4_x4
-```
-
-推荐训练数据权重：
-
-```text
-animal=1
-surgery=1
-industry=4
-xsports=4
-```
-
-注意：`train_*_enhanced.json` 里有视觉描述和分析，但不保证正确，且输出格式偏长。不要直接作为主训练集，否则模型可能学会长解释，影响最终 A/B/C/D 输出稳定性。若后续使用 enhanced，建议只做短证据蒸馏并过滤最终答案不一致的样本。
-
-当前最佳提交：
-
-```text
-egocross_outputs/router_baseline_strong_weighted_weak_direct_max8_vid006_2f/submission.zip
-Overall: 0.489028
-```
-
-## 6. 当前已有脚本
-
-### 6.1 baseline 脚本
-
-```bash
-generate_egocross_submission.py
-```
-
-作用：
-
-```text
-读取 egocross_testbed_imgs.json
-读取每道题的视频帧
-调用本地 vLLM OpenAI-compatible API
-要求模型直接输出 A/B/C/D
-从输出中抽取答案
-填入 submission_template.json
-生成 submission JSON
-```
-
-已验证可用。
-
-### 6.2 CoT 测试脚本
-
-```bash
-generate_egocross_submission_cot_test.py
-```
-
-作用：
-
-```text
-读取 test set
-使用 CoT / 思维链 prompt
-要求模型先简短分析视觉证据和选项
-最后输出 Final answer: X
-生成提交 JSON
-同时生成 *_raw_cot.json 保存完整模型输出，方便检查是否真的输出思维链
-```
-
-### 6.3 Short CoT 512 测试脚本
-
-```bash
-generate_egocross_submission_shortcot_test.py
-```
-
-作用：
-
-```text
-使用更短的 CoT prompt。
-要求模型最多用 2 句短推理，然后输出 Final answer: X。
-默认 max_tokens=512，用于降低推理文本被截断、缺少最终答案的概率。
-默认 base_url 为 http://127.0.0.1:8001/v1。
-```
-
-这个脚本用于测试：
-
-```text
-short CoT prompt + max_frames 8 + vLLM max_model_len 49152 + max_tokens 512
-```
-
-### 6.4 Router 推理脚本
-
-```bash
-scripts/egocross_router_infer.py
-```
-
-作用：
-
-```text
-按 dataset/domain 选择 prompt mode 和 max_frames。
-支持只跑某些 domain，其他样本用 baseline fallback 填满完整 submission。
-支持 raw_outputs.json 和 metrics_summary.txt。
-对明确的 context length 400 错误支持自动降帧 retry：start -> 12 -> 8 -> 6 -> 4 -> 2 -> 1 中不超过 start 的序列。
-```
-
-当前支持的 frame sampling：
-
-```text
-uniform：默认旧行为，均匀取 max_frames 帧，但不保证包含最后一帧。
-endpoint：降采样时固定包含最后一帧；max_frames>=2 时包含首帧和尾帧，中间均匀取样。
-tail_dense：固定包含首尾帧，并把更多采样点分配到视频后半段。
-
-endpoint 适合诊断 next direction / next interaction / temporal localization 这类依赖片段末尾状态的问题。
-tail_dense 适合第一视角动作/方向/下一步交互题，尤其是目标答案依赖片段后段趋势时。
-```
-
-当前支持的 prompt mode：
-
-```text
-direct：通用 answer-only prompt。
-strict_direct：更严格的单字符输出 prompt。
-domain_direct：加入 dataset/domain 短提示。
-type_direct：根据 question type 加入一行短提示，例如 counting / temporal localization / next direction。
-domain_type_direct：同时加入 domain 短提示和 question type 短提示。
-
-type_direct / domain_type_direct 仍然要求只输出 A/B/C/D，不输出解释或 CoT。
-```
-
-已知结果：
-
-```text
-Industry + XSports 同时使用 domain_direct 时，XSports 上升但 Industry 下降，Overall 持平。
-如果继续做 router，优先只让 XSports 使用 domain_direct，Industry 回到 baseline/direct。
-```
-
-### 6.5 Weighted answer-only 数据构建脚本
-
-```bash
-scripts/prepare_egocross_weighted_answer_only.py
-```
-
-作用：
-
-```text
-读取 train_animal.json / train_surgery.json / train_industry.json / train_xsports.json。
-把 assistant 内容强制转换为单字母 A/B/C/D。
-按指定权重复制并 shuffle，生成 weighted answer-only 训练集。
-默认建议输出：/share/home/group9/data/egocross/train_weighted_answer_only_i4_x4.json
-```
-
-## 7. vLLM 启动方式
-
-baseline 稳定启动命令：
+启动 vLLM：
 
 ```bash
 cd /share/home/group9/lsg/LlamaFactory
 conda activate lsg
 export PATH="/share/home/group9/miniconda3/envs/lsg/bin:$PATH"
+export HF_HUB_OFFLINE=1
+export TRANSFORMERS_OFFLINE=1
 
-CUDA_VISIBLE_DEVICES=4 python -m vllm.entrypoints.openai.api_server \
-  --model saves/egocross/qwen3vl4b/full_sft_32k_200k \
+VLLM_USE_V1=0 CUDA_VISIBLE_DEVICES=4 python -m vllm.entrypoints.openai.api_server \
+  --model /share/home/group9/why/rl_grpo_v2/output/egocross_grpo_answer_v7/v3-20260507-113212 \
   --port 8000 \
   --served-model-name egocross \
   --trust-remote-code \
   --max-model-len 32768 \
   --gpu-memory-utilization 0.85 \
-  --enforce-eager
+  --enforce-eager \
+  --mm-processor-cache-gb 0
 ```
 
 检查服务：
@@ -429,804 +125,12 @@ CUDA_VISIBLE_DEVICES=4 python -m vllm.entrypoints.openai.api_server \
 curl http://127.0.0.1:8000/v1/models
 ```
 
-如果返回模型列表且 `id` 是 `egocross`，说明服务可用。
-
-`--enforce-eager` 很重要。之前 vLLM 在 Qwen3-VL 多图输入上遇到过 deepstack token 对齐问题，使用 eager 模式更稳。
-
-当前更推荐的稳定启动方式：
+跑当前最强候选：
 
 ```bash
 cd /share/home/group9/lsg/LlamaFactory
-conda activate lsg
-export PATH="/share/home/group9/miniconda3/envs/lsg/bin:$PATH"
+mkdir -p logs
 
-VLLM_USE_V1=0 CUDA_VISIBLE_DEVICES=4 python -m vllm.entrypoints.openai.api_server \
-  --model saves/egocross/qwen3vl4b/weighted_answer_only_full_i4_x4_lr5e6_ep1 \
-  --port 8000 \
-  --served-model-name egocross \
-  --trust-remote-code \
-  --max-model-len 32768 \
-  --gpu-memory-utilization 0.85 \
-  --enforce-eager \
-  --mm-processor-cache-gb 0
-```
-
-说明：
-
-```text
-VLLM_USE_V1=0：切回 vLLM old engine，绕开部分 v1 多模态路径问题。
---mm-processor-cache-gb 0：关闭 multimodal processor cache，避免 mm_hash/cache 不一致。
---enforce-eager：继续保留，Qwen3-VL 多图输入更稳。
-代价是速度可能稍慢，但比赛提交更看重稳定性。
-```
-
-注意：
-
-```text
-这个启动方式不能解决 context length 超限。
-ExtrameSportFPV_VID006 仍然需要推理命令里加 --frame-route VID006=2。
-```
-
-## 8. 已遇到的重要问题与解决方案
-
-### 8.1 环境串到系统 Python
-
-现象：
-
-```text
-No module named 'llamafactory'
-binary: /usr/bin/python3
-```
-
-原因：`torchrun` 或命令优先用了系统 Python。
-
-解决：
-
-```bash
-export PATH="/share/home/group9/miniconda3/envs/lsg/bin:$PATH"
-```
-
-### 8.2 tokenizer / HuggingFace 网络问题
-
-现象：
-
-```text
-Network is unreachable
-OSError: Failed to load tokenizer
-```
-
-解决：使用离线模式：
-
-```bash
-HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
-```
-
-### 8.3 Full SFT OOM
-
-尝试过 `cutoff_len=65536`，Full SFT OOM。
-
-最终跑通配置：
-
-```text
-cutoff_len: 32768
-image_max_pixels: 200000
-```
-
-### 8.4 test set 路径解析问题
-
-test set 中 `video_path` 形如：
-
-```text
-/egocross_testbed/CholecTrack20/generated/VID01/frames/oc_q1/frame_00000.jpg
-```
-
-这不是服务器真实绝对路径。脚本中已经处理为：
-
-```text
-/share/home/group9/data/egocross_full/egocross_testbed/CholecTrack20/generated/...
-```
-
-### 8.5 submission_template 问题
-
-`egocross_testbed_imgs.json` 只有：
-
-```text
-id, dataset, question_text, options, video_path
-```
-
-没有 `question_id`。
-
-所以生成提交时必须使用：
-
-```bash
-submission_template.json
-```
-
-脚本只填入 `answer`，保留 template 中的 `id/question_id/dataset`。
-
-### 8.6 vLLM 上下文长度超限
-
-现象：
-
-```text
-Input length (34244) exceeds model's maximum context length (32768)
-```
-
-原因：图片帧过多或 prompt 变长后，视觉 token + 文本 token 超过 `--max-model-len 32768`。
-
-已知：
-
-```text
-direct prompt + max_frames 8 已经跑通
-CoT prompt + max_frames 12 容易超长
-```
-
-### 8.7 vLLM deepstack token 错误
-
-现象：
-
-```text
-Requested more deepstack tokens than available in buffer:
-num_tokens=480 > self.deepstack_input_embeds_num_tokens=479
-```
-
-这是 vLLM + Qwen3-VL + 多图输入的视觉 token 对齐问题，不是训练模型坏了。
-
-缓解：
-
-```text
-使用 --enforce-eager
-减少 max_frames
-避免自动 fallback 连续发送超长请求
-```
-
-### 8.8 自动降帧 fallback 尝试不理想
-
-曾尝试在 CoT 脚本中做：
-
-```text
-max_frames 12 -> 超长后 fallback 8 -> fallback 6 -> fallback 4 -> fallback 2 -> fallback 1
-```
-
-但实际效果不好。原因是 vLLM 遇到前一个超长请求后，有时服务进入不稳定状态，后续较少帧请求也会返回 500。
-
-更新结论：
-
-```text
-对 vLLM 500 / deepstack token 错误，仍然不建议自动 fallback，优先重启服务。
-对明确的 400 context length 错误，可以安全做同一样本降帧 retry。
-当前 router 脚本已实现 context length retry：start -> 12 -> 8 -> 6 -> 4 -> 2 -> 1 中不超过 start 的序列。
-ExtrameSportFPV_VID006 已验证需要显式降帧，推荐 --frame-route VID006=2。
-```
-
-### 8.8.1 vLLM 多模态 cache / mm_hash 问题
-
-现象：
-
-```text
-vLLM 在预处理多模态输入时失败，multimodal cache 中找不到对应 mm_hash。
-请求返回 400 Bad Request，脚本标记为 error_fallback。
-```
-
-推荐启动 vLLM 时关闭多模态 processor cache，并切回旧 engine：
-
-```bash
-VLLM_USE_V1=0 CUDA_VISIBLE_DEVICES=4 python -m vllm.entrypoints.openai.api_server \
-  --model saves/egocross/qwen3vl4b/weighted_answer_only_full_i4_x4_lr5e6_ep1 \
-  --port 8000 \
-  --served-model-name egocross \
-  --trust-remote-code \
-  --max-model-len 32768 \
-  --gpu-memory-utilization 0.85 \
-  --enforce-eager \
-  --mm-processor-cache-gb 0
-```
-
-说明：
-
-```text
-VLLM_USE_V1=0 可绕开部分 vLLM v1 多模态路径问题。
---mm-processor-cache-gb 0 可避免 mm_hash cache 缺失/不一致。
-```
-
-### 8.8.2 ExtrameSportFPV_VID006 特殊问题
-
-`ExtrameSportFPV_VID006` 是当前 test set 中最麻烦的一组样本，涉及：
-
-```text
-question_id/id 范围：ExtrameSportFPV_VID006_q5 到 q12
-路径位置：/share/home/group9/data/egocross_full/egocross_testbed/ExtrameSportFPV/generated/VID006/frames
-```
-
-遇到过两类问题：
-
-```text
-1. context length 超限：
-   Input length (653xx) exceeds model's maximum context length (49152)
-
-2. vLLM multimodal cache / mm_hash 错误：
-   vLLM 预处理多模态输入时，multimodal cache 里找不到对应 mm_hash，请求返回 400 Bad Request。
-```
-
-原因：
-
-```text
-VID006 的帧视觉 token 异常多。
-即使使用 max_frames=8，也可能达到 65k 左右输入长度，超过 49k 上下文。
-同时，多图请求在 vLLM 的 multimodal cache 路径上容易触发 mm_hash/cache 不一致。
-```
-
-最终稳定解决方案：
-
-```text
-启动 vLLM 时使用：
-VLLM_USE_V1=0
---enforce-eager
---mm-processor-cache-gb 0
-
-推理时对 VID006 显式降帧：
---frame-route VID006=2
-```
-
-注意：
-
-```text
-普通的自动 retry 只能解决明确的 context length 400。
-当前 retry 顺序为 start -> 12 -> 8 -> 6 -> 4 -> 2 -> 1 中不超过 start 的序列。
-如果已经触发 mm_hash/cache 错误，最好重启 vLLM，并关闭 mm processor cache。
-对完整 test set，推荐直接显式指定 --frame-route VID006=2，避免先发送 8 帧污染服务状态。
-```
-
-只测试 VID006 的方法：
-
-```bash
-cd /share/home/group9/lsg/LlamaFactory
-
-python - <<'PY'
-import json
-from pathlib import Path
-
-src = Path("/share/home/group9/data/egocross_full/egocross_testbed/egocross_testbed_imgs.json")
-dst = Path("egocross_outputs/scratch_tests/egocross_testbed_vid006.json")
-dst.parent.mkdir(parents=True, exist_ok=True)
-
-data = json.load(open(src))
-
-def hit(x):
-    text = json.dumps(x, ensure_ascii=False)
-    return "VID006" in text and "ExtrameSportFPV" in text
-
-sub = [x for x in data if hit(x)]
-print("total:", len(data))
-print("matched:", len(sub))
-if sub:
-    print("first sample:", json.dumps(sub[0], ensure_ascii=False)[:800])
-
-json.dump(sub, open(dst, "w"), indent=2, ensure_ascii=False)
-print("saved:", dst)
-PY
-```
-
-只跑 VID006 小测试：
-
-```bash
-python scripts/egocross_router_infer.py \
-  --input-json egocross_outputs/scratch_tests/egocross_testbed_vid006.json \
-  --default-prompt-mode direct \
-  --default-max-frames 8 \
-  --frame-route VID006=2 \
-  --base-url http://127.0.0.1:8000/v1 \
-  --output-dir egocross_outputs/scratch_tests/vid006_2f_test
-```
-
-如果 2 帧仍失败，再降到 1 帧：
-
-```bash
-python scripts/egocross_router_infer.py \
-  --input-json egocross_outputs/scratch_tests/egocross_testbed_vid006.json \
-  --default-prompt-mode direct \
-  --default-max-frames 8 \
-  --frame-route VID006=1 \
-  --base-url http://127.0.0.1:8000/v1 \
-  --output-dir egocross_outputs/scratch_tests/vid006_1f_test
-```
-
-已经验证：
-
-```text
-VID006 使用 --frame-route VID006=2 可以跑通。
-当前最佳完整 test set 提交也使用该设置。
-```
-
-### 8.9 transformers / Qwen3-VL rope_scaling 兼容问题
-
-现象 1：
-
-```text
-transformers==5.6.2 不兼容 LLaMA-Factory。
-LLaMA-Factory 要求 transformers>=4.55.0,<=5.2.0,!=4.57.0。
-```
-
-处理：
-
-```bash
-pip install -U "transformers==4.57.3"
-```
-
-现象 2：
-
-```text
-训练加载 Qwen3-VL 时失败：
-AttributeError: 'NoneType' object has no attribute 'get'
-原因是模型 config 里的 text_config.rope_scaling 为 null，而 transformers 4.57.x 某处代码按 dict 处理。
-```
-
-处理方式：只 patch 继续训练的基座模型 config，不改 HuggingFace cache 或源码。
-
-```bash
-cd /share/home/group9/lsg/LlamaFactory
-
-cp saves/egocross/qwen3vl4b/full_sft_32k_200k/config.json \
-   saves/egocross/qwen3vl4b/full_sft_32k_200k/config.json.bak_rope_null
-
-python - <<'PY'
-import json
-from pathlib import Path
-
-p = Path("saves/egocross/qwen3vl4b/full_sft_32k_200k/config.json")
-cfg = json.loads(p.read_text())
-text_config = cfg.setdefault("text_config", {})
-if text_config.get("rope_scaling") is None:
-    text_config["rope_scaling"] = {"rope_type": "default"}
-p.write_text(json.dumps(cfg, indent=2, ensure_ascii=False) + "\n")
-print("patched text_config.rope_scaling =", cfg["text_config"]["rope_scaling"])
-PY
-```
-
-验证：
-
-```bash
-python - <<'PY'
-from transformers import AutoConfig
-p = "saves/egocross/qwen3vl4b/full_sft_32k_200k"
-cfg = AutoConfig.from_pretrained(p, trust_remote_code=True)
-print("loaded ok")
-print("rope_scaling:", cfg.text_config.rope_scaling)
-PY
-```
-
-重要区别：
-
-```text
-训练阶段（transformers 4.57.x）：text_config.rope_scaling 需要 {"rope_type": "default"}，否则可能 None.get 报错。
-vLLM 推理阶段：text_config.rope_scaling 更稳的形式是 null，否则可能触发 rotary position / q/k shape 不匹配。
-```
-
-因此，如果为了训练改过 `full_sft_32k_200k/config.json`，在用 vLLM 启动 baseline 模型前也需要恢复为 null。
-
-推荐把每个模型目录都保留两份 config 备份：
-
-```text
-config.json.bak_rope_default_for_train  # 训练版：text_config.rope_scaling = {"rope_type": "default"}
-config.json.bak_rope_null               # 推理版：text_config.rope_scaling = null
-```
-
-训练/推理时只切换 `config.json`：
-
-```bash
-# 训练前
-cp config.json.bak_rope_default_for_train config.json
-
-# vLLM 推理前
-cp config.json.bak_rope_null config.json
-```
-
-baseline 模型创建/恢复推理版 config：
-
-```bash
-cd /share/home/group9/lsg/LlamaFactory
-
-cp saves/egocross/qwen3vl4b/full_sft_32k_200k/config.json \
-   saves/egocross/qwen3vl4b/full_sft_32k_200k/config.json.bak_rope_default_for_train
-
-python - <<'PY'
-import json
-from pathlib import Path
-
-p = Path("saves/egocross/qwen3vl4b/full_sft_32k_200k/config.json")
-cfg = json.loads(p.read_text())
-
-if isinstance(cfg.get("text_config"), dict):
-    cfg["text_config"]["rope_scaling"] = None
-
-if "rope_scaling" in cfg:
-    cfg["rope_scaling"] = None
-
-p.write_text(json.dumps(cfg, indent=2, ensure_ascii=False) + "\n")
-print("patched full_sft_32k_200k for vLLM:")
-print("top rope_scaling =", cfg.get("rope_scaling"))
-print("text rope_scaling =", cfg.get("text_config", {}).get("rope_scaling"))
-PY
-
-cp saves/egocross/qwen3vl4b/full_sft_32k_200k/config.json \
-   saves/egocross/qwen3vl4b/full_sft_32k_200k/config.json.bak_rope_null
-```
-
-weighted 新模型创建/恢复推理版 config：
-
-```bash
-cd /share/home/group9/lsg/LlamaFactory
-
-cp saves/egocross/qwen3vl4b/weighted_answer_only_full_i4_x4_lr5e6_ep1/config.json \
-   saves/egocross/qwen3vl4b/weighted_answer_only_full_i4_x4_lr5e6_ep1/config.json.bak_rope_default_for_train
-
-python - <<'PY'
-import json
-from pathlib import Path
-
-p = Path("saves/egocross/qwen3vl4b/weighted_answer_only_full_i4_x4_lr5e6_ep1/config.json")
-cfg = json.loads(p.read_text())
-
-if isinstance(cfg.get("text_config"), dict):
-    cfg["text_config"]["rope_scaling"] = None
-
-if "rope_scaling" in cfg:
-    cfg["rope_scaling"] = None
-
-p.write_text(json.dumps(cfg, indent=2, ensure_ascii=False) + "\n")
-print("patched weighted model for vLLM:")
-print("top rope_scaling =", cfg.get("rope_scaling"))
-print("text rope_scaling =", cfg.get("text_config", {}).get("rope_scaling"))
-PY
-
-cp saves/egocross/qwen3vl4b/weighted_answer_only_full_i4_x4_lr5e6_ep1/config.json \
-   saves/egocross/qwen3vl4b/weighted_answer_only_full_i4_x4_lr5e6_ep1/config.json.bak_rope_null
-```
-
-检查当前目录 config 属于训练版还是推理版：
-
-```bash
-python - <<'PY'
-import json
-cfg = json.load(open("config.json"))
-print("top:", cfg.get("rope_scaling"))
-print("text:", cfg.get("text_config", {}).get("rope_scaling"))
-PY
-```
-
-## 9. 当前正在尝试的 CoT 实验
-
-目标：
-
-```text
-在不改变模型的前提下，只改变推理 prompt
-测试让模型输出简短思维链/分析过程是否能提高 Codabench 分数
-```
-
-推荐干净实验：
-
-```text
-baseline: direct prompt + max_frames 8 + max_model_len 32768
-cot test: CoT prompt + max_frames 8 + max_model_len 32768 或 49152
-```
-
-CoT prompt 的核心要求：
-
-```text
-First briefly describe visual evidence.
-Then compare options.
-Finally output exactly one line: Final answer: X.
-```
-
-最终提交 JSON 中仍然只允许：
-
-```json
-"answer": "A/B/C/D"
-```
-
-思维链只保存在 `_raw_cot.json` 中，不提交。
-
-## 10. CoT 推荐运行命令
-
-### 10.1 启动 vLLM，32768 稳定版
-
-```bash
-CUDA_VISIBLE_DEVICES=4 python -m vllm.entrypoints.openai.api_server \
-  --model saves/egocross/qwen3vl4b/full_sft_32k_200k \
-  --port 8000 \
-  --served-model-name egocross \
-  --trust-remote-code \
-  --max-model-len 32768 \
-  --gpu-memory-utilization 0.85 \
-  --enforce-eager
-```
-
-### 10.2 CoT max8 测试
-
-```bash
-python generate_egocross_submission_cot_test.py \
-  --template submission_template.json \
-  --max-frames 8 \
-  --output submission_full_sft_32k_200k_max8_cot_test.json
-```
-
-### 10.3 如果想试更大上下文
-
-启动 vLLM 时改为：
-
-```bash
---max-model-len 49152
-```
-
-输出文件名建议写清楚：
-
-```bash
-python generate_egocross_submission_cot_test.py \
-  --template submission_template.json \
-  --max-frames 8 \
-  --max-tokens 256 \
-  --output submission_full_sft_32k_200k_max8_cot_49k_256.json
-```
-
-注意：`49152` 可能减少上下文超限，但也可能更吃显存或触发 vLLM 多图 bug。它是新实验，不应替代 baseline。
-
-### 10.4 Short CoT 512 + 49k 上下文实验
-
-如需并行运行实验，可在空闲 GPU 上启动独立 vLLM 服务。以下示例使用 GPU 5 和端口 8001：
-
-```bash
-cd /share/home/group9/lsg/LlamaFactory
-conda activate lsg
-export PATH="/share/home/group9/miniconda3/envs/lsg/bin:$PATH"
-
-CUDA_VISIBLE_DEVICES=5 python -m vllm.entrypoints.openai.api_server \
-  --model saves/egocross/qwen3vl4b/full_sft_32k_200k \
-  --port 8001 \
-  --served-model-name egocross \
-  --trust-remote-code \
-  --max-model-len 49152 \
-  --gpu-memory-utilization 0.85 \
-  --enforce-eager
-```
-
-检查服务：
-
-```bash
-curl http://127.0.0.1:8001/v1/models
-```
-
-运行 short CoT 512：
-
-```bash
-python generate_egocross_submission_shortcot_test.py \
-  --template submission_template.json \
-  --max-frames 8 \
-  --max-tokens 512 \
-  --base-url http://127.0.0.1:8001/v1 \
-  --output submission_full_sft_32k_200k_max8_shortcot_49k_512.json
-```
-
-这个实验的目的：
-
-```text
-解决普通 CoT 输出过长、还没到 Final answer 就被截断的问题。
-通过 short prompt 限制推理长度，同时用 max_tokens=512 保证能输出最终答案。
-```
-
-## 11. 检查输出
-
-检查 submission：
-
-```bash
-python - <<'PY'
-import json
-p = "submission_full_sft_32k_200k_max8_cot_test.json"
-with open(p) as f:
-    data = json.load(f)
-print("num:", len(data))
-print("empty:", sum(1 for x in data if not x.get("answer")))
-print("answers:", {k: sum(1 for x in data if x.get("answer") == k) for k in "ABCD"})
-print(data[0])
-print(data[-1])
-PY
-```
-
-检查 raw CoT 是否有错误：
-
-```bash
-python - <<'PY'
-import json
-p = "submission_full_sft_32k_200k_max8_cot_test_raw_cot.json"
-with open(p) as f:
-    data = json.load(f)
-errs = [x for x in data if str(x.get("raw_output", "")).startswith("ERROR:")]
-print("errors:", len(errs))
-print(errs[:3])
-PY
-```
-
-理想结果：
-
-```text
-num: 957
-empty: 0
-errors: 0
-```
-
-检查 short CoT 是否真的输出了 `Final answer`：
-
-```bash
-python - <<'PY'
-import json
-p = "submission_full_sft_32k_200k_max8_shortcot_49k_512_raw_cot.json"
-with open(p) as f:
-    data = json.load(f)
-errs = [x for x in data if str(x.get("raw_output", "")).startswith("ERROR:")]
-no_final = [x for x in data if "FINAL ANSWER" not in str(x.get("raw_output", "")).upper()]
-print("num:", len(data))
-print("errors:", len(errs))
-print("no_final_answer:", len(no_final))
-print("first no_final:", no_final[:1])
-PY
-```
-
-如果 `no_final_answer` 很多，说明 prompt 仍然不够强，或者输出仍被截断。此时应继续缩短 prompt，而不是只增加 `max_tokens`。
-
-普通 CoT 256 的检查文件：
-
-```bash
-python - <<'PY'
-import json
-p = "egocross_outputs/full_sft_32k_200k_max8_cot_49k_256/submission_full_sft_32k_200k_max8_cot_49k_256_raw_cot.json"
-with open(p) as f:
-    data = json.load(f)
-errs = [x for x in data if str(x.get("raw_output", "")).startswith("ERROR:")]
-no_final = [x for x in data if "FINAL ANSWER" not in str(x.get("raw_output", "")).upper()]
-print("num:", len(data))
-print("errors:", len(errs))
-print("no_final_answer:", len(no_final))
-print("first no_final:", no_final[:1])
-PY
-```
-
-Short CoT 512 的检查文件：
-
-```bash
-python - <<'PY'
-import json
-p = "egocross_outputs/full_sft_32k_200k_max8_shortcot_49k_512/submission_full_sft_32k_200k_max8_shortcot_49k_512_raw_cot.json"
-with open(p) as f:
-    data = json.load(f)
-errs = [x for x in data if str(x.get("raw_output", "")).startswith("ERROR:")]
-no_final = [x for x in data if "FINAL ANSWER" not in str(x.get("raw_output", "")).upper()]
-print("num:", len(data))
-print("errors:", len(errs))
-print("no_final_answer:", len(no_final))
-print("first no_final:", no_final[:1])
-PY
-```
-
-## 12. 打包提交
-
-Codabench 需要：
-
-```text
-submission.zip
-└── predictions.json
-```
-
-打包命令：
-
-```bash
-cp submission_full_sft_32k_200k_max8_cot_test.json predictions.json
-zip submission.zip predictions.json
-```
-
-如果已经在实验输出目录中打包为 `submission.zip`，直接上传该文件即可。
-
-## 13. 重要原则
-
-1. 不覆盖 baseline 文件。
-2. 新实验必须新文件名，例如带 `cot`、`49k`、`max8`。
-3. 每次只改一个关键变量，方便比较分数。
-4. 如果 vLLM 出现 500，优先重启服务，不要继续跑污染结果。
-5. 如果 raw 输出里有 `ERROR`，对应提交不建议直接上传。
-6. CoT 输出只能用于分析，最终 predictions.json 只填 A/B/C/D。
-7. 比赛合规：不要通过反复提交 hidden test、观察榜单/domain 分数来反推标签、定位错误样本或调整 router/fallback/prompt。
-8. 最终策略应在提交前固定，依据公开 support/validation、训练日志、格式稳定性、coverage、运行错误率等非 hidden-label 信号决定。
-9. 报告中不要描述“根据 hidden 榜单反馈调整策略”。可以描述为“基于 support set 与鲁棒性诊断选择固定推理策略，hidden test 仅用于最终评估”。
-10. 若要尝试 prompt / frame / vote 变体，应先在 support/validation 上预先选定固定策略；不要把 hidden 分数当作开发集。
-
-## 14. 后续可能优化方向
-
-可继续尝试：
-
-```text
-1. 当前最佳是 router_baseline_strong_weighted_weak，Overall = 0.489028，先保留并作为新基线。
-2. 如果继续训练，可尝试 industry=5,xsports=5 或只增强 Industry/XSports，但要继续用 domain router 防止损伤 Surgery/Animal。
-3. 可尝试第二个 weighted Full SFT：learning_rate=3e-6 或 weights industry=3,xsports=5，比较弱 domain 提升和强 domain 损伤。
-4. enhanced 数据已经验证为 few-shot 短推理不稳定，暂不建议用于正式提交 prompt；若继续使用，只做小样本诊断或离线错误分析。
-5. 对 ExtrameSportFPV 特别长样本继续使用 --frame-route VID006=2。
-6. few-shot 当前两轮均未超过 direct/router，后续不要全量盲跑；若继续尝试，优先做 text-only few-shot、答案字母平衡、或错误类型定向示例。
-```
-
-当前最可靠 baseline 仍然是：
-
-```text
-full_sft_32k_200k + direct prompt + max_frames 8
-Codabench Overall = 0.480669
-```
-
-当前最佳提交是：
-
-```text
-router_baseline_strong_weighted_weak_direct_max8_vid006_2f
-Codabench Overall = 0.489028
-```
-
-## 14.1 外部 GRPO 模型结果（2026-05-09）
-
-同学训练的 GRPO answer 模型路径：
-
-```text
-/share/home/group9/why/rl_grpo_v2/output/egocross_grpo_answer_v7/v3-20260507-113212
-```
-
-已完成一次 direct 推理提交，结果明显超过旧 router：
-
-```text
-Overall: 0.528736
-Surgery: 0.530035
-Industry: 0.534694
-XSports: 0.459350
-Animal: 0.612022
-coverage: 1.0
-```
-
-已完成 direct + tail_dense max8 + VID006=4 推理，当前为更强候选：
-
-```text
-Overall: 0.529781
-Surgery: 0.533569
-Industry: 0.530612
-XSports: 0.459350
-Animal: 0.617486
-coverage: 1.0
-output: egocross_outputs/why_grpo_direct_tail_dense_max8_vid006_4f
-```
-
-当前判断：
-
-```text
-这个 GRPO 模型应作为新的主力候选。
-后续不要根据 hidden leaderboard 的 domain 分数反推 fallback 或继续调策略。
-若要尝试 router/fallback，必须先在公开 support/validation 上固定规则，再一次性应用到 test。
-更合规的高耗时尝试是单模型全域固定推理增强，例如 endpoint / tail_dense 采帧或预先固定的 option-order voting。
-复杂 prompt（domain_type_direct / type_direct）可能让 answer-only GRPO 模型偏离训练分布，正式提交前应先用 support/validation 验证。
-当前最强候选是 direct prompt + tail_dense sampling + max_frames=8 + VID006=4。
-下一步可尝试相同策略 max_frames=12，并对 VID006 继续显式使用 --frame-route VID006=4。
-router 脚本已更新 context length retry 顺序：start -> 12 -> 8 -> 6 -> 4 -> 2 -> 1 中不超过 start 的序列。
-例如 default-max-frames=12 时，会按 12 -> 8 -> 6 -> 4 -> 2 -> 1 尝试；
-VID006=4 时，会按 4 -> 2 -> 1 尝试。
-```
-
-当前强候选命令（单 GRPO 模型、全域固定策略、不使用 fallback）：
-
-```bash
-python scripts/egocross_router_infer.py \
-  --template submission_template.json \
-  --default-prompt-mode direct \
-  --default-max-frames 8 \
-  --frame-sampling tail_dense \
-  --frame-route VID006=4 \
-  --base-url http://127.0.0.1:8000/v1 \
-  --output-dir egocross_outputs/why_grpo_direct_tail_dense_max8_vid006_4f \
-  2>&1 | tee logs/why_grpo_direct_tail_dense_max8_vid006_4f.log
-```
-
-下一步 max12 对照命令：
-
-```bash
 python scripts/egocross_router_infer.py \
   --template submission_template.json \
   --default-prompt-mode direct \
@@ -1238,81 +142,263 @@ python scripts/egocross_router_infer.py \
   2>&1 | tee logs/why_grpo_direct_tail_dense_max12_vid006_4f.log
 ```
 
-## 15. Weighted answer-only Full SFT 推荐命令
+输出检查：
 
-准备环境：
+```bash
+cat egocross_outputs/why_grpo_direct_tail_dense_max12_vid006_4f/metrics_summary.txt
+```
+
+如果 `status_dist` 里有大量 `error_fallback`，不要提交该结果。
+
+## 5.1 Support 固定策略验证
+
+后续如果要比较 prompt / frame_sampling / max_frames，优先在公开 support set 上固定策略后验证，不要根据 hidden 榜单反馈继续调。
+
+支持脚本：
+
+```bash
+scripts/egocross_support_eval.py
+```
+
+示例：验证当前最强策略在 support set 上的 acc：
 
 ```bash
 cd /share/home/group9/lsg/LlamaFactory
-conda activate lsg
-export PATH="/share/home/group9/miniconda3/envs/lsg/bin:$PATH"
-export HF_HUB_OFFLINE=1
-export TRANSFORMERS_OFFLINE=1
-mkdir -p logs
+
+python scripts/egocross_support_eval.py \
+  --support-dir /share/home/group9/data/egocross \
+  --prompt-mode direct \
+  --max-frames 12 \
+  --frame-sampling tail_dense \
+  --frame-route VID006=4 \
+  --base-url http://127.0.0.1:8000/v1 \
+  --output-dir egocross_outputs/support_eval/grpo_direct_tail_dense_max12_vid006_4f
 ```
 
-构建 weighted answer-only 数据：
+输出文件：
+
+```text
+support_predictions.json
+support_metrics.json
+support_metrics.txt
+```
+
+建议策略：预先列出少量候选，例如 `uniform/endpoint/tail_dense`、`max8/max12`、`direct/strict_direct`，一次性在 support 上比较 overall、per-domain、per-question-type、answer-only 格式率和 error rate。选定后直接应用到 test；不要再用 hidden domain 分数反推修改。
+
+## 6. 文件结构
+
+关键文件分布：
+
+```text
+README_EGOCROSS_lsg.md                 当前实验交接 README
+agents.md                              长期 agent 规则和当前最佳命令
+submission_template.json               官方提交模板，禁止覆盖
+
+scripts/egocross_router_infer.py        当前主推理脚本
+scripts/egocross_support_eval.py        support set 固定策略验证脚本
+scripts/egocross_blend_submit.py        历史 blend 工具
+scripts/prepare_egocross_weighted_answer_only.py
+scripts/prepare_egocross_preference_answer_only.py
+
+configs/egocross_*.yaml                 EgoCross 训练配置
+data/dataset_info.json                  LLaMA-Factory 数据集注册
+egocross_outputs/                       历史输出目录，每个实验单独建目录
+```
+
+根目录旧脚本：
+
+```text
+generate_egocross_submission.py
+generate_egocross_submission_cot_test.py
+generate_egocross_submission_shortcot_test.py
+```
+
+这些是历史入口，保留用于复现；新实验优先使用 `scripts/egocross_router_infer.py`。
+
+## 7. 推理脚本能力
+
+主脚本：
+
+```bash
+scripts/egocross_router_infer.py
+```
+
+支持：
+
+```text
+1. 按 dataset/domain 路由 prompt mode 和 max_frames。
+2. 只跑部分 domain，其他样本用 fallback submission 填满完整输出。
+3. 保存 predictions.json、raw_outputs.json、metrics_summary.txt、submission.zip。
+4. 对明确 context length 400 错误自动降帧 retry。
+5. frame sampling: uniform / endpoint / tail_dense。
+6. prompt mode: direct / strict_direct / domain_direct / type_direct / domain_type_direct。
+7. option-order voting，但当前 GRPO 模型上 voting 实测不佳。
+```
+
+降帧序列：
+
+```text
+start -> 12 -> 8 -> 6 -> 4 -> 2 -> 1 中不超过 start 的序列
+```
+
+例如：
+
+```text
+max_frames=12: 12 -> 8 -> 6 -> 4 -> 2 -> 1
+VID006=4: 4 -> 2 -> 1
+```
+
+采帧策略：
+
+```text
+uniform: 默认旧行为，均匀取 max_frames 帧，但不保证包含最后一帧。
+endpoint: 包含首尾帧，中间均匀取样。
+tail_dense: 包含首尾帧，并把更多采样点分配到视频后半段。
+```
+
+当前 GRPO 模型上，`direct + tail_dense + max12 + VID006=4` 是当前最强。
+
+Prompt 经验：
+
+```text
+direct: 当前最稳。
+strict_direct: 可做最小 prompt 对照。
+domain_type_direct/type_direct: 已发现可能让 answer-only GRPO 模型偏离分布。
+CoT/few-shot/enhanced reasoning: 历史上均未超过 direct/router，不建议用于最终提交。
+```
+
+## 8. 历史关键结果
+
+| 方案 | Overall | Surgery | Industry | XSports | Animal | 结论 |
+|---|---:|---:|---:|---:|---:|---|
+| baseline full SFT direct max8 | 0.480669 | 0.515901 | 0.400000 | 0.414634 | 0.622951 | 旧 baseline |
+| weighted answer-only direct | 0.481714 | 0.501767 | 0.416327 | 0.430894 | 0.606557 | 弱域提升，强域下降 |
+| old router baseline strong + weighted weak | 0.489028 | 0.515901 | 0.416327 | 0.430894 | 0.622951 | 旧最佳 |
+| CoT 49k 256 | 0.444096 | 0.508834 | 0.342857 | 0.418699 | 0.513661 | 明显下降 |
+| short CoT 49k 512 | 0.459770 | 0.515901 | 0.375510 | 0.414634 | 0.546448 | 仍低于 direct |
+| few-shot weak domains | 0.479624 | 0.515901 | 0.412245 | 0.398374 | 0.622951 | few-shot 伤 XSports |
+| enhanced short reasoning few-shot | 0.481714 | 0.515901 | 0.387755 | 0.430894 | 0.622951 | enhanced 伤 Industry |
+| external GRPO direct max8 VID006=4 | 0.528736 | 0.530035 | 0.534694 | 0.459350 | 0.612022 | 新主力模型 |
+| GRPO direct endpoint max8 | 0.526646 | 0.526502 | 0.526531 | 0.459350 | 0.617486 | 低于 tail_dense |
+| GRPO direct tail_dense max8 | 0.529781 | 0.533569 | 0.530612 | 0.459350 | 0.617486 | 采帧改进有效 |
+| GRPO direct tail_dense max12 | 0.536050 | 0.533569 | 0.538776 | 0.459350 | 0.639344 | 当前最强候选 |
+| GRPO domain_type_direct + vote max12 | 0.472309 | 0.487633 | 0.383673 | 0.447154 | 0.601093 | 复杂 prompt 明显伤分 |
+| GRPO direct + vote max8 | 0.491118 | 0.505300 | 0.412245 | 0.451220 | 0.628415 | voting 不适合当前 GRPO |
+
+说明：表中分数是实验记录，不应用于继续对 hidden test 做反推调参。
+
+## 9. 训练相关记录
+
+已完成训练：
+
+```text
+Full SFT baseline:
+base: Qwen/Qwen3-VL-4B-Instruct
+data: /share/home/group9/data/egocross/train.json
+epochs: 2
+cutoff_len: 32768
+image_max_pixels: 200000
+output: saves/egocross/qwen3vl4b/full_sft_32k_200k
+
+Weighted answer-only SFT:
+base: saves/egocross/qwen3vl4b/full_sft_32k_200k
+data: train_weighted_answer_only_i4_x4.json
+weights: animal=1,surgery=1,industry=4,xsports=4
+lr: 5e-6
+epochs: 1
+output: saves/egocross/qwen3vl4b/weighted_answer_only_full_i4_x4_lr5e6_ep1
+```
+
+已新增但不一定已跑通的配置：
+
+```text
+configs/egocross_dpo_answer_only_full_all_equal_lr1e6_ep1.yaml
+configs/egocross_dpo_answer_only_lora_all_equal_lr1e6_ep1.yaml
+configs/egocross_answer_only_full_all_equal_lr2e6_ep1.yaml
+```
+
+显存限制下，full DPO 容易 OOM；基础 SFT 更容易跑。当前最佳来自外部 GRPO 模型推理优化，不是本地 DPO。
+
+生成全域 answer-only SFT 数据：
 
 ```bash
 python scripts/prepare_egocross_weighted_answer_only.py \
   --data-dir /share/home/group9/data/egocross \
-  --output /share/home/group9/data/egocross/train_weighted_answer_only_i4_x4.json \
-  --weights animal=1,surgery=1,industry=4,xsports=4 \
+  --output /share/home/group9/data/egocross/train_answer_only_all_equal.json \
+  --weights animal=1,surgery=1,industry=1,xsports=1 \
   --seed 2026
 ```
 
-4 卡训练示例（卡号可按实际空闲情况改）：
+生成全域 DPO preference 数据：
 
 ```bash
-CUDA_VISIBLE_DEVICES=4,5,6,7 \
-FORCE_TORCHRUN=1 NNODES=1 NPROC_PER_NODE=4 \
-llamafactory-cli train configs/egocross_weighted_answer_only_full_ep1.yaml \
-  2>&1 | tee logs/weighted_answer_only_full_ep1_$(date +%Y%m%d_%H%M%S).log
+python scripts/prepare_egocross_preference_answer_only.py \
+  --data-dir /share/home/group9/data/egocross \
+  --output /share/home/group9/data/egocross/train_pref_answer_only_all_equal_wrong3_fmt1.json \
+  --fold-output-dir /share/home/group9/data/egocross/pref_answer_only_all_equal_folds
 ```
 
-输出模型：
+## 10. vLLM 和环境坑点
+
+推荐启动参数：
 
 ```text
+VLLM_USE_V1=0
+--enforce-eager
+--mm-processor-cache-gb 0
+```
+
+原因：
+
+```text
+1. Qwen3-VL 多图输入曾遇到 deepstack token 对齐问题。
+2. vLLM v1 多模态路径和 mm processor cache 曾出现 mm_hash/cache 问题。
+3. 关闭 cache 和 old engine 更慢，但更稳。
+```
+
+VID006：
+
+```text
+ExtrameSportFPV_VID006 是长样本，视觉 token 多。
+当前 GRPO tail_dense 最强候选使用 --frame-route VID006=4。
+如果出现 context length 或 vLLM 错误，可尝试更低 VID006=2，但不要用 hidden 反馈做细调。
+```
+
+训练/推理 config：
+
+```text
+transformers 训练阶段可能需要 text_config.rope_scaling={"rope_type":"default"}。
+vLLM 推理阶段历史上 null rope_scaling 更稳。
+切换前检查模型 config，避免训练版/推理版混用。
+```
+
+## 11. 文件保护规则
+
+不要覆盖：
+
+```text
+submission_template.json
+saves/egocross/qwen3vl4b/full_sft_32k_200k
 saves/egocross/qwen3vl4b/weighted_answer_only_full_i4_x4_lr5e6_ep1
+egocross_outputs/baseline_max8
+egocross_outputs/router_baseline_strong_weighted_weak_direct_max8_vid006_2f
+egocross_outputs/why_grpo_direct_tail_dense_max12_vid006_4f
 ```
 
-训练完成后建议先用 direct prompt + max_frames 8 跑完整 test，不要叠加 router/domain prompt。这样可以单独评估“模型本身是否变强”。
+每个新实验必须新建 output dir，命名包含模型、prompt、sampling、max_frames、VID006 设置。
 
-## 16. 当前最佳 router 提交流程
+## 12. 建议的后续工作
 
-前提：vLLM 已启动新模型：
+当前建议先停在：
 
 ```text
-saves/egocross/qwen3vl4b/weighted_answer_only_full_i4_x4_lr5e6_ep1
+egocross_outputs/why_grpo_direct_tail_dense_max12_vid006_4f/submission.zip
 ```
 
-只让新模型推理 Industry / XSports，Surgery / Animal 使用 baseline fallback：
-
-```bash
-python scripts/egocross_router_infer.py \
-  --template submission_template.json \
-  --fallback-submission egocross_outputs/baseline_max8/submission_full_sft_32k_200k_max8.json \
-  --only-datasets ENIGMA,ExtrameSportFPV \
-  --default-prompt-mode direct \
-  --default-max-frames 8 \
-  --frame-route VID006=2 \
-  --base-url http://127.0.0.1:8000/v1 \
-  --output-dir egocross_outputs/router_baseline_strong_weighted_weak_direct_max8_vid006_2f
-```
-
-提交文件：
+如果后续继续探索，优先在 support/validation 上预先验证固定策略，再提交 hidden test。建议顺序：
 
 ```text
-egocross_outputs/router_baseline_strong_weighted_weak_direct_max8_vid006_2f/submission.zip
-```
-
-Codabench 结果：
-
-```text
-Overall: 0.489028
-Surgery: 0.515901
-Industry: 0.416327
-XSports: 0.430894
-Animal: 0.622951
-coverage: 1.0
+1. 支持集验证不同 frame_sampling，而不是用 hidden 分数调。
+2. 保持 direct prompt，不优先加 CoT/few-shot/type prompt。
+3. 若要改 VID006 帧数，先基于 context length / error rate 等鲁棒性信号，不基于 hidden 分数。
 ```
