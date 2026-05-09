@@ -1183,6 +1183,18 @@ Animal: 0.612022
 coverage: 1.0
 ```
 
+已完成 direct + tail_dense max8 + VID006=4 推理，当前为更强候选：
+
+```text
+Overall: 0.529781
+Surgery: 0.533569
+Industry: 0.530612
+XSports: 0.459350
+Animal: 0.617486
+coverage: 1.0
+output: egocross_outputs/why_grpo_direct_tail_dense_max8_vid006_4f
+```
+
 当前判断：
 
 ```text
@@ -1191,13 +1203,14 @@ coverage: 1.0
 若要尝试 router/fallback，必须先在公开 support/validation 上固定规则，再一次性应用到 test。
 更合规的高耗时尝试是单模型全域固定推理增强，例如 endpoint / tail_dense 采帧或预先固定的 option-order voting。
 复杂 prompt（domain_type_direct / type_direct）可能让 answer-only GRPO 模型偏离训练分布，正式提交前应先用 support/validation 验证。
-可尝试 direct prompt + tail_dense sampling + max_frames=8 或 12，并对 VID006 显式使用 --frame-route VID006=4。
+当前最强候选是 direct prompt + tail_dense sampling + max_frames=8 + VID006=4。
+下一步可尝试相同策略 max_frames=12，并对 VID006 继续显式使用 --frame-route VID006=4。
 router 脚本已更新 context length retry 顺序：start -> 12 -> 8 -> 6 -> 4 -> 2 -> 1 中不超过 start 的序列。
 例如 default-max-frames=12 时，会按 12 -> 8 -> 6 -> 4 -> 2 -> 1 尝试；
 VID006=4 时，会按 4 -> 2 -> 1 尝试。
 ```
 
-推荐挂跑命令（单 GRPO 模型、全域固定策略、不使用 fallback）：
+当前强候选命令（单 GRPO 模型、全域固定策略、不使用 fallback）：
 
 ```bash
 python scripts/egocross_router_infer.py \
@@ -1209,6 +1222,20 @@ python scripts/egocross_router_infer.py \
   --base-url http://127.0.0.1:8000/v1 \
   --output-dir egocross_outputs/why_grpo_direct_tail_dense_max8_vid006_4f \
   2>&1 | tee logs/why_grpo_direct_tail_dense_max8_vid006_4f.log
+```
+
+下一步 max12 对照命令：
+
+```bash
+python scripts/egocross_router_infer.py \
+  --template submission_template.json \
+  --default-prompt-mode direct \
+  --default-max-frames 12 \
+  --frame-sampling tail_dense \
+  --frame-route VID006=4 \
+  --base-url http://127.0.0.1:8000/v1 \
+  --output-dir egocross_outputs/why_grpo_direct_tail_dense_max12_vid006_4f \
+  2>&1 | tee logs/why_grpo_direct_tail_dense_max12_vid006_4f.log
 ```
 
 ## 15. Weighted answer-only Full SFT 推荐命令
