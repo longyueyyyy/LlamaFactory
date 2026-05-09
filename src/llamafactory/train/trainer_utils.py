@@ -610,20 +610,23 @@ def get_batch_logps(
     loss_mask = labels != label_pad_token_id
     labels[labels == label_pad_token_id] = 0  # dummy token
     chunk_size = int(os.getenv("LLAMAFACTORY_LOGPS_CHUNK_SIZE", "1024"))
-    if chunk_size > 0 and logits.size(1) > chunk_size:
-        per_token_logps = torch.cat(
-            [
-                torch.gather(
-                    logits[:, start : start + chunk_size, :].log_softmax(-1),
-                    dim=2,
-                    index=labels[:, start : start + chunk_size].unsqueeze(2),
-                ).squeeze(2)
-                for start in range(0, logits.size(1), chunk_size)
-            ],
-            dim=1,
-        )
-    else:
-        per_token_logps = torch.gather(logits.log_softmax(-1), dim=2, index=labels.unsqueeze(2)).squeeze(2)
+    if chunk_size <= 0:
+        chunk_size = logits.size(1)
+
+    # Avoid materializing logits.log_softmax(-1), which is batch x seq x vocab and can OOM
+    # for long multimodal DPO. This is mathematically equivalent to log_softmax gather.
+    per_token_logps = torch.cat(
+        [
+            torch.gather(
+                logits[:, start : start + chunk_size, :],
+                dim=2,
+                index=labels[:, start : start + chunk_size].unsqueeze(2),
+            ).squeeze(2)
+            - torch.logsumexp(logits[:, start : start + chunk_size, :], dim=-1)
+            for start in range(0, logits.size(1), chunk_size)
+        ],
+        dim=1,
+    )
 
     valid_length = loss_mask.sum(-1)
     if ld_alpha is not None:
