@@ -538,8 +538,13 @@ Run GRPO baseline 4-fold heldout first, then A/B/C fold heldout. Run full-suppor
 
 Fold0 smoke command:
 ```bash
-CUDA_VISIBLE_DEVICES=0,1 FORCE_TORCHRUN=1 llamafactory-cli train \
+LLAMAFACTORY_LOGPS_CHUNK_SIZE=512 CUDA_VISIBLE_DEVICES=0,1 FORCE_TORCHRUN=1 llamafactory-cli train \
   configs/egocross_dpo_lora_from_grpo_all_equal_wrong3_fmt1_fold0_lr1e5_beta003_ftx005_ep1.yaml
+```
+
+DPO OOM note:
+```text
+Long multimodal DPO may OOM inside get_batch_logps at logits.log_softmax(-1). DDP does not shard this per-rank tensor. This repo now chunks label log-prob computation with LLAMAFACTORY_LOGPS_CHUNK_SIZE, default 1024. If fold0 still OOMs, retry with LLAMAFACTORY_LOGPS_CHUNK_SIZE=512 or 256 before lowering cutoff/image pixels.
 ```
 
 Heldout fold eval example:
@@ -558,7 +563,7 @@ python scripts/egocross_support_eval.py \
 
 Full training and export use only the winning candidate:
 ```bash
-CUDA_VISIBLE_DEVICES=0,1 FORCE_TORCHRUN=1 llamafactory-cli train \
+LLAMAFACTORY_LOGPS_CHUNK_SIZE=512 CUDA_VISIBLE_DEVICES=0,1 FORCE_TORCHRUN=1 llamafactory-cli train \
   configs/egocross_dpo_lora_from_grpo_all_equal_wrong3_fmt1_lr<W>_beta<B>_ftx005_ep1.yaml
 
 llamafactory-cli export \
