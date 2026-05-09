@@ -364,8 +364,10 @@ scripts/egocross_router_infer.py
 ```text
 uniform：默认旧行为，均匀取 max_frames 帧，但不保证包含最后一帧。
 endpoint：降采样时固定包含最后一帧；max_frames>=2 时包含首帧和尾帧，中间均匀取样。
+tail_dense：固定包含首尾帧，并把更多采样点分配到视频后半段。
 
 endpoint 适合诊断 next direction / next interaction / temporal localization 这类依赖片段末尾状态的问题。
+tail_dense 适合第一视角动作/方向/下一步交互题，尤其是目标答案依赖片段后段趋势时。
 ```
 
 当前支持的 prompt mode：
@@ -1187,9 +1189,9 @@ coverage: 1.0
 这个 GRPO 模型应作为新的主力候选。
 后续不要根据 hidden leaderboard 的 domain 分数反推 fallback 或继续调策略。
 若要尝试 router/fallback，必须先在公开 support/validation 上固定规则，再一次性应用到 test。
-更合规的高耗时尝试是单模型全域固定推理增强，例如 endpoint 采帧或预先固定的 option-order voting。
+更合规的高耗时尝试是单模型全域固定推理增强，例如 endpoint / tail_dense 采帧或预先固定的 option-order voting。
 复杂 prompt（domain_type_direct / type_direct）可能让 answer-only GRPO 模型偏离训练分布，正式提交前应先用 support/validation 验证。
-可尝试 direct prompt + endpoint sampling + max_frames=8 或 12，并对 VID006 显式使用 --frame-route VID006=4。
+可尝试 direct prompt + tail_dense sampling + max_frames=8 或 12，并对 VID006 显式使用 --frame-route VID006=4。
 router 脚本已更新 context length retry 顺序：start -> 12 -> 8 -> 6 -> 4 -> 2 -> 1 中不超过 start 的序列。
 例如 default-max-frames=12 时，会按 12 -> 8 -> 6 -> 4 -> 2 -> 1 尝试；
 VID006=4 时，会按 4 -> 2 -> 1 尝试。
@@ -1202,11 +1204,11 @@ python scripts/egocross_router_infer.py \
   --template submission_template.json \
   --default-prompt-mode direct \
   --default-max-frames 8 \
-  --frame-sampling endpoint \
+  --frame-sampling tail_dense \
   --frame-route VID006=4 \
   --base-url http://127.0.0.1:8000/v1 \
-  --output-dir egocross_outputs/why_grpo_direct_endpoint_max8_vid006_4f \
-  2>&1 | tee logs/why_grpo_direct_endpoint_max8_vid006_4f.log
+  --output-dir egocross_outputs/why_grpo_direct_tail_dense_max8_vid006_4f \
+  2>&1 | tee logs/why_grpo_direct_tail_dense_max8_vid006_4f.log
 ```
 
 ## 15. Weighted answer-only Full SFT 推荐命令

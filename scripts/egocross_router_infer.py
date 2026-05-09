@@ -307,10 +307,18 @@ def resolve_frame_path(testbed_dir, dataset, frame_path):
 
 def sample_frames(frame_paths, max_frames, sampling="uniform"):
     if max_frames and len(frame_paths) > max_frames:
+        last_idx = len(frame_paths) - 1
+        if sampling == "tail_dense":
+            if max_frames <= 1:
+                return [frame_paths[-1]]
+            positions = [i / (max_frames - 1) for i in range(max_frames)]
+            indices = [round((1 - (1 - pos) ** 1.8) * last_idx) for pos in positions]
+            indices[0] = 0
+            indices[-1] = last_idx
+            return [frame_paths[idx] for idx in indices]
         if sampling == "endpoint":
             if max_frames <= 1:
                 return [frame_paths[-1]]
-            last_idx = len(frame_paths) - 1
             return [frame_paths[round(i * last_idx / (max_frames - 1))] for i in range(max_frames)]
         step = len(frame_paths) / max_frames
         return [frame_paths[int(i * step)] for i in range(max_frames)]
@@ -1090,9 +1098,9 @@ def main():
     parser.add_argument("--max-tokens", type=int, default=8)
     parser.add_argument(
         "--frame-sampling",
-        choices=["uniform", "endpoint"],
+        choices=["uniform", "endpoint", "tail_dense"],
         default="uniform",
-        help="Frame sampling strategy. endpoint includes the last frame when downsampling.",
+        help="Frame sampling strategy. endpoint includes the last frame; tail_dense allocates more frames near the end.",
     )
     parser.add_argument("--only-datasets", default=None)
     parser.add_argument("--fallback-submission", default=None)
