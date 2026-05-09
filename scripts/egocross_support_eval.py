@@ -4,6 +4,9 @@ import json
 import re
 from collections import Counter, defaultdict
 from pathlib import Path
+from types import SimpleNamespace
+from urllib import error as urllib_error
+from urllib import request as urllib_request
 
 import egocross_router_infer as router
 
@@ -209,6 +212,46 @@ def metrics_text(metrics):
     return "\n".join(lines) + "\n"
 
 
+class SimpleOpenAIClient:
+    def __init__(self, base_url):
+        self.base_url = base_url.rstrip("/")
+        self.chat = SimpleNamespace(completions=SimpleNamespace(create=self.create_chat_completion))
+
+    def create_chat_completion(self, model, messages, max_tokens, temperature):
+        payload = {
+            "model": model,
+            "messages": messages,
+            "max_tokens": max_tokens,
+            "temperature": temperature,
+        }
+        body = json.dumps(payload).encode("utf-8")
+        req = urllib_request.Request(
+            f"{self.base_url}/chat/completions",
+            data=body,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            with urllib_request.urlopen(req, timeout=300) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+        except urllib_error.HTTPError as exc:
+            detail = exc.read().decode("utf-8", errors="replace")
+            raise RuntimeError(f"HTTP {exc.code}: {detail}") from exc
+
+        content = data["choices"][0]["message"]["content"]
+        message = SimpleNamespace(content=content)
+        choice = SimpleNamespace(message=message)
+        return SimpleNamespace(choices=[choice])
+
+
+def make_client(base_url):
+    try:
+        from openai import OpenAI
+        return OpenAI(base_url=base_url, api_key="dummy")
+    except ModuleNotFoundError:
+        return SimpleOpenAIClient(base_url)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Evaluate a fixed EgoCross inference strategy on labeled support set.")
     parser.add_argument("--support-dir", default="/share/home/group9/data/egocross")
@@ -234,9 +277,7 @@ def main():
     if args.limit:
         samples = samples[: args.limit]
 
-    from openai import OpenAI
-
-    client = OpenAI(base_url=args.base_url, api_key="dummy")
+    client = make_client(args.base_url)
     support_dir = Path(args.support_dir)
     frame_routes = router.parse_frame_routes(args.frame_route)
     raw_rows = []

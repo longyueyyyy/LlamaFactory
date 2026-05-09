@@ -31,6 +31,10 @@ scripts/egocross_support_eval.py
   Runs a fixed inference strategy on the labeled support set and writes
   support_predictions.json, support_metrics.json, and support_metrics.txt.
 
+scripts/run_egocross_support_eval_grid.py
+  Sequentially runs a small preset support-eval grid and writes
+  egocross_outputs/support_eval/_grid_summary.tsv.
+
 scripts/egocross_blend_submit.py
   Historical submission blending helper.
 

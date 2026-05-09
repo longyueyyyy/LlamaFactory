@@ -88,6 +88,14 @@ python scripts/egocross_support_eval.py \
   --output-dir egocross_outputs/support_eval/grpo_direct_tail_dense_max12_vid006_4f
 ```
 
+Run the default support strategy grid:
+
+```bash
+python scripts/run_egocross_support_eval_grid.py
+```
+
+The grid writes separate directories under `egocross_outputs/support_eval/` and a summary TSV at `egocross_outputs/support_eval/_grid_summary.tsv`. It must not overwrite existing experiment outputs.
+
 ## Known Pitfalls
 
 - VID006 is long and expensive; use `--frame-route VID006=4` for the GRPO tail-dense setup.

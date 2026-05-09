@@ -95,7 +95,7 @@ Animal: 0.639344
 coverage: 1.0
 ```
 
-当前建议：先保留这版作为提交候选，不继续基于 hidden 榜单反馈做细调。
+当前建议：先保留这版作为提交候选，不继续基于 hidden 榜单反馈做细调。`max_frames=16` 已提交验证，Overall 0.532915，低于当前 `max12`，因此暂不替代当前最佳。
 
 ## 5. 当前最佳运行命令
 
@@ -183,6 +183,69 @@ support_metrics.json
 support_metrics.txt
 ```
 
+一次性跑多个预设候选策略：
+
+```bash
+cd /share/home/group9/lsg/LlamaFactory
+
+python scripts/run_egocross_support_eval_grid.py
+```
+
+默认候选包括：
+
+```text
+direct + tail_dense + max8/12/16 + VID006=4
+direct + endpoint + max12 + VID006=4
+direct + uniform + max12 + VID006=4
+strict_direct + tail_dense + max12 + VID006=4
+```
+
+汇总表：
+
+```text
+egocross_outputs/support_eval/_grid_summary.tsv
+```
+
+可选环境变量：
+
+```bash
+python scripts/run_egocross_support_eval_grid.py \
+  --base-url http://127.0.0.1:8000/v1 \
+  --support-dir /share/home/group9/data/egocross \
+  --out-root egocross_outputs/support_eval
+```
+
+默认不覆盖已有非空输出目录；如要只打印命令不运行，使用 `--dry-run`。
+
+服务器 support 选策略建议流程：
+
+```bash
+cd /share/home/group9/lsg/LlamaFactory
+conda activate lsg
+STAMP=$(date +%Y%m%d_%H%M%S)
+
+python scripts/run_egocross_support_eval_grid.py \
+  --support-dir /share/home/group9/data/egocross \
+  --base-url http://127.0.0.1:8000/v1 \
+  --out-root egocross_outputs/support_eval/grpo_grid_${STAMP} \
+  --log-dir logs/support_eval_grid_${STAMP}
+```
+
+跑完查看汇总：
+
+```bash
+cat egocross_outputs/support_eval/grpo_grid_${STAMP}/_grid_summary.tsv
+```
+
+选择规则：
+
+```text
+1. 先看 overall support acc。
+2. 若 overall 接近，优先 answer_only_format_rate=1.0、status_dist 无 error、used_max_frames_dist 不频繁降帧的策略。
+3. 再看 per-domain，避免某个 domain 明显崩掉。
+4. 选定后用同一组 prompt/frame_sampling/max_frames/VID006 配置跑 test；不要根据 hidden 榜单再改策略。
+```
+
 建议策略：预先列出少量候选，例如 `uniform/endpoint/tail_dense`、`max8/max12`、`direct/strict_direct`，一次性在 support 上比较 overall、per-domain、per-question-type、answer-only 格式率和 error rate。选定后直接应用到 test；不要再用 hidden domain 分数反推修改。
 
 ## 6. 文件结构
@@ -196,6 +259,7 @@ submission_template.json               官方提交模板，禁止覆盖
 
 scripts/egocross_router_infer.py        当前主推理脚本
 scripts/egocross_support_eval.py        support set 固定策略验证脚本
+scripts/run_egocross_support_eval_grid.py
 scripts/egocross_blend_submit.py        历史 blend 工具
 scripts/prepare_egocross_weighted_answer_only.py
 scripts/prepare_egocross_preference_answer_only.py
@@ -282,6 +346,7 @@ CoT/few-shot/enhanced reasoning: 历史上均未超过 direct/router，不建议
 | GRPO direct endpoint max8 | 0.526646 | 0.526502 | 0.526531 | 0.459350 | 0.617486 | 低于 tail_dense |
 | GRPO direct tail_dense max8 | 0.529781 | 0.533569 | 0.530612 | 0.459350 | 0.617486 | 采帧改进有效 |
 | GRPO direct tail_dense max12 | 0.536050 | 0.533569 | 0.538776 | 0.459350 | 0.639344 | 当前最强候选 |
+| GRPO direct tail_dense max16 | 0.532915 | 0.522968 | 0.538776 | 0.459350 | 0.639344 | 低于 max12，Surgery 回落 |
 | GRPO domain_type_direct + vote max12 | 0.472309 | 0.487633 | 0.383673 | 0.447154 | 0.601093 | 复杂 prompt 明显伤分 |
 | GRPO direct + vote max8 | 0.491118 | 0.505300 | 0.412245 | 0.451220 | 0.628415 | voting 不适合当前 GRPO |
 
