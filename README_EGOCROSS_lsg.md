@@ -544,7 +544,7 @@ LLAMAFACTORY_LOGPS_CHUNK_SIZE=512 CUDA_VISIBLE_DEVICES=0,1 FORCE_TORCHRUN=1 llam
 
 DPO OOM note:
 ```text
-Long multimodal DPO may OOM inside get_batch_logps at logits.log_softmax(-1). DDP does not shard this per-rank tensor. This repo now chunks label log-prob computation with LLAMAFACTORY_LOGPS_CHUNK_SIZE, default 1024. If fold0 still OOMs, retry with LLAMAFACTORY_LOGPS_CHUNK_SIZE=512 or 256 before lowering cutoff/image pixels.
+Long multimodal DPO may OOM inside get_batch_logps at logits.log_softmax(-1). DDP does not shard this per-rank tensor. This repo now avoids full-logits fp32 upcast in DPO trainer and chunks label log-prob computation with LLAMAFACTORY_LOGPS_CHUNK_SIZE, default 1024. If fold0 still OOMs, retry with LLAMAFACTORY_LOGPS_CHUNK_SIZE=512, 256, or 128 before lowering cutoff/image pixels.
 ```
 
 Heldout fold eval example:

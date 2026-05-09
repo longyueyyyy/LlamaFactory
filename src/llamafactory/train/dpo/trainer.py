@@ -227,7 +227,7 @@ class CustomDPOTrainer(DPOTrainer):
             batch = nested_detach(batch, clone=True)  # avoid error
 
         labels = batch.pop("labels")  # dpo do not need compute loss in forward
-        all_logits: torch.Tensor = model(**batch, return_dict=True, use_cache=False).logits.to(torch.float32)
+        all_logits: torch.Tensor = model(**batch, return_dict=True, use_cache=False).logits
         all_logps, valid_length = get_batch_logps(
             logits=all_logits, labels=labels, ld_alpha=(self.ld_alpha if not is_ref_model else None)
         )
@@ -236,7 +236,8 @@ class CustomDPOTrainer(DPOTrainer):
 
         batch_size = batch["input_ids"].size(0) // 2
         chosen_logps, rejected_logps = all_logps.split(batch_size, dim=0)
-        chosen_logits, rejected_logits = all_logits.split(batch_size, dim=0)
+        chosen_logits_mean = all_logits[:batch_size].detach().mean().float()
+        rejected_logits_mean = all_logits[batch_size:].detach().mean().float()
         chosen_length, _ = valid_length.split(batch_size, dim=0)
         if self.loss_type in ["ipo", "orpo", "simpo"]:
             chosen_logps_avg = chosen_logps
@@ -246,8 +247,8 @@ class CustomDPOTrainer(DPOTrainer):
         return {
             "chosen_logps": chosen_logps,
             "rejected_logps": rejected_logps,
-            "chosen_logits": chosen_logits,
-            "rejected_logits": rejected_logits,
+            "chosen_logits_mean": chosen_logits_mean,
+            "rejected_logits_mean": rejected_logits_mean,
             "chosen_logps_avg": chosen_logps_avg,
         }
 
@@ -286,8 +287,8 @@ class CustomDPOTrainer(DPOTrainer):
         model_output = self.concatenated_forward(model, batch)
         policy_chosen_logps = model_output["chosen_logps"]
         policy_rejected_logps = model_output["rejected_logps"]
-        policy_chosen_logits = model_output["chosen_logits"]
-        policy_rejected_logits = model_output["rejected_logits"]
+        policy_chosen_logits_mean = model_output["chosen_logits_mean"]
+        policy_rejected_logits_mean = model_output["rejected_logits_mean"]
         policy_chosen_logps_avg = model_output["chosen_logps_avg"]
 
         reference_chosen_logps, reference_rejected_logps = self.compute_reference_log_probs(model, batch)
@@ -308,8 +309,8 @@ class CustomDPOTrainer(DPOTrainer):
         metrics[f"{prefix}rewards/margins"] = (chosen_rewards - rejected_rewards).mean().item()
         metrics[f"{prefix}logps/chosen"] = policy_chosen_logps.mean().item()
         metrics[f"{prefix}logps/rejected"] = policy_rejected_logps.mean().item()
-        metrics[f"{prefix}logits/chosen"] = policy_chosen_logits.mean().item()
-        metrics[f"{prefix}logits/rejected"] = policy_rejected_logits.mean().item()
+        metrics[f"{prefix}logits/chosen"] = policy_chosen_logits_mean.item()
+        metrics[f"{prefix}logits/rejected"] = policy_rejected_logits_mean.item()
         if self.loss_type == "orpo":
             metrics[f"{prefix}sft_loss"] = sft_loss.mean().item()
             metrics[f"{prefix}odds_ratio_loss"] = ((losses - sft_loss) / self.beta).mean().item()
