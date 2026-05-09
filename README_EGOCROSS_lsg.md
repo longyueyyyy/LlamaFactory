@@ -485,10 +485,22 @@ Do not start with full DPO. Do not change inference strategy in the same round.
 Do not use hidden leaderboard/domain feedback for tuning or model promotion.
 ```
 
-Base model:
+Original external GRPO model:
 ```text
 /share/home/group9/why/rl_grpo_v2/output/egocross_grpo_answer_v7/v3-20260507-113212
 ```
+
+Train/export-safe model view used by the new DPO configs:
+```text
+saves/egocross/qwen3vl4b/grpo_v3_train_rope_default
+```
+
+Create the train-safe model view before training:
+```bash
+python scripts/prepare_egocross_grpo_train_safe.py --overwrite-config
+```
+
+This creates symlinks to the external GRPO files and writes only a local `config.json` with `text_config.rope_scaling={"rope_type":"default"}`. Do not edit the external GRPO directory in place.
 
 The ctx65536/65538 variant is treated as an inference/config comparison, not the first training source. It had no score gain and adds engineering variables.
 
@@ -555,8 +567,10 @@ llamafactory-cli export \
 
 Reference-model sanity:
 ```text
-LLaMA-Factory stage=dpo + finetuning_type=lora + pref_loss=sigmoid creates DPO reference behavior by disabling the new LoRA adapter on the same base model when ref_model is unset. For this experiment, the reference should therefore be the frozen external GRPO base, not original SFT.
+LLaMA-Factory stage=dpo + finetuning_type=lora + pref_loss=sigmoid creates DPO reference behavior by disabling the new LoRA adapter on the same base model when ref_model is unset. For this experiment, the reference should therefore be the frozen train-safe view of the external GRPO base, not original SFT.
 ```
+
+After export, vLLM may still prefer null rope_scaling. If vLLM fails to load a merged model, inspect the exported `config.json` and set `text_config.rope_scaling` back to null for inference only. Keep the train-safe base config at `{"rope_type":"default"}` for transformers training/export.
 
 Promotion criteria:
 ```text

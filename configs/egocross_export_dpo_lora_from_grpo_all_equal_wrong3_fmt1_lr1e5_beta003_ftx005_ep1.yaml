@@ -1,7 +1,7 @@
 ### Note: DO NOT use quantized model or quantization_bit when merging lora adapters.
 
 ### model
-model_name_or_path: /share/home/group9/why/rl_grpo_v2/output/egocross_grpo_answer_v7/v3-20260507-113212
+model_name_or_path: saves/egocross/qwen3vl4b/grpo_v3_train_rope_default
 adapter_name_or_path: saves/egocross/qwen3vl4b/dpo_lora_from_grpo_all_equal_wrong3_fmt1_lr1e5_beta003_ftx005_ep1
 template: qwen3_vl
 trust_remote_code: true
