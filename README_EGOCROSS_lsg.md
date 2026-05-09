@@ -528,6 +528,13 @@ B: configs/egocross_dpo_lora_from_grpo_all_equal_wrong3_fmt1_lr5e6_beta003_ftx00
 C: configs/egocross_dpo_lora_from_grpo_all_equal_wrong3_fmt1_lr1e5_beta005_ftx005_ep1.yaml
 ```
 
+Current DPO memory profile:
+```text
+All fold/full LoRA DPO configs now use cutoff_len=24576 and image_max_pixels/video_max_pixels=131072.
+Their output_dir paths include _memsafe_ctx24576_px131k.
+Keep this setting identical for A/B/C and all folds so preference parameters are the only intended comparison variable.
+```
+
 Fold protocol:
 ```text
 foldN training must use only egocross_pref_answer_only_all_equal_wrong3_fmt1_foldN.
@@ -538,15 +545,35 @@ Run GRPO baseline 4-fold heldout first, then A/B/C fold heldout. Run full-suppor
 
 Fold0 smoke command:
 ```bash
-LLAMAFACTORY_LOGPS_CHUNK_SIZE=512 CUDA_VISIBLE_DEVICES=0,1 FORCE_TORCHRUN=1 llamafactory-cli train \
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+LLAMAFACTORY_LOGPS_CHUNK_SIZE=128 CUDA_VISIBLE_DEVICES=4,5 FORCE_TORCHRUN=1 llamafactory-cli train \
   configs/egocross_dpo_lora_from_grpo_all_equal_wrong3_fmt1_fold0_lr1e5_beta003_ftx005_ep1.yaml
+```
+
+Queued A/B/C fold run:
+```bash
+# Conservative: one 2-GPU lane, runs all A/B/C x fold0-3 sequentially.
+bash scripts/run_egocross_dpo_lora_folds_abc_memsafe.sh
+
+# Faster on four free A800s: two 2-GPU lanes, each lane runs a sequential subset.
+GPU_LANES="4,5 6,7" bash scripts/run_egocross_dpo_lora_folds_abc_memsafe.sh
+
+# Optional subsets:
+CANDIDATES="A B" FOLDS="0 1 2 3" GPU_LANES="4,5 6,7" bash scripts/run_egocross_dpo_lora_folds_abc_memsafe.sh
+```
+
+The queue writes logs to `logs/egocross_dpo_lora_folds_abc_memsafe_<timestamp>/`, with one log per candidate/fold, plus `driver.log` and `summary.tsv`. If an output directory already exists and is non-empty, the script stops before training; set `SKIP_EXISTING=1` only when you intentionally want to skip existing runs.
+
+Export a trained fold adapter for heldout evaluation:
+```bash
+bash scripts/export_egocross_dpo_lora_fold_memsafe.sh A 0
 ```
 
 DPO OOM note:
 ```text
-Long multimodal DPO may OOM inside get_batch_logps at logits.log_softmax(-1). DDP does not shard this per-rank tensor. This repo now avoids full-logits fp32 upcast in DPO trainer and computes label log-probs as label_logit - logsumexp(logits), chunked by LLAMAFACTORY_LOGPS_CHUNK_SIZE. If fold0 still OOMs, retry with LLAMAFACTORY_LOGPS_CHUNK_SIZE=512, 256, or 128 before lowering cutoff/image pixels.
-If it still OOMs after the logsumexp patch, use the memsafe fold0 config:
-configs/egocross_dpo_lora_from_grpo_all_equal_wrong3_fmt1_fold0_lr1e5_beta003_ftx005_ep1_memsafe_ctx24576_px131k.yaml
+Long multimodal DPO may OOM inside get_batch_logps at logits.log_softmax(-1). DDP does not shard this per-rank tensor. This repo now avoids full-logits fp32 upcast in DPO trainer and computes label log-probs as label_logit - logsumexp(logits), chunked by LLAMAFACTORY_LOGPS_CHUNK_SIZE.
+The first working profile is the current default: cutoff_len=24576, image/video max pixels=131072, LLAMAFACTORY_LOGPS_CHUNK_SIZE=128.
+If it still OOMs, stop and inspect the batch/media length distribution before making another global reduction. Do not mix different cutoff/image settings across A/B/C fold comparisons.
 ```
 
 Heldout fold eval example:
@@ -565,7 +592,8 @@ python scripts/egocross_support_eval.py \
 
 Full training and export use only the winning candidate:
 ```bash
-LLAMAFACTORY_LOGPS_CHUNK_SIZE=512 CUDA_VISIBLE_DEVICES=0,1 FORCE_TORCHRUN=1 llamafactory-cli train \
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+LLAMAFACTORY_LOGPS_CHUNK_SIZE=128 CUDA_VISIBLE_DEVICES=4,5 FORCE_TORCHRUN=1 llamafactory-cli train \
   configs/egocross_dpo_lora_from_grpo_all_equal_wrong3_fmt1_lr<W>_beta<B>_ftx005_ep1.yaml
 
 llamafactory-cli export \

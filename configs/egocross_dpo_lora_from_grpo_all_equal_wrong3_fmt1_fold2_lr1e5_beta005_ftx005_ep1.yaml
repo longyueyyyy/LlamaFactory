@@ -1,8 +1,8 @@
 ### model
 model_name_or_path: saves/egocross/qwen3vl4b/grpo_v3_train_rope_default
 trust_remote_code: true
-image_max_pixels: 200000
-video_max_pixels: 200000
+image_max_pixels: 131072
+video_max_pixels: 131072
 image_min_pixels: 50176
 
 ### method
@@ -20,12 +20,12 @@ dataset: egocross_pref_answer_only_all_equal_wrong3_fmt1_fold2
 dataset_dir: ./data
 media_dir: /share/home/group9/data/egocross
 template: qwen3_vl
-cutoff_len: 32768
+cutoff_len: 24576
 preprocessing_num_workers: 16
 dataloader_num_workers: 4
 
 ### output
-output_dir: saves/egocross/qwen3vl4b/dpo_lora_from_grpo_all_equal_wrong3_fmt1_fold2_lr1e5_beta005_ftx005_ep1
+output_dir: saves/egocross/qwen3vl4b/dpo_lora_from_grpo_all_equal_wrong3_fmt1_fold2_lr1e5_beta005_ftx005_ep1_memsafe_ctx24576_px131k
 logging_steps: 5
 save_steps: 999999
 save_total_limit: 1
