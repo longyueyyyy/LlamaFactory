@@ -297,6 +297,7 @@ scripts/egocross_router_infer.py
 5. frame sampling: uniform / endpoint / tail_dense。
 6. prompt mode: direct / strict_direct / domain_direct / type_direct / domain_type_direct。
 7. option-order voting，但当前 GRPO 模型上 voting 实测不佳。
+8. `--temperature` 控制采样温度；默认是 0.0，历史 direct/vote 实验均为 deterministic 推理。
 ```
 
 降帧序列：
@@ -328,6 +329,7 @@ Prompt 经验：
 direct: 当前最稳。
 strict_direct: 可做最小 prompt 对照。
 domain_type_direct/type_direct: 已发现可能让 answer-only GRPO 模型偏离分布。
+temperature=0.7: 可以作为 self-consistency/随机采样对照，但可能引入噪声；优先在 support 上验证。
 CoT/few-shot/enhanced reasoning: 历史上均未超过 direct/router，不建议用于最终提交。
 ```
 

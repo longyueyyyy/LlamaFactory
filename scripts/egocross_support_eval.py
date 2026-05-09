@@ -170,6 +170,7 @@ def build_metrics(rows, args):
             "max_frames": args.max_frames,
             "frame_sampling": args.frame_sampling,
             "max_tokens": args.max_tokens,
+            "temperature": args.temperature,
             "vote": bool(args.vote),
             "frame_route": args.frame_route or [],
             "only_domains": args.only_domains,
@@ -263,6 +264,7 @@ def main():
     parser.add_argument("--frame-sampling", choices=["uniform", "endpoint", "tail_dense"], default="uniform")
     parser.add_argument("--frame-route", action="append", default=[])
     parser.add_argument("--max-tokens", type=int, default=8)
+    parser.add_argument("--temperature", type=float, default=0.0)
     parser.add_argument("--vote", action="store_true", help="Use 3-way option-order voting for every selected support sample.")
     parser.add_argument("--only-domains", default=None, help="Comma-separated support domains, e.g. Industry,XSports.")
     parser.add_argument("--limit", type=int, default=0)
@@ -302,6 +304,7 @@ def main():
                     max_frames,
                     args.frame_sampling,
                     args.max_tokens,
+                    args.temperature,
                 )
                 frame_attempts = raw_payload
             else:
@@ -314,6 +317,7 @@ def main():
                     max_frames,
                     args.frame_sampling,
                     args.max_tokens,
+                    args.temperature,
                 )
         except Exception as exc:
             raw_payload = f"ERROR: {exc}"
@@ -335,6 +339,7 @@ def main():
             "max_frames": max_frames,
             "used_max_frames": used_max_frames,
             "frame_sampling": args.frame_sampling,
+            "temperature": args.temperature,
             "frame_attempts": frame_attempts,
             "prompt": prompt,
             "raw_output": raw_payload,

@@ -757,12 +757,12 @@ def build_prompt(sample, prompt_mode, option_lines):
     )
 
 
-def call_model(client, model, content, max_tokens):
+def call_model(client, model, content, max_tokens, temperature):
     resp = client.chat.completions.create(
         model=model,
         messages=[{"role": "user", "content": content}],
         max_tokens=max_tokens,
-        temperature=0,
+        temperature=temperature,
     )
     return resp.choices[0].message.content
 
@@ -794,13 +794,13 @@ def build_image_content(testbed_dir, sample, max_frames, frame_sampling="uniform
     return content
 
 
-def infer_once(client, model, testbed_dir, sample, prompt_mode, max_frames, frame_sampling, max_tokens, original_order):
+def infer_once(client, model, testbed_dir, sample, prompt_mode, max_frames, frame_sampling, max_tokens, temperature, original_order):
     parsed_options = parse_options(sample.get("options", ""))
     option_lines, display_to_original = format_options(parsed_options, original_order)
     content = build_image_content(testbed_dir, sample, max_frames, frame_sampling)
     prompt = build_prompt(sample, prompt_mode, option_lines)
     content.append({"type": "text", "text": prompt})
-    raw_output = call_model(client, model, content, max_tokens)
+    raw_output = call_model(client, model, content, max_tokens, temperature)
     display_answer = extract_answer(raw_output)
     if display_answer is None:
         return None, raw_output, prompt
@@ -820,6 +820,7 @@ def infer_fewshot_once(
     fewshot_frames,
     evidence_mode,
     output_format,
+    temperature,
 ):
     content, prompt, selected, target = build_fewshot_content(
         testbed_dir,
@@ -832,12 +833,12 @@ def infer_fewshot_once(
         evidence_mode,
         output_format,
     )
-    raw_output = call_model(client, model, content, max_tokens)
+    raw_output = call_model(client, model, content, max_tokens, temperature)
     answer = extract_answer(raw_output)
     return answer, raw_output, prompt, selected, target
 
 
-def infer_with_frame_retry(client, model, testbed_dir, sample, prompt_mode, max_frames, frame_sampling, max_tokens):
+def infer_with_frame_retry(client, model, testbed_dir, sample, prompt_mode, max_frames, frame_sampling, max_tokens, temperature):
     attempts = []
     for attempt_frames in frame_retry_sequence(max_frames):
         try:
@@ -850,6 +851,7 @@ def infer_with_frame_retry(client, model, testbed_dir, sample, prompt_mode, max_
                 attempt_frames,
                 frame_sampling,
                 max_tokens,
+                temperature,
                 ["A", "B", "C", "D"],
             )
             attempts.append({
@@ -888,6 +890,7 @@ def infer_fewshot_with_frame_retry(
     fewshot_frames,
     evidence_mode,
     output_format,
+    temperature,
 ):
     attempts = []
     for attempt_frames in frame_retry_sequence(max_frames):
@@ -895,16 +898,17 @@ def infer_fewshot_with_frame_retry(
             answer, raw_output, prompt, selected, target = infer_fewshot_once(
                 client,
                 model,
-                        testbed_dir,
-                        sample,
-                        attempt_frames,
-                        frame_sampling,
-                        max_tokens,
+                testbed_dir,
+                sample,
+                attempt_frames,
+                frame_sampling,
+                max_tokens,
                 support_index,
                 fewshot_k,
                 fewshot_frames,
                 evidence_mode,
                 output_format,
+                temperature,
             )
             attempts.append({
                 "max_frames": attempt_frames,
@@ -931,7 +935,7 @@ def infer_fewshot_with_frame_retry(
     raise RuntimeError("All frame retry attempts exceeded context length.")
 
 
-def vote_infer(client, model, testbed_dir, sample, prompt_mode, max_frames, frame_sampling, max_tokens):
+def vote_infer(client, model, testbed_dir, sample, prompt_mode, max_frames, frame_sampling, max_tokens, temperature):
     orders = [
         ["A", "B", "C", "D"],
         ["B", "C", "D", "A"],
@@ -940,7 +944,7 @@ def vote_infer(client, model, testbed_dir, sample, prompt_mode, max_frames, fram
     attempts = []
     for order in orders:
         answer, raw_output, prompt = infer_once(
-            client, model, testbed_dir, sample, prompt_mode, max_frames, frame_sampling, max_tokens, order
+            client, model, testbed_dir, sample, prompt_mode, max_frames, frame_sampling, max_tokens, temperature, order
         )
         attempts.append({
             "order": order,
@@ -959,12 +963,12 @@ def vote_infer(client, model, testbed_dir, sample, prompt_mode, max_frames, fram
     return answer, attempts, "vote_plurality"
 
 
-def vote_with_frame_retry(client, model, testbed_dir, sample, prompt_mode, max_frames, frame_sampling, max_tokens):
+def vote_with_frame_retry(client, model, testbed_dir, sample, prompt_mode, max_frames, frame_sampling, max_tokens, temperature):
     frame_attempts = []
     for attempt_frames in frame_retry_sequence(max_frames):
         try:
             answer, attempts, status = vote_infer(
-                client, model, testbed_dir, sample, prompt_mode, attempt_frames, frame_sampling, max_tokens
+                client, model, testbed_dir, sample, prompt_mode, attempt_frames, frame_sampling, max_tokens, temperature
             )
             frame_attempts.append({
                 "max_frames": attempt_frames,
@@ -1062,6 +1066,7 @@ def write_fewshot_config(output_dir, args, support_index):
         "fewshot_output_format": args.fewshot_output_format,
         "fewshot_use_enhanced": args.fewshot_use_enhanced,
         "frame_sampling": args.frame_sampling,
+        "temperature": args.temperature,
         "support_index_counts": support_index_summary(support_index),
         "notes": [
             "Few-shot mode is enabled only for samples matching fewshot_domains.",
@@ -1096,6 +1101,7 @@ def main():
         help="Question-id/dataset substring max-frame override, e.g. ExtrameSportFPV_VID006=2.",
     )
     parser.add_argument("--max-tokens", type=int, default=8)
+    parser.add_argument("--temperature", type=float, default=0.0, help="Sampling temperature for vLLM/OpenAI chat completion.")
     parser.add_argument(
         "--frame-sampling",
         choices=["uniform", "endpoint", "tail_dense"],
@@ -1213,6 +1219,7 @@ def main():
                         args.fewshot_frames,
                         args.fewshot_evidence_mode,
                         args.fewshot_output_format,
+                        args.temperature,
                     )
                 )
                 target_question_type = target["question_type"]
@@ -1225,7 +1232,15 @@ def main():
                 })
             elif use_vote:
                 answer, raw_payload, status, used_max_frames = vote_with_frame_retry(
-                    client, args.model, testbed_dir, sample, prompt_mode, max_frames, args.frame_sampling, args.max_tokens
+                    client,
+                    args.model,
+                    testbed_dir,
+                    sample,
+                    prompt_mode,
+                    max_frames,
+                    args.frame_sampling,
+                    args.max_tokens,
+                    args.temperature,
                 )
                 frame_attempts = raw_payload
             else:
@@ -1238,6 +1253,7 @@ def main():
                     max_frames,
                     args.frame_sampling,
                     args.max_tokens,
+                    args.temperature,
                 )
             if answer is None:
                 fallback = fallback_answer(fallback_index, sample, idx)
@@ -1269,6 +1285,7 @@ def main():
             "max_frames": max_frames,
             "used_max_frames": used_max_frames,
             "frame_sampling": args.frame_sampling,
+            "temperature": args.temperature,
             "frame_attempts": frame_attempts,
             "vote": use_vote,
             "fewshot": use_fewshot,
