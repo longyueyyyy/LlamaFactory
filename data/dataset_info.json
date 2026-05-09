@@ -153,6 +153,74 @@
       "assistant_tag": "assistant"
     }
   },
+  "egocross_pref_answer_only_all_equal_wrong3_fmt1_fold0": {
+    "file_name": "/share/home/group9/data/egocross/pref_answer_only_all_equal_folds/train_pref_answer_only_all_equal_wrong3_fmt1_fold0.json",
+    "ranking": true,
+    "formatting": "sharegpt",
+    "columns": {
+      "messages": "messages",
+      "images": "images",
+      "chosen": "chosen",
+      "rejected": "rejected"
+    },
+    "tags": {
+      "role_tag": "role",
+      "content_tag": "content",
+      "user_tag": "user",
+      "assistant_tag": "assistant"
+    }
+  },
+  "egocross_pref_answer_only_all_equal_wrong3_fmt1_fold1": {
+    "file_name": "/share/home/group9/data/egocross/pref_answer_only_all_equal_folds/train_pref_answer_only_all_equal_wrong3_fmt1_fold1.json",
+    "ranking": true,
+    "formatting": "sharegpt",
+    "columns": {
+      "messages": "messages",
+      "images": "images",
+      "chosen": "chosen",
+      "rejected": "rejected"
+    },
+    "tags": {
+      "role_tag": "role",
+      "content_tag": "content",
+      "user_tag": "user",
+      "assistant_tag": "assistant"
+    }
+  },
+  "egocross_pref_answer_only_all_equal_wrong3_fmt1_fold2": {
+    "file_name": "/share/home/group9/data/egocross/pref_answer_only_all_equal_folds/train_pref_answer_only_all_equal_wrong3_fmt1_fold2.json",
+    "ranking": true,
+    "formatting": "sharegpt",
+    "columns": {
+      "messages": "messages",
+      "images": "images",
+      "chosen": "chosen",
+      "rejected": "rejected"
+    },
+    "tags": {
+      "role_tag": "role",
+      "content_tag": "content",
+      "user_tag": "user",
+      "assistant_tag": "assistant"
+    }
+  },
+  "egocross_pref_answer_only_all_equal_wrong3_fmt1_fold3": {
+    "file_name": "/share/home/group9/data/egocross/pref_answer_only_all_equal_folds/train_pref_answer_only_all_equal_wrong3_fmt1_fold3.json",
+    "ranking": true,
+    "formatting": "sharegpt",
+    "columns": {
+      "messages": "messages",
+      "images": "images",
+      "chosen": "chosen",
+      "rejected": "rejected"
+    },
+    "tags": {
+      "role_tag": "role",
+      "content_tag": "content",
+      "user_tag": "user",
+      "assistant_tag": "assistant"
+    }
+  },
   "mllm_audio_demo": {
     "file_name": "mllm_audio_demo.json",
     "formatting": "sharegpt",

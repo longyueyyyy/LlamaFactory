@@ -2,6 +2,7 @@
 import argparse
 import json
 import re
+import time
 from collections import Counter, defaultdict
 from pathlib import Path
 from types import SimpleNamespace
@@ -17,6 +18,7 @@ DOMAIN_FILES = {
     "Industry": "train_industry.json",
     "XSports": "train_xsports.json",
 }
+DOMAIN_ALIASES = {key.lower(): key for key in DOMAIN_FILES}
 
 
 def clean_user_text(text):
@@ -63,6 +65,11 @@ def infer_dataset_from_images(images, domain):
     return domain
 
 
+def normalize_domain(domain):
+    text = str(domain or "").strip()
+    return DOMAIN_ALIASES.get(text.lower(), text)
+
+
 def support_row_to_sample(row, domain, idx):
     messages = row.get("messages") or []
     user_msg = next((msg for msg in messages if msg.get("role") == "user"), None)
@@ -94,6 +101,41 @@ def support_row_to_sample(row, domain, idx):
     }
 
 
+def eval_row_to_sample(row, idx):
+    domain = normalize_domain(row.get("domain"))
+    messages = row.get("messages") or []
+    user_msg = next((msg for msg in messages if msg.get("role") == "user"), None)
+    if not user_msg:
+        raise ValueError(f"Eval row missing user message: idx={idx}")
+
+    question, options = parse_support_question_options(user_msg.get("content", ""))
+    answer = str(row.get("answer") or "").strip().upper()
+    if answer not in router.VALID_ANSWERS:
+        raise ValueError(f"Invalid eval answer: idx={idx} answer={answer!r}")
+
+    images = row.get("images") or []
+    if not images:
+        raise ValueError(f"Eval row has no images: idx={idx}")
+
+    dataset = infer_dataset_from_images(images, domain)
+    question_type = router.normalize_question_type(row.get("question_type", ""), question)
+    source_index = row.get("source_index", idx)
+    sample_id = row.get("id") or f"{domain}_{source_index}"
+    return {
+        "id": sample_id,
+        "question_id": row.get("question_id") or sample_id,
+        "dataset": dataset,
+        "domain": domain,
+        "question_text": question,
+        "question_type": question_type,
+        "options": options,
+        "video_path": images,
+        "gold_answer": answer,
+        "fold": row.get("fold"),
+        "source_index": source_index,
+    }
+
+
 def load_support_samples(support_dir, only_domains=None):
     support_dir = Path(support_dir)
     selectors = {item.strip().lower() for item in only_domains.split(",") if item.strip()} if only_domains else None
@@ -106,6 +148,20 @@ def load_support_samples(support_dir, only_domains=None):
             rows = json.load(f)
         for idx, row in enumerate(rows, start=1):
             samples.append(support_row_to_sample(row, domain, idx))
+    return samples
+
+
+def load_eval_samples(eval_json, only_domains=None):
+    selectors = {item.strip().lower() for item in only_domains.split(",") if item.strip()} if only_domains else None
+    with open(eval_json, encoding="utf-8") as f:
+        rows = json.load(f)
+
+    samples = []
+    for idx, row in enumerate(rows, start=1):
+        sample = eval_row_to_sample(row, idx)
+        if selectors and sample["domain"].lower() not in selectors:
+            continue
+        samples.append(sample)
     return samples
 
 
@@ -147,10 +203,19 @@ def answer_only_format_ok(raw_payload):
     return bool(raw_outputs) and all(is_single_letter_output(item) for item in raw_outputs)
 
 
-def build_metrics(rows, args):
+def build_metrics(rows, args, elapsed_seconds):
     total = len(rows)
     correct = sum(1 for row in rows if row["correct"])
     answer_only = sum(1 for row in rows if row.get("answer_only_format"))
+    valid_answers = sum(1 for row in rows if row.get("answer") in router.VALID_ANSWERS)
+    parse_fail = total - valid_answers
+    error_count = sum(1 for row in rows if "error" in str(row.get("status", "")))
+    error_fallback = sum(1 for row in rows if "error_fallback" in str(row.get("status", "")))
+    used_frame_values = [
+        int(row["used_max_frames"])
+        for row in rows
+        if isinstance(row.get("used_max_frames"), int) or str(row.get("used_max_frames", "")).isdigit()
+    ]
     by_domain = defaultdict(lambda: {"correct": 0, "total": 0})
     by_dataset = defaultdict(lambda: {"correct": 0, "total": 0})
     by_type = defaultdict(lambda: {"correct": 0, "total": 0})
@@ -174,12 +239,20 @@ def build_metrics(rows, args):
             "vote": bool(args.vote),
             "frame_route": args.frame_route or [],
             "only_domains": args.only_domains,
+            "eval_json": args.eval_json,
         },
         "overall": {
             "correct": correct,
             "total": total,
             "acc": round(safe_div(correct, total), 6),
             "answer_only_format_rate": round(safe_div(answer_only, total), 6),
+            "coverage": round(safe_div(valid_answers, total), 6),
+            "parse_fail": parse_fail,
+            "error": error_count,
+            "error_fallback": error_fallback,
+            "avg_used_frames": round(safe_div(sum(used_frame_values), len(used_frame_values)), 6),
+            "runtime_seconds": round(elapsed_seconds, 3),
+            "avg_runtime_seconds": round(safe_div(elapsed_seconds, total), 3),
         },
         "by_domain": finalize_bucket(by_domain),
         "by_dataset": finalize_bucket(by_dataset),
@@ -196,6 +269,12 @@ def metrics_text(metrics):
     overall = metrics["overall"]
     lines.append(f"overall_acc: {overall['acc']:.6f} ({overall['correct']}/{overall['total']})")
     lines.append(f"answer_only_format_rate: {overall['answer_only_format_rate']:.6f}")
+    lines.append(f"coverage: {overall['coverage']:.6f}")
+    lines.append(f"parse_fail: {overall['parse_fail']}")
+    lines.append(f"error: {overall['error']}")
+    lines.append(f"error_fallback: {overall['error_fallback']}")
+    lines.append(f"avg_used_frames: {overall['avg_used_frames']:.6f}")
+    lines.append(f"runtime_seconds: {overall['runtime_seconds']:.3f}")
     lines.append(
         "strategy: "
         + " ".join(f"{key}={value}" for key, value in metrics["strategy"].items() if value not in [None, [], ""])
@@ -256,6 +335,7 @@ def make_client(base_url):
 def main():
     parser = argparse.ArgumentParser(description="Evaluate a fixed EgoCross inference strategy on labeled support set.")
     parser.add_argument("--support-dir", default="/share/home/group9/data/egocross")
+    parser.add_argument("--eval-json", default=None, help="Optional fold heldout eval JSON from pref_answer_only_all_equal_folds.")
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--base-url", default="http://127.0.0.1:8000/v1")
     parser.add_argument("--model", default="egocross")
@@ -275,7 +355,7 @@ def main():
         raise SystemExit(f"Refusing to write non-empty output directory: {output_dir}")
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    samples = load_support_samples(args.support_dir, args.only_domains)
+    samples = load_eval_samples(args.eval_json, args.only_domains) if args.eval_json else load_support_samples(args.support_dir, args.only_domains)
     if args.limit:
         samples = samples[: args.limit]
 
@@ -283,6 +363,7 @@ def main():
     support_dir = Path(args.support_dir)
     frame_routes = router.parse_frame_routes(args.frame_route)
     raw_rows = []
+    started_at = time.time()
 
     for idx, sample in enumerate(samples, start=1):
         max_frames = router.apply_frame_routes(sample, args.max_frames, frame_routes)
@@ -350,7 +431,7 @@ def main():
             flush=True,
         )
 
-    metrics = build_metrics(raw_rows, args)
+    metrics = build_metrics(raw_rows, args, time.time() - started_at)
     with open(output_dir / "support_predictions.json", "w", encoding="utf-8") as f:
         json.dump(raw_rows, f, indent=2, ensure_ascii=False)
     with open(output_dir / "support_metrics.json", "w", encoding="utf-8") as f:

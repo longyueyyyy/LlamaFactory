@@ -95,7 +95,7 @@ Animal: 0.639344
 coverage: 1.0
 ```
 
-当前建议：先保留这版作为提交候选，不继续基于 hidden 榜单反馈做细调。`max_frames=16` 已提交验证，Overall 0.532915，低于当前 `max12`，因此暂不替代当前最佳。
+当前建议：先保留这版作为提交候选，不继续基于 hidden 榜单反馈做细调。`ctx65536 + max12 + no VID006 route + temp0` 已复现同分 0.536050，但工程复杂度更高；`max_frames=16`、`ctx65536 + max24`、`temperature=0.2` 和 `temperature=0.7 + vote` 均低于当前最佳。
 
 ## 5. 当前最佳运行命令
 
@@ -349,8 +349,12 @@ CoT/few-shot/enhanced reasoning: 历史上均未超过 direct/router，不建议
 | GRPO direct tail_dense max8 | 0.529781 | 0.533569 | 0.530612 | 0.459350 | 0.617486 | 采帧改进有效 |
 | GRPO direct tail_dense max12 | 0.536050 | 0.533569 | 0.538776 | 0.459350 | 0.639344 | 当前最强候选 |
 | GRPO direct tail_dense max16 | 0.532915 | 0.522968 | 0.538776 | 0.459350 | 0.639344 | 低于 max12，Surgery 回落 |
+| GRPO ctx65536 direct tail_dense max12 no VID006 route temp0 | 0.536050 | 0.533569 | 0.538776 | 0.459350 | 0.639344 | 与当前最佳同分；长上下文可避免特殊 VID006 route，但无提分 |
+| GRPO ctx65536 direct tail_dense max24 | 0.531870 | 0.522968 | 0.542857 | 0.459350 | 0.628415 | 长上下文更多帧提升 Industry，但损伤 Surgery/Animal |
+| GRPO ctx65536 direct tail_dense max12 no VID006 route temp0.2 | 0.529781 | 0.522968 | 0.526531 | 0.459350 | 0.639344 | 轻微温度采样仍伤分 |
 | GRPO domain_type_direct + vote max12 | 0.472309 | 0.487633 | 0.383673 | 0.447154 | 0.601093 | 复杂 prompt 明显伤分 |
 | GRPO direct + vote max8 | 0.491118 | 0.505300 | 0.412245 | 0.451220 | 0.628415 | voting 不适合当前 GRPO |
+| GRPO direct tail_dense max12 vote temp0.7 | 0.486938 | 0.505300 | 0.420408 | 0.426829 | 0.628415 | 高温投票明显伤分，不建议继续 |
 
 说明：表中分数是实验记录，不应用于继续对 hidden test 做反推调参。
 
@@ -468,4 +472,123 @@ egocross_outputs/why_grpo_direct_tail_dense_max12_vid006_4f/submission.zip
 1. 支持集验证不同 frame_sampling，而不是用 hidden 分数调。
 2. 保持 direct prompt，不优先加 CoT/few-shot/type prompt。
 3. 若要改 VID006 帧数，先基于 context length / error rate 等鲁棒性信号，不基于 hidden 分数。
+4. ctx65536 + max12 no VID006 route 已与当前最佳同分，可作为工程对照，但无提分；最终提交优先保留更简单稳定的原 max12 + VID006=4。
+5. 不建议继续温度采样或高温投票；temperature=0.2 与 temperature=0.7 + vote 均低于 deterministic direct。
+```
+
+## 13. Conservative LoRA DPO From External GRPO
+
+Purpose:
+```text
+Run the first new training experiment as LoRA DPO from the external GRPO model.
+Do not start with full DPO. Do not change inference strategy in the same round.
+Do not use hidden leaderboard/domain feedback for tuning or model promotion.
+```
+
+Base model:
+```text
+/share/home/group9/why/rl_grpo_v2/output/egocross_grpo_answer_v7/v3-20260507-113212
+```
+
+The ctx65536/65538 variant is treated as an inference/config comparison, not the first training source. It had no score gain and adds engineering variables.
+
+Data check before DPO:
+```bash
+python scripts/check_egocross_pref_data.py \
+  --data-dir /share/home/group9/data/egocross \
+  --pref-file /share/home/group9/data/egocross/train_pref_answer_only_all_equal_wrong3_fmt1.json \
+  --fold-dir /share/home/group9/data/egocross/pref_answer_only_all_equal_folds
+```
+
+Local mirror/debug only:
+```bash
+python scripts/check_egocross_pref_data.py \
+  --data-dir ../data_local/egocross \
+  --pref-file ../data_local/egocross/train_pref_answer_only_all_equal_wrong3_fmt1.json \
+  --fold-dir ../data_local/egocross/pref_answer_only_all_equal_folds \
+  --skip-image-check
+```
+
+Candidate configs:
+```text
+A: configs/egocross_dpo_lora_from_grpo_all_equal_wrong3_fmt1_lr1e5_beta003_ftx005_ep1.yaml
+B: configs/egocross_dpo_lora_from_grpo_all_equal_wrong3_fmt1_lr5e6_beta003_ftx005_ep1.yaml
+C: configs/egocross_dpo_lora_from_grpo_all_equal_wrong3_fmt1_lr1e5_beta005_ftx005_ep1.yaml
+```
+
+Fold protocol:
+```text
+foldN training must use only egocross_pref_answer_only_all_equal_wrong3_fmt1_foldN.
+foldN accuracy must be measured only on pref_answer_only_all_equal_folds/eval_answer_only_all_equal_foldN.json.
+Preference train rows are only for loss/format stability checks, not promotion accuracy.
+Run GRPO baseline 4-fold heldout first, then A/B/C fold heldout. Run full-support training only after fold metrics are stable.
+```
+
+Fold0 smoke command:
+```bash
+CUDA_VISIBLE_DEVICES=0,1 FORCE_TORCHRUN=1 llamafactory-cli train \
+  configs/egocross_dpo_lora_from_grpo_all_equal_wrong3_fmt1_fold0_lr1e5_beta003_ftx005_ep1.yaml
+```
+
+Heldout fold eval example:
+```bash
+python scripts/egocross_support_eval.py \
+  --support-dir /share/home/group9/data/egocross \
+  --eval-json /share/home/group9/data/egocross/pref_answer_only_all_equal_folds/eval_answer_only_all_equal_fold0.json \
+  --prompt-mode direct \
+  --max-frames 12 \
+  --frame-sampling tail_dense \
+  --frame-route VID006=4 \
+  --temperature 0 \
+  --base-url http://127.0.0.1:8000/v1 \
+  --output-dir egocross_outputs/support_eval/dpo_lora_from_grpo_A_fold0_direct_tail_dense_max12_vid006_4f
+```
+
+Full training and export use only the winning candidate:
+```bash
+CUDA_VISIBLE_DEVICES=0,1 FORCE_TORCHRUN=1 llamafactory-cli train \
+  configs/egocross_dpo_lora_from_grpo_all_equal_wrong3_fmt1_lr<W>_beta<B>_ftx005_ep1.yaml
+
+llamafactory-cli export \
+  configs/egocross_export_dpo_lora_from_grpo_all_equal_wrong3_fmt1_lr<W>_beta<B>_ftx005_ep1.yaml
+```
+
+Reference-model sanity:
+```text
+LLaMA-Factory stage=dpo + finetuning_type=lora + pref_loss=sigmoid creates DPO reference behavior by disabling the new LoRA adapter on the same base model when ref_model is unset. For this experiment, the reference should therefore be the frozen external GRPO base, not original SFT.
+```
+
+Promotion criteria:
+```text
+At least 3/4 folds have heldout accuracy >= GRPO baseline.
+Mean heldout accuracy is above baseline, or tied with better format/error metrics.
+answer_only_format_rate >= 0.995.
+coverage = 1.0.
+parse_fail is not above baseline.
+support eval has error/error_fallback = 0.
+```
+
+Hard stop:
+```text
+coverage < 1.0
+answer_only_format_rate < 0.995
+support overall drops by more than 0.5-1.0 point vs GRPO baseline
+any domain drops by more than 2 points without stable fold/overall compensation
+answer distribution collapses heavily to one letter
+merged model appears not to have loaded/merged LoRA
+```
+
+First-round inference must stay fixed:
+```text
+direct + tail_dense + max12 + VID006=4 + temperature=0
+No prompt/frame/router/vote changes in the same round as DPO.
+```
+
+Final comparison table template:
+```text
+model	strategy	support_overall	Surgery	Industry	XSports	Animal	answer_only_format_rate	coverage	parse_fail	error	avg_used_frames	runtime_seconds
+GRPO baseline	direct_tail_dense_max12_vid006_4f									
+DPO LoRA A	direct_tail_dense_max12_vid006_4f									
+DPO LoRA B	direct_tail_dense_max12_vid006_4f									
+DPO LoRA C	direct_tail_dense_max12_vid006_4f									
 ```
