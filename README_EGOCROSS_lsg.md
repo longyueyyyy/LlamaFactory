@@ -569,6 +569,19 @@ Export a trained fold adapter for heldout evaluation:
 bash scripts/export_egocross_dpo_lora_fold_memsafe.sh A 0
 ```
 
+Automated heldout evaluation:
+```bash
+# GRPO baseline: one vLLM serves the baseline model and runs fold0-3 sequentially.
+GPU=4 PORT=8000 bash scripts/run_egocross_grpo_baseline_fold_eval.sh
+
+# DPO A/B/C folds: export missing merged fold models, then evaluate through vLLM lanes.
+# If baseline is running on GPU4/port8000, use the other three GPUs here.
+GPU_LANES="5:8001 6:8002 7:8003" bash scripts/run_egocross_dpo_lora_fold_eval_abc_memsafe.sh
+
+# If baseline is already done, DPO eval can use all four GPUs.
+GPU_LANES="4:8001 5:8002 6:8003 7:8004" bash scripts/run_egocross_dpo_lora_fold_eval_abc_memsafe.sh
+```
+
 DPO OOM note:
 ```text
 Long multimodal DPO may OOM inside get_batch_logps at logits.log_softmax(-1). DDP does not shard this per-rank tensor. This repo now avoids full-logits fp32 upcast in DPO trainer and computes label log-probs as label_logit - logsumexp(logits), chunked by LLAMAFACTORY_LOGPS_CHUNK_SIZE.
