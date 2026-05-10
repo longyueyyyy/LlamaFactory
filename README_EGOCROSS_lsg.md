@@ -583,6 +583,7 @@ GPU_LANES="4:8001 5:8002 6:8003 7:8004" bash scripts/run_egocross_dpo_lora_fold_
 ```
 
 The DPO eval script lazily exports a missing merged model immediately before that fold is evaluated, using a small lock so exports do not run concurrently. Existing eval outputs can be skipped with `SKIP_EXISTING_EVAL=1`.
+If the user quota is tight, set `DELETE_MERGED_AFTER_EVAL=1` to remove each merged fold model after its heldout metrics are written. This keeps the LoRA adapter directories and eval outputs.
 
 For vLLM inference, exported DPO fold models are patched so `text_config.rope_scaling` is `null`. Keep the train-safe base at `{"rope_type":"default"}` for Transformers training/export; only the merged inference copy should be patched for vLLM.
 

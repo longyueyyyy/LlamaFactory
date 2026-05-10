@@ -13,6 +13,7 @@ SERVED_MODEL_NAME="${SERVED_MODEL_NAME:-egocross}"
 EXPORT_MISSING="${EXPORT_MISSING:-1}"
 PREEXPORT_ALL="${PREEXPORT_ALL:-0}"
 SKIP_EXISTING_EVAL="${SKIP_EXISTING_EVAL:-0}"
+DELETE_MERGED_AFTER_EVAL="${DELETE_MERGED_AFTER_EVAL:-0}"
 
 export VLLM_USE_V1="${VLLM_USE_V1:-0}"
 
@@ -284,6 +285,11 @@ run_one() {
 
   append_metrics "${candidate}" "${fold}" "${gpu}" "${port}" "${model_dir}" "${output_dir}"
   say "DONE ${candidate} fold${fold}; metrics=${output_dir}/support_metrics.txt"
+
+  if [[ "${DELETE_MERGED_AFTER_EVAL}" == "1" ]]; then
+    say "DELETE merged model after eval: ${model_dir}"
+    rm -rf "${model_dir}"
+  fi
 }
 
 run_lane() {
