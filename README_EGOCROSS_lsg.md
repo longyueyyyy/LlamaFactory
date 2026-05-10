@@ -224,6 +224,30 @@ direct + uniform + max12 + VID006=4
 
 Current default grid intentionally excludes historical negative or unstable branches such as `max16` and `strict_direct`; they remain available only through explicit `--candidates` names. Use `--list-candidates` to inspect the registry.
 
+Dynamic frame selection candidates are explicit-only. They keep `direct + temperature=0` fixed and change only frame sampling:
+
+```bash
+python scripts/run_egocross_support_eval_grid.py \
+  --support-dir /share/home/group9/data/egocross \
+  --base-url http://127.0.0.1:8000/v1 \
+  --out-root egocross_outputs/support_eval/grpo_dynamic_frame_${STAMP} \
+  --log-dir logs/support_eval_dynamic_frame_${STAMP} \
+  --candidates direct_query_diverse_max12_vid006_4f,direct_query_diverse_tail_max12_vid006_4f
+```
+
+Before running model inference, preview deterministic frame choices without calling vLLM:
+
+```bash
+python scripts/egocross_preview_frame_sampling.py \
+  --support-dir /share/home/group9/data/egocross \
+  --sampling tail_dense,query_diverse,query_diverse_tail \
+  --max-frames 12 \
+  --frame-route VID006=4 \
+  --limit 20
+```
+
+`query_diverse` and `query_diverse_tail` are lightweight, deterministic samplers. They use public input metadata only: question type, question/options text, option time ranges when present, timeline coverage, and diversity. They do not use labels, hidden feedback, CoT, voting, or extra trained weights.
+
 汇总表：
 
 ```text
@@ -258,6 +282,106 @@ Promotion gate for any inference router:
 3. coverage=1.0, parse_fail=0, error_fallback=0.
 4. No obvious per-domain collapse and no answer distribution collapse.
 5. If these fail, record a support negative result and do not run hidden test.
+```
+
+Support-only inference grid result, 2026-05-10:
+
+```text
+run: egocross_outputs/support_eval/grpo_infer_grid_20260510_161738
+model: external GRPO v3
+fixed settings: direct + tail_dense + temperature=0 + answer-only
+
+baseline direct_tail_dense_max12_vid006_4f:
+overall_acc: 0.862500 (69/80)
+Animal/Surgery/Industry/XSports: 0.800000 / 0.950000 / 0.900000 / 0.800000
+answer_only_format_rate: 1.000000
+coverage: 1.000000
+parse_fail/error/error_fallback: 0/0/0
+avg_used_frames: 11.4
+runtime_seconds: 201.942
+status_dist: {"ok": 68, "ok_after_frame_retry": 12}
+used_max_frames_dist: {"12": 68, "8": 12}
+answer_dist: {"A": 17, "B": 18, "C": 21, "D": 24}
+
+ENIGMA=8 route direct_tail_dense_max12_enigma_8f_vid006_4f:
+overall_acc: 0.862500 (69/80)
+Animal/Surgery/Industry/XSports: 0.800000 / 0.950000 / 0.900000 / 0.800000
+answer_only_format_rate: 1.000000
+coverage: 1.000000
+parse_fail/error/error_fallback: 0/0/0
+avg_used_frames: 11.0
+runtime_seconds: 161.924
+status_dist: {"ok": 80}
+used_max_frames_dist: {"12": 60, "8": 20}
+answer_dist: {"A": 17, "B": 18, "C": 21, "D": 24}
+
+Analysis:
+ENIGMA=8 produced the same predictions and the same 11 support errors as baseline.
+It removed support retry events and reduced runtime, so it is a robustness/runtime improvement only.
+It does not satisfy the promotion gate because full support accuracy did not beat baseline by at least one sample.
+Do not run hidden test for this candidate.
+
+Other grid notes:
+direct_tail_dense_max8_vid006_4f tied overall at 0.862500 but shifted domains (Animal 0.75, XSports 0.85); diagnostic only.
+direct_endpoint_max12_vid006_4f tied baseline without robustness gain.
+direct_uniform_max12_vid006_4f dropped to 0.850000.
+```
+
+Fixed challenger test result, 2026-05-10:
+
+```text
+strategy fixed from support/fold before test:
+direct + tail_dense + max12 + VID006=4 + ExtrameSportFPV=8 + temperature=0
+
+support/fold validation:
+full support: 0.875000 (70/80), baseline was 0.862500 (69/80)
+fold acc: 0.950000, 0.900000, 0.850000, 0.800000; mean 0.875000
+baseline fold acc: 0.900000, 0.900000, 0.850000, 0.800000; mean 0.862500
+coverage/parse/error_fallback: 1.0/0/0
+
+fixed test result:
+Overall: 0.536050
+Surgery: 0.533569
+Industry: 0.538776
+XSports: 0.459350
+Animal: 0.639344
+coverage: 1.0
+
+Conclusion:
+XSports=8 was a valid support/fold-selected fixed challenger, but hidden fixed test tied the current GRPO best exactly.
+It did not exceed 0.536050 and should not replace the simpler current best strategy.
+Do not use this hidden tie to further tune XSports/video/frame routes.
+Keep current best as direct + tail_dense + max12 + VID006=4 + temperature=0.
+```
+
+Post-test support/fold diagnostic, 2026-05-10:
+
+```text
+strategy:
+direct + tail_dense + max12 + VID006=4 + VID059=8 + temperature=0
+
+full support:
+overall_acc: 0.875000 (70/80)
+Animal: 0.800000 (16/20)
+Industry: 0.900000 (18/20)
+Surgery: 0.950000 (19/20)
+XSports: 0.850000 (17/20)
+answer_only_format_rate: 1.000000
+coverage: 1.000000
+parse_fail/error/error_fallback: 0/0/0
+status_dist: {"ok": 68, "ok_after_frame_retry": 12}
+answer_dist: {"A": 18, "B": 18, "C": 21, "D": 23}
+used_max_frames_dist: {"12": 59, "8": 21}
+
+fold validation:
+fold acc: 0.950000, 0.900000, 0.850000, 0.800000; mean 0.875000
+baseline fold acc: 0.900000, 0.900000, 0.850000, 0.800000; mean 0.862500
+coverage/parse_fail/error_fallback: 1.0/0/0 on all folds
+
+Conclusion:
+VID059=8 is support/fold-positive and narrower than the earlier ExtrameSportFPV=8 rule.
+However, it was explored after a related fixed hidden test for ExtrameSportFPV=8 tied the current best.
+Record as a support/fold diagnostic candidate only; do not run an additional hidden test for this rule in the same feedback cycle.
 ```
 
 默认不覆盖已有非空输出目录；如要只打印命令不运行，使用 `--dry-run`。
@@ -306,6 +430,7 @@ scripts/egocross_router_infer.py        当前主推理脚本
 scripts/egocross_support_eval.py        support set 固定策略验证脚本
 scripts/run_egocross_support_eval_grid.py
 scripts/egocross_support_analyze.py     support/fold prediction diagnostics
+scripts/egocross_preview_frame_sampling.py
 scripts/egocross_blend_submit.py        历史 blend 工具
 scripts/prepare_egocross_weighted_answer_only.py
 scripts/prepare_egocross_preference_answer_only.py
@@ -340,10 +465,11 @@ scripts/egocross_router_infer.py
 2. 只跑部分 domain，其他样本用 fallback submission 填满完整输出。
 3. 保存 predictions.json、raw_outputs.json、metrics_summary.txt、submission.zip。
 4. 对明确 context length 400 错误自动降帧 retry。
-5. frame sampling: uniform / endpoint / tail_dense。
-6. prompt mode: direct / strict_direct / domain_direct / type_direct / domain_type_direct。
-7. option-order voting，但当前 GRPO 模型上 voting 实测不佳。
-8. `--temperature` 控制采样温度；默认是 0.0，历史 direct/vote 实验均为 deterministic 推理。
+5. frame sampling: uniform / endpoint / tail_dense / query_diverse / query_diverse_tail。
+6. query_diverse modes use question type/options/time ranges plus deterministic diversity; no labels or hidden feedback.
+7. prompt mode: direct / strict_direct / domain_direct / type_direct / domain_type_direct。
+8. option-order voting，但当前 GRPO 模型上 voting 实测不佳。
+9. `--temperature` 控制采样温度；默认是 0.0，历史 direct/vote 实验均为 deterministic 推理。
 ```
 
 降帧序列：
@@ -365,6 +491,8 @@ VID006=4: 4 -> 2 -> 1
 uniform: 默认旧行为，均匀取 max_frames 帧，但不保证包含最后一帧。
 endpoint: 包含首尾帧，中间均匀取样。
 tail_dense: 包含首尾帧，并把更多采样点分配到视频后半段。
+query_diverse: query-aware deterministic coverage/diversity sampler.
+query_diverse_tail: query-aware deterministic sampler with extra tail bias for prediction/sequence questions.
 ```
 
 当前 GRPO 模型上，`direct + tail_dense + max12 + VID006=4` 是当前最强。

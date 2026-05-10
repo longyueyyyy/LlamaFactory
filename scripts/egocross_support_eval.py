@@ -371,7 +371,7 @@ def main():
     parser.add_argument("--model", default="egocross")
     parser.add_argument("--prompt-mode", choices=sorted(router.PROMPT_MODES), default="direct")
     parser.add_argument("--max-frames", type=int, default=8)
-    parser.add_argument("--frame-sampling", choices=["uniform", "endpoint", "tail_dense"], default="uniform")
+    parser.add_argument("--frame-sampling", choices=sorted(router.FRAME_SAMPLINGS), default="uniform")
     parser.add_argument("--frame-route", action="append", default=[])
     parser.add_argument("--max-tokens", type=int, default=8)
     parser.add_argument("--temperature", type=float, default=0.0)

@@ -1,0 +1,3 @@
+name	role	run_status	overall	answer_only	coverage	parse_fail	error	error_fallback	avg_used_frames	runtime_seconds	Animal	Surgery	Industry	XSports	answer_dist	status_dist	used_max_frames_dist	notes	output_dir
+direct_query_diverse_max12_vid006_4f	dynamic_frame_candidate	dry_run													{}	{}	{}	Query-aware deterministic frame selection using question type/options plus diversity.	egocross_outputs\scratch_tests\dynamic_grid_dry_run\direct_query_diverse_max12_vid006_4f
+direct_query_diverse_tail_max12_vid006_4f	dynamic_frame_candidate	dry_run													{}	{}	{}	Query-aware deterministic frame selection with extra tail bias.	egocross_outputs\scratch_tests\dynamic_grid_dry_run\direct_query_diverse_tail_max12_vid006_4f

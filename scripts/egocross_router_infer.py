@@ -26,6 +26,7 @@ DOMAIN_HINT_BY_DATASET = {
 }
 
 PROMPT_MODES = {"direct", "strict_direct", "domain_direct", "type_direct", "domain_type_direct"}
+FRAME_SAMPLINGS = {"uniform", "endpoint", "tail_dense", "query_diverse", "query_diverse_tail"}
 VALID_ANSWERS = {"A", "B", "C", "D"}
 LETTERS = ["A", "B", "C", "D"]
 SUPPORT_FILES = {
@@ -305,9 +306,131 @@ def resolve_frame_path(testbed_dir, dataset, frame_path):
     )
 
 
-def sample_frames(frame_paths, max_frames, sampling="uniform"):
+def clamp01(value):
+    return max(0.0, min(1.0, float(value)))
+
+
+def unique_sorted_indices(indices, last_idx):
+    seen = set()
+    output = []
+    for index in indices:
+        value = int(round(index))
+        value = max(0, min(last_idx, value))
+        if value not in seen:
+            seen.add(value)
+            output.append(value)
+    return sorted(output)
+
+
+def parse_time_positions_from_options(options):
+    text = options_text(options)
+    ranges = []
+    for start, end in re.findall(r"(\d+(?:\.\d+)?)\s*[-–]\s*(\d+(?:\.\d+)?)\s*(?:seconds?|sec|s)\b", text, re.I):
+        start_f = float(start)
+        end_f = float(end)
+        if end_f >= start_f:
+            ranges.append((start_f, end_f))
+    if not ranges:
+        return []
+
+    max_end = max(end for _, end in ranges)
+    if max_end <= 0:
+        return []
+    positions = []
+    for start, end in ranges:
+        mid = (start + end) / 2.0
+        positions.append(clamp01(mid / max_end))
+    return positions
+
+
+def uniform_positions(count):
+    if count <= 1:
+        return [1.0]
+    return [i / (count - 1) for i in range(count)]
+
+
+def tail_dense_positions(count, power=1.8):
+    if count <= 1:
+        return [1.0]
+    return [1 - (1 - pos) ** power for pos in uniform_positions(count)]
+
+
+def query_anchor_positions(sample, sampling):
+    question = sample.get("question_text", "") if sample else ""
+    options = sample.get("options", "") if sample else ""
+    question_type = normalize_question_type(sample.get("question_type", ""), question) if sample else "unknown"
+    group = question_type_group(question_type)
+    anchors = []
+
+    time_positions = parse_time_positions_from_options(options)
+    if time_positions:
+        anchors.extend(time_positions)
+
+    if question_type in {"next_interaction", "next_direction"}:
+        anchors.extend([0.70, 0.82, 0.92, 1.00])
+    elif question_type in {"phase_sequence", "action_sequence"}:
+        anchors.extend([0.00, 0.35, 0.60, 0.82, 1.00])
+    elif question_type == "temporal_localization":
+        anchors.extend([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
+    elif question_type in {"region_localization", "counting", "not_visible"}:
+        anchors.extend(uniform_positions(7))
+    elif group == "identification":
+        anchors.extend([0.00, 0.25, 0.50, 0.72, 0.88, 1.00])
+    else:
+        anchors.extend(tail_dense_positions(7 if sampling == "query_diverse_tail" else 6))
+
+    text = f"{question} {options}".lower()
+    if any(token in text for token in ("first", "begin", "start", "initial")):
+        anchors.extend([0.00, 0.12, 0.25])
+    if any(token in text for token in ("last", "final", "next", "after", "will")):
+        anchors.extend([0.75, 0.88, 1.00])
+    if "middle" in text or "during" in text:
+        anchors.extend([0.40, 0.50, 0.60])
+
+    if sampling == "query_diverse_tail":
+        anchors.extend(tail_dense_positions(8))
+    else:
+        anchors.extend(uniform_positions(8))
+
+    return [clamp01(pos) for pos in anchors]
+
+
+def query_diverse_indices(frame_paths, max_frames, sampling, sample=None):
+    count = len(frame_paths)
+    if max_frames <= 0 or count <= max_frames:
+        return list(range(count))
+    last_idx = count - 1
+    if max_frames <= 1:
+        return [last_idx]
+
+    anchors = query_anchor_positions(sample or {}, sampling)
+    selected = unique_sorted_indices([0, last_idx], last_idx)
+
+    while len(selected) < max_frames:
+        best_idx = None
+        best_score = None
+        for idx in range(count):
+            if idx in selected:
+                continue
+            pos = idx / last_idx if last_idx else 1.0
+            relevance = max((1.0 - abs(pos - anchor) for anchor in anchors), default=0.0)
+            diversity = min(abs(idx - chosen) / last_idx for chosen in selected) if selected and last_idx else 1.0
+            tail_bonus = pos if sampling == "query_diverse_tail" else 0.0
+            score = (0.55 * relevance) + (0.35 * diversity) + (0.10 * tail_bonus)
+            if best_score is None or score > best_score or (score == best_score and idx < best_idx):
+                best_score = score
+                best_idx = idx
+        selected.append(best_idx)
+        selected.sort()
+
+    return selected
+
+
+def sample_frames(frame_paths, max_frames, sampling="uniform", sample=None):
     if max_frames and len(frame_paths) > max_frames:
         last_idx = len(frame_paths) - 1
+        if sampling in {"query_diverse", "query_diverse_tail"}:
+            return [frame_paths[idx] for idx in query_diverse_indices(frame_paths, max_frames, sampling, sample)]
         if sampling == "tail_dense":
             if max_frames <= 1:
                 return [frame_paths[-1]]
@@ -785,7 +908,7 @@ def frame_retry_sequence(max_frames):
 def build_image_content(testbed_dir, sample, max_frames, frame_sampling="uniform"):
     dataset = sample["dataset"]
     content = []
-    for frame_path in sample_frames(sample.get("video_path", []), max_frames, frame_sampling):
+    for frame_path in sample_frames(sample.get("video_path", []), max_frames, frame_sampling, sample=sample):
         abs_path = resolve_frame_path(testbed_dir, dataset, frame_path)
         content.append({
             "type": "image_url",
@@ -1104,9 +1227,9 @@ def main():
     parser.add_argument("--temperature", type=float, default=0.0, help="Sampling temperature for vLLM/OpenAI chat completion.")
     parser.add_argument(
         "--frame-sampling",
-        choices=["uniform", "endpoint", "tail_dense"],
+        choices=sorted(FRAME_SAMPLINGS),
         default="uniform",
-        help="Frame sampling strategy. endpoint includes the last frame; tail_dense allocates more frames near the end.",
+        help="Frame sampling strategy. query_diverse modes use question type/options plus timeline coverage.",
     )
     parser.add_argument("--only-datasets", default=None)
     parser.add_argument("--fallback-submission", default=None)
