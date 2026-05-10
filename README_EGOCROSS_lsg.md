@@ -584,6 +584,8 @@ GPU_LANES="4:8001 5:8002 6:8003 7:8004" bash scripts/run_egocross_dpo_lora_fold_
 
 The DPO eval script lazily exports a missing merged model immediately before that fold is evaluated, using a small lock so exports do not run concurrently. Existing eval outputs can be skipped with `SKIP_EXISTING_EVAL=1`.
 
+For vLLM inference, exported DPO fold models are patched so `text_config.rope_scaling` is `null`. Keep the train-safe base at `{"rope_type":"default"}` for Transformers training/export; only the merged inference copy should be patched for vLLM.
+
 DPO OOM note:
 ```text
 Long multimodal DPO may OOM inside get_batch_logps at logits.log_softmax(-1). DDP does not shard this per-rank tensor. This repo now avoids full-logits fp32 upcast in DPO trainer and computes label log-probs as label_logit - logsumexp(logits), chunked by LLAMAFACTORY_LOGPS_CHUNK_SIZE.

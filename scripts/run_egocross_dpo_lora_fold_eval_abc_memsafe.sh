@@ -183,6 +183,32 @@ with open(summary_path, "a", encoding="utf-8") as f:
 PY
 }
 
+fix_vllm_config() {
+  local model_dir="$1"
+  python - "${model_dir}/config.json" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+config_path = Path(sys.argv[1])
+data = json.loads(config_path.read_text(encoding="utf-8"))
+changed = False
+
+text_config = data.get("text_config")
+if isinstance(text_config, dict) and text_config.get("rope_scaling") is not None:
+    text_config["rope_scaling"] = None
+    changed = True
+
+if data.get("rope_scaling") is not None:
+    data["rope_scaling"] = None
+    changed = True
+
+if changed:
+    config_path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(f"Patched vLLM inference rope_scaling to null in {config_path}")
+PY
+}
+
 run_one() {
   local task="$1"
   local lane="$2"
@@ -192,6 +218,7 @@ run_one() {
   IFS=: read -r candidate fold adapter_dir model_dir <<< "${task}"
 
   export_one_if_missing "${candidate}" "${fold}" "${model_dir}"
+  fix_vllm_config "${model_dir}"
 
   output_dir="${OUTPUT_ROOT}/${candidate}_fold${fold}_direct_tail_dense_max12_vid006_4f"
   eval_json="${SUPPORT_DIR}/pref_answer_only_all_equal_folds/eval_answer_only_all_equal_fold${fold}.json"

@@ -70,3 +70,28 @@ echo "Export config: ${export_config}"
 echo "Adapter: ${adapter_dir}"
 echo "Merged export dir: ${export_dir}"
 llamafactory-cli export "${export_config}"
+
+python - "${export_dir}/config.json" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+config_path = Path(sys.argv[1])
+data = json.loads(config_path.read_text(encoding="utf-8"))
+changed = False
+
+text_config = data.get("text_config")
+if isinstance(text_config, dict) and text_config.get("rope_scaling") is not None:
+    text_config["rope_scaling"] = None
+    changed = True
+
+if data.get("rope_scaling") is not None:
+    data["rope_scaling"] = None
+    changed = True
+
+if changed:
+    config_path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(f"Patched vLLM inference rope_scaling to null in {config_path}")
+else:
+    print(f"vLLM inference rope_scaling already null/absent in {config_path}")
+PY
