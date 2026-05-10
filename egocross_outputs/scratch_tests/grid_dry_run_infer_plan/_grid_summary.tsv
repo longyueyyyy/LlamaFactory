@@ -1,0 +1,6 @@
+name	role	run_status	overall	answer_only	coverage	parse_fail	error	error_fallback	avg_used_frames	runtime_seconds	Animal	Surgery	Industry	XSports	answer_dist	status_dist	used_max_frames_dist	notes	output_dir
+direct_tail_dense_max12_vid006_4f	baseline	dry_run													{}	{}	{}	Current GRPO inference baseline.	egocross_outputs\scratch_tests\grid_dry_run_infer_plan\direct_tail_dense_max12_vid006_4f
+direct_tail_dense_max12_enigma_8f_vid006_4f	support_candidate	dry_run													{}	{}	{}	Context robustness route based on public support retry diagnostics.	egocross_outputs\scratch_tests\grid_dry_run_infer_plan\direct_tail_dense_max12_enigma_8f_vid006_4f
+direct_tail_dense_max8_vid006_4f	diagnostic_only	dry_run													{}	{}	{}	Lower-frame diagnostic; do not promote without fold evidence.	egocross_outputs\scratch_tests\grid_dry_run_infer_plan\direct_tail_dense_max8_vid006_4f
+direct_endpoint_max12_vid006_4f	diagnostic_only	dry_run													{}	{}	{}	Sampling diagnostic only.	egocross_outputs\scratch_tests\grid_dry_run_infer_plan\direct_endpoint_max12_vid006_4f
+direct_uniform_max12_vid006_4f	diagnostic_only	dry_run													{}	{}	{}	Sampling diagnostic only.	egocross_outputs\scratch_tests\grid_dry_run_infer_plan\direct_uniform_max12_vid006_4f

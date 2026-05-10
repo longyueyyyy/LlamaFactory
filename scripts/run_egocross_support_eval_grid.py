@@ -7,63 +7,102 @@ from datetime import datetime
 from pathlib import Path
 
 
-DEFAULT_CANDIDATES = [
+CANDIDATE_PRESETS = [
     {
         "name": "direct_tail_dense_max8_vid006_4f",
+        "role": "diagnostic_only",
         "prompt_mode": "direct",
         "max_frames": 8,
         "frame_sampling": "tail_dense",
         "frame_routes": ["VID006=4"],
+        "notes": "Lower-frame diagnostic; do not promote without fold evidence.",
     },
     {
         "name": "direct_tail_dense_max12_vid006_4f",
+        "role": "baseline",
         "prompt_mode": "direct",
         "max_frames": 12,
         "frame_sampling": "tail_dense",
         "frame_routes": ["VID006=4"],
+        "notes": "Current GRPO inference baseline.",
     },
     {
-        "name": "direct_tail_dense_max16_vid006_4f",
+        "name": "direct_tail_dense_max12_enigma_8f_vid006_4f",
+        "role": "support_candidate",
         "prompt_mode": "direct",
-        "max_frames": 16,
+        "max_frames": 12,
         "frame_sampling": "tail_dense",
-        "frame_routes": ["VID006=4"],
+        "frame_routes": ["ENIGMA=8", "VID006=4"],
+        "notes": "Context robustness route based on public support retry diagnostics.",
     },
     {
         "name": "direct_endpoint_max12_vid006_4f",
+        "role": "diagnostic_only",
         "prompt_mode": "direct",
         "max_frames": 12,
         "frame_sampling": "endpoint",
         "frame_routes": ["VID006=4"],
+        "notes": "Sampling diagnostic only.",
     },
     {
         "name": "direct_uniform_max12_vid006_4f",
+        "role": "diagnostic_only",
         "prompt_mode": "direct",
         "max_frames": 12,
         "frame_sampling": "uniform",
         "frame_routes": ["VID006=4"],
+        "notes": "Sampling diagnostic only.",
+    },
+    {
+        "name": "direct_tail_dense_max16_vid006_4f",
+        "role": "legacy_negative",
+        "prompt_mode": "direct",
+        "max_frames": 16,
+        "frame_sampling": "tail_dense",
+        "frame_routes": ["VID006=4"],
+        "notes": "Historical negative candidate; available only when explicitly requested.",
     },
     {
         "name": "strict_direct_tail_dense_max12_vid006_4f",
+        "role": "legacy_prompt_diagnostic",
         "prompt_mode": "strict_direct",
         "max_frames": 12,
         "frame_sampling": "tail_dense",
         "frame_routes": ["VID006=4"],
+        "notes": "Prompt diagnostic; available only when explicitly requested.",
     },
+]
+
+
+DEFAULT_CANDIDATE_NAMES = [
+    "direct_tail_dense_max12_vid006_4f",
+    "direct_tail_dense_max12_enigma_8f_vid006_4f",
+    "direct_tail_dense_max8_vid006_4f",
+    "direct_endpoint_max12_vid006_4f",
+    "direct_uniform_max12_vid006_4f",
 ]
 
 
 SUMMARY_COLUMNS = [
     "name",
+    "role",
     "run_status",
     "overall",
     "answer_only",
+    "coverage",
+    "parse_fail",
+    "error",
+    "error_fallback",
+    "avg_used_frames",
+    "runtime_seconds",
     "Animal",
     "Surgery",
     "Industry",
     "XSports",
+    "answer_dist",
     "status_dist",
     "used_max_frames_dist",
+    "notes",
     "output_dir",
 ]
 
@@ -71,29 +110,33 @@ SUMMARY_COLUMNS = [
 def parse_args():
     parser = argparse.ArgumentParser(description="Run a small EgoCross support-set inference strategy grid.")
     parser.add_argument("--support-dir", default="/share/home/group9/data/egocross")
+    parser.add_argument("--eval-json", default=None, help="Optional fold heldout eval JSON.")
     parser.add_argument("--base-url", default="http://127.0.0.1:8000/v1")
     parser.add_argument("--model", default="egocross")
     parser.add_argument("--out-root", default="egocross_outputs/support_eval")
     parser.add_argument("--log-dir", default="logs/support_eval")
     parser.add_argument("--summary", default=None)
     parser.add_argument("--max-tokens", type=int, default=8)
+    parser.add_argument("--temperature", type=float, default=0.0)
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--only-domains", default=None)
     parser.add_argument("--candidates", default=None, help="Comma-separated candidate names. Default runs all presets.")
+    parser.add_argument("--list-candidates", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--rerun", action="store_true", help="Do not overwrite; create a timestamped output dir when needed.")
     return parser.parse_args()
 
 
 def selected_candidates(names):
+    by_name = {candidate["name"]: candidate for candidate in CANDIDATE_PRESETS}
     if not names:
-        return DEFAULT_CANDIDATES
+        return [by_name[name] for name in DEFAULT_CANDIDATE_NAMES]
     wanted = {item.strip() for item in names.split(",") if item.strip()}
-    known = {candidate["name"] for candidate in DEFAULT_CANDIDATES}
+    known = set(by_name)
     unknown = sorted(wanted - known)
     if unknown:
         raise SystemExit(f"Unknown candidates: {', '.join(unknown)}\nKnown candidates: {', '.join(sorted(known))}")
-    return [candidate for candidate in DEFAULT_CANDIDATES if candidate["name"] in wanted]
+    return [candidate for candidate in CANDIDATE_PRESETS if candidate["name"] in wanted]
 
 
 def is_non_empty_dir(path):
@@ -118,9 +161,13 @@ def build_command(args, candidate, output_dir):
         candidate["frame_sampling"],
         "--max-tokens",
         str(args.max_tokens),
+        "--temperature",
+        str(args.temperature),
         "--output-dir",
         str(output_dir),
     ]
+    if args.eval_json:
+        cmd.extend(["--eval-json", args.eval_json])
     for route in candidate.get("frame_routes", []):
         cmd.extend(["--frame-route", route])
     if args.only_domains:
@@ -161,22 +208,32 @@ def domain_acc(metrics, domain):
     return metrics.get("by_domain", {}).get(domain, {}).get("acc", "")
 
 
-def summary_row(name, run_status, output_dir):
+def summary_row(candidate, run_status, output_dir):
     metrics = read_metrics(output_dir)
     overall = metrics.get("overall", {}) if metrics else {}
+    name = candidate["name"]
     return {
         "name": name,
+        "role": candidate.get("role", ""),
         "run_status": run_status,
         "overall": overall.get("acc", ""),
         "answer_only": overall.get("answer_only_format_rate", ""),
+        "coverage": overall.get("coverage", ""),
+        "parse_fail": overall.get("parse_fail", ""),
+        "error": overall.get("error", ""),
+        "error_fallback": overall.get("error_fallback", ""),
+        "avg_used_frames": overall.get("avg_used_frames", ""),
+        "runtime_seconds": overall.get("runtime_seconds", ""),
         "Animal": domain_acc(metrics, "Animal"),
         "Surgery": domain_acc(metrics, "Surgery"),
         "Industry": domain_acc(metrics, "Industry"),
         "XSports": domain_acc(metrics, "XSports"),
+        "answer_dist": json.dumps(metrics.get("answer_dist", {}) if metrics else {}, ensure_ascii=False, sort_keys=True),
         "status_dist": json.dumps(metrics.get("status_dist", {}) if metrics else {}, ensure_ascii=False, sort_keys=True),
         "used_max_frames_dist": json.dumps(
             metrics.get("used_max_frames_dist", {}) if metrics else {}, ensure_ascii=False, sort_keys=True
         ),
+        "notes": candidate.get("notes", ""),
         "output_dir": str(output_dir),
     }
 
@@ -190,6 +247,16 @@ def write_summary(path, rows):
 
 def main():
     args = parse_args()
+    if args.list_candidates:
+        for candidate in CANDIDATE_PRESETS:
+            marker = "default" if candidate["name"] in DEFAULT_CANDIDATE_NAMES else "explicit"
+            print(
+                f"{candidate['name']}\t{candidate.get('role', '')}\t{marker}\t"
+                f"max_frames={candidate['max_frames']}\tframe_sampling={candidate['frame_sampling']}\t"
+                f"frame_routes={','.join(candidate.get('frame_routes', []))}\t{candidate.get('notes', '')}"
+            )
+        return
+
     out_root = Path(args.out_root)
     log_dir = Path(args.log_dir)
     summary_path = Path(args.summary) if args.summary else out_root / "_grid_summary.tsv"
@@ -205,7 +272,7 @@ def main():
 
         if (output_dir / "support_metrics.json").exists() and not args.rerun:
             print(f"[SKIP] {name}: existing support_metrics.json")
-            summary_rows.append(summary_row(name, "skipped_existing_metrics", output_dir))
+            summary_rows.append(summary_row(candidate, "skipped_existing_metrics", output_dir))
             write_summary(summary_path, summary_rows)
             continue
 
@@ -216,7 +283,7 @@ def main():
                 log_path = log_dir / f"{name}_{stamp}.log"
             else:
                 print(f"[SKIP] {name}: non-empty output dir without metrics: {output_dir}")
-                summary_rows.append(summary_row(name, "skipped_non_empty_dir", output_dir))
+                summary_rows.append(summary_row(candidate, "skipped_non_empty_dir", output_dir))
                 write_summary(summary_path, summary_rows)
                 continue
 
@@ -226,7 +293,7 @@ def main():
         print("      " + " ".join(cmd))
 
         if args.dry_run:
-            summary_rows.append(summary_row(name, "dry_run", output_dir))
+            summary_rows.append(summary_row(candidate, "dry_run", output_dir))
             write_summary(summary_path, summary_rows)
             continue
 
@@ -235,7 +302,7 @@ def main():
             run_status = f"failed_{status}"
             print(f"[FAIL] {name}: exit {status}, see {log_path}")
 
-        summary_rows.append(summary_row(name, run_status, output_dir))
+        summary_rows.append(summary_row(candidate, run_status, output_dir))
         write_summary(summary_path, summary_rows)
 
     print()

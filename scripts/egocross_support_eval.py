@@ -65,6 +65,26 @@ def infer_dataset_from_images(images, domain):
     return domain
 
 
+def video_id_from_images(images):
+    if not images:
+        return "unknown"
+
+    raw = str(images[0]).replace("\\", "/").strip("/")
+    parts = raw.split("/")
+    if "frames" in parts:
+        idx = parts.index("frames")
+        if idx + 2 < len(parts):
+            return f"{parts[idx + 1]}/{parts[idx + 2]}"
+
+    for dataset in router.DOMAIN_BY_DATASET:
+        if dataset in parts:
+            idx = parts.index(dataset)
+            if idx + 1 < len(parts):
+                return f"{dataset}/{parts[idx + 1]}"
+
+    return "/".join(parts[:2]) if len(parts) >= 2 else raw or "unknown"
+
+
 def normalize_domain(domain):
     text = str(domain or "").strip()
     return DOMAIN_ALIASES.get(text.lower(), text)
@@ -95,6 +115,8 @@ def support_row_to_sample(row, domain, idx):
         "domain": domain,
         "question_text": question,
         "question_type": question_type,
+        "video_id": video_id_from_images(images),
+        "frame_count": len(images),
         "options": options,
         "video_path": images,
         "gold_answer": answer,
@@ -128,6 +150,8 @@ def eval_row_to_sample(row, idx):
         "domain": domain,
         "question_text": question,
         "question_type": question_type,
+        "video_id": video_id_from_images(images),
+        "frame_count": len(images),
         "options": options,
         "video_path": images,
         "gold_answer": answer,
@@ -219,6 +243,7 @@ def build_metrics(rows, args, elapsed_seconds):
     by_domain = defaultdict(lambda: {"correct": 0, "total": 0})
     by_dataset = defaultdict(lambda: {"correct": 0, "total": 0})
     by_type = defaultdict(lambda: {"correct": 0, "total": 0})
+    by_video = defaultdict(lambda: {"correct": 0, "total": 0})
     by_status = Counter(row["status"] for row in rows)
     answers = Counter(row.get("answer") or "" for row in rows)
     gold = Counter(row.get("gold_answer") or "" for row in rows)
@@ -228,6 +253,7 @@ def build_metrics(rows, args, elapsed_seconds):
         add_bucket(by_domain, row["domain"], row["correct"])
         add_bucket(by_dataset, row["dataset"], row["correct"])
         add_bucket(by_type, row["question_type"], row["correct"])
+        add_bucket(by_video, row.get("video_id", "unknown"), row["correct"])
 
     return {
         "strategy": {
@@ -257,6 +283,7 @@ def build_metrics(rows, args, elapsed_seconds):
         "by_domain": finalize_bucket(by_domain),
         "by_dataset": finalize_bucket(by_dataset),
         "by_question_type": finalize_bucket(by_type),
+        "by_video": finalize_bucket(by_video),
         "status_dist": dict(sorted(by_status.items())),
         "answer_dist": dict(sorted(answers.items())),
         "gold_dist": dict(sorted(gold.items())),
@@ -284,6 +311,9 @@ def metrics_text(metrics):
         lines.append(f"  {key}: {value['acc']:.6f} ({value['correct']}/{value['total']})")
     lines.append("by_question_type:")
     for key, value in metrics["by_question_type"].items():
+        lines.append(f"  {key}: {value['acc']:.6f} ({value['correct']}/{value['total']})")
+    lines.append("by_video:")
+    for key, value in metrics["by_video"].items():
         lines.append(f"  {key}: {value['acc']:.6f} ({value['correct']}/{value['total']})")
     lines.append("status_dist: " + json.dumps(metrics["status_dist"], ensure_ascii=False, sort_keys=True))
     lines.append("answer_dist: " + json.dumps(metrics["answer_dist"], ensure_ascii=False, sort_keys=True))
@@ -411,6 +441,8 @@ def main():
             "dataset": sample["dataset"],
             "domain": sample["domain"],
             "question_type": sample["question_type"],
+            "video_id": sample.get("video_id", "unknown"),
+            "frame_count": sample.get("frame_count"),
             "gold_answer": sample["gold_answer"],
             "answer": answer,
             "correct": correct,

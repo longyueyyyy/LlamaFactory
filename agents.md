@@ -23,12 +23,14 @@
 - Inference: `direct` prompt, `--default-max-frames 12`, `--frame-sampling tail_dense`, `--frame-route VID006=4`.
 - Output: `egocross_outputs/why_grpo_direct_tail_dense_max12_vid006_4f`.
 - Score record: Overall `0.536050`, Surgery `0.533569`, Industry `0.538776`, XSports `0.459350`, Animal `0.639344`, coverage `1.0`.
+- Recent challenger: LoRA DPO B from the external GRPO model (`lr5e-6`, `beta=0.03`, `pref_ftx=0.05`, memsafe `cutoff_len=24576`, image/video pixels `131072`) passed fold/support format checks but fixed test evaluation reached Overall `0.526646`, coverage `1.0`; it should not replace the GRPO best.
 
 ## Compliance
 
 - Do not infer hidden labels by leaderboard probing, reverse engineering, or exploiting evaluation behavior.
 - Do not manually label hidden test samples.
 - Do not tune router/fallback/prompt/frame strategy from hidden leaderboard or hidden domain feedback.
+- Do not use the negative LoRA DPO B hidden result to launch hidden-driven sweeps. Treat it as a recorded fixed challenger evaluation only.
 - Final reports should say strategies were fixed using support/validation data and robustness diagnostics, with hidden test used only for final evaluation.
 - For new inference strategy selection, run fixed candidates on public support set with `scripts/egocross_support_eval.py`, then apply the chosen strategy unchanged to hidden test.
 
@@ -94,7 +96,21 @@ Run the default support strategy grid:
 python scripts/run_egocross_support_eval_grid.py
 ```
 
+The default grid is inference-only and conservative: baseline `direct_tail_dense_max12_vid006_4f`, support candidate `direct_tail_dense_max12_enigma_8f_vid006_4f`, and diagnostic-only `max8`, `endpoint`, and `uniform` variants. Historical negative candidates such as `max16` or `strict_direct` are explicit-only via `--candidates`.
+
 The grid writes separate directories under `egocross_outputs/support_eval/` and a summary TSV at `egocross_outputs/support_eval/_grid_summary.tsv`. It must not overwrite existing experiment outputs.
+
+Analyze support or fold predictions:
+
+```bash
+python scripts/egocross_support_analyze.py \
+  --predictions egocross_outputs/support_eval/grpo_direct_tail_dense_max12_vid006_4f/support_predictions.json \
+  --metrics egocross_outputs/support_eval/grpo_direct_tail_dense_max12_vid006_4f/support_metrics.json \
+  --support-dir /share/home/group9/data/egocross \
+  --output-dir egocross_outputs/support_eval/grpo_direct_tail_dense_max12_vid006_4f_analysis
+```
+
+Promotion gate for any new inference router: full support beats baseline by at least one sample; four-fold mean beats `0.8625` with at least `3/4` folds not below baseline; `coverage=1.0`, `parse_fail=0`, `error_fallback=0`; no obvious per-domain or answer distribution collapse. If the gate fails, record a support negative result and do not run hidden test.
 
 ## Known Pitfalls
 

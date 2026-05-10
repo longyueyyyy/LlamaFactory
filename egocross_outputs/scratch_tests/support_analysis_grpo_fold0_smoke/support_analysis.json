@@ -1,0 +1,291 @@
+{
+  "warnings": [],
+  "strategy": {
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "max_tokens": 8,
+    "temperature": 0.0,
+    "vote": false,
+    "frame_route": [
+      "VID006=4"
+    ],
+    "only_domains": null,
+    "eval_json": "/share/home/group9/data/egocross/pref_answer_only_all_equal_folds/eval_answer_only_all_equal_fold0.json"
+  },
+  "overall": {
+    "correct": 18,
+    "total": 20,
+    "acc": 0.9,
+    "answer_only_format_rate": 1.0,
+    "coverage": 1.0,
+    "parse_fail": 0,
+    "error": 0,
+    "error_fallback": 0,
+    "avg_used_frames": 11.4,
+    "runtime_seconds": 61.184
+  },
+  "by_domain": {
+    "Animal": {
+      "correct": 5,
+      "total": 5,
+      "acc": 1.0
+    },
+    "Industry": {
+      "correct": 5,
+      "total": 5,
+      "acc": 1.0
+    },
+    "Surgery": {
+      "correct": 5,
+      "total": 5,
+      "acc": 1.0
+    },
+    "XSports": {
+      "correct": 3,
+      "total": 5,
+      "acc": 0.6
+    }
+  },
+  "by_question_type": {
+    "action_identification": {
+      "correct": 2,
+      "total": 3,
+      "acc": 0.666667
+    },
+    "action_sequence": {
+      "correct": 0,
+      "total": 1,
+      "acc": 0.0
+    },
+    "animal_identification": {
+      "correct": 2,
+      "total": 2,
+      "acc": 1.0
+    },
+    "counting": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "next_interaction": {
+      "correct": 2,
+      "total": 2,
+      "acc": 1.0
+    },
+    "object_interaction": {
+      "correct": 2,
+      "total": 2,
+      "acc": 1.0
+    },
+    "phase_sequence": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "region_localization": {
+      "correct": 3,
+      "total": 3,
+      "acc": 1.0
+    },
+    "temporal_localization": {
+      "correct": 3,
+      "total": 3,
+      "acc": 1.0
+    },
+    "tool_interaction": {
+      "correct": 2,
+      "total": 2,
+      "acc": 1.0
+    }
+  },
+  "by_video": {
+    "CholecTrack20/VID103": {
+      "correct": 2,
+      "total": 2,
+      "acc": 1.0
+    },
+    "ENIGMA/111": {
+      "correct": 2,
+      "total": 2,
+      "acc": 1.0
+    },
+    "ENIGMA/157": {
+      "correct": 3,
+      "total": 3,
+      "acc": 1.0
+    },
+    "EgoPet/005": {
+      "correct": 2,
+      "total": 2,
+      "acc": 1.0
+    },
+    "EgoPet/036": {
+      "correct": 2,
+      "total": 2,
+      "acc": 1.0
+    },
+    "EgoPet/093": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "EgoSurgery/15": {
+      "correct": 3,
+      "total": 3,
+      "acc": 1.0
+    },
+    "ExtrameSportFPV/VID045": {
+      "correct": 2,
+      "total": 2,
+      "acc": 1.0
+    },
+    "ExtrameSportFPV/VID059": {
+      "correct": 1,
+      "total": 3,
+      "acc": 0.333333
+    }
+  },
+  "by_video_question_type": {
+    "CholecTrack20/VID103\tphase_sequence": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "CholecTrack20/VID103\tregion_localization": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "ENIGMA/111\tcounting": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "ENIGMA/111\ttemporal_localization": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "ENIGMA/157\tnext_interaction": {
+      "correct": 2,
+      "total": 2,
+      "acc": 1.0
+    },
+    "ENIGMA/157\tregion_localization": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "EgoPet/005\tanimal_identification": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "EgoPet/005\tobject_interaction": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "EgoPet/036\tanimal_identification": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "EgoPet/036\ttemporal_localization": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "EgoPet/093\tobject_interaction": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "EgoSurgery/15\tregion_localization": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "EgoSurgery/15\ttool_interaction": {
+      "correct": 2,
+      "total": 2,
+      "acc": 1.0
+    },
+    "ExtrameSportFPV/VID045\taction_identification": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "ExtrameSportFPV/VID045\ttemporal_localization": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "ExtrameSportFPV/VID059\taction_identification": {
+      "correct": 1,
+      "total": 2,
+      "acc": 0.5
+    },
+    "ExtrameSportFPV/VID059\taction_sequence": {
+      "correct": 0,
+      "total": 1,
+      "acc": 0.0
+    }
+  },
+  "status_dist": {
+    "ok": 17,
+    "ok_after_frame_retry": 3
+  },
+  "used_max_frames_dist": {
+    "12": 17,
+    "8": 3
+  },
+  "answer_dist": {
+    "A": 5,
+    "B": 2,
+    "C": 7,
+    "D": 6
+  },
+  "gold_dist": {
+    "A": 6,
+    "B": 3,
+    "C": 6,
+    "D": 5
+  },
+  "error_by_domain_question_type": {
+    "XSports\taction_identification": 1,
+    "XSports\taction_sequence": 1
+  },
+  "error_by_video": {
+    "ExtrameSportFPV/VID059": 2
+  },
+  "errors": [
+    {
+      "id": "XSports_4",
+      "question_id": "XSports_4",
+      "domain": "XSports",
+      "dataset": "ExtrameSportFPV",
+      "video_id": "ExtrameSportFPV/VID059",
+      "question_type": "action_identification",
+      "gold_answer": "B",
+      "answer": "C",
+      "status": "ok",
+      "used_max_frames": 12,
+      "frame_count": 10
+    },
+    {
+      "id": "XSports_16",
+      "question_id": "XSports_16",
+      "domain": "XSports",
+      "dataset": "ExtrameSportFPV",
+      "video_id": "ExtrameSportFPV/VID059",
+      "question_type": "action_sequence",
+      "gold_answer": "A",
+      "answer": "D",
+      "status": "ok",
+      "used_max_frames": 12,
+      "frame_count": 10
+    }
+  ]
+}

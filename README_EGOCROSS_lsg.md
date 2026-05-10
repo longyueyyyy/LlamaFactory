@@ -183,6 +183,27 @@ support_metrics.json
 support_metrics.txt
 ```
 
+Support-only analysis for an existing eval output:
+
+```bash
+python scripts/egocross_support_analyze.py \
+  --predictions egocross_outputs/support_eval/grpo_direct_tail_dense_max12_vid006_4f/support_predictions.json \
+  --metrics egocross_outputs/support_eval/grpo_direct_tail_dense_max12_vid006_4f/support_metrics.json \
+  --support-dir /share/home/group9/data/egocross \
+  --output-dir egocross_outputs/support_eval/grpo_direct_tail_dense_max12_vid006_4f_analysis
+```
+
+For fold outputs, pass the fold eval JSON so per-video diagnostics can be reconstructed from public metadata:
+
+```bash
+python scripts/egocross_support_analyze.py \
+  --predictions egocross_outputs/support_eval/grpo_baseline_folds_20260510_111639/fold0_direct_tail_dense_max12_vid006_4f/support_predictions.json \
+  --metrics egocross_outputs/support_eval/grpo_baseline_folds_20260510_111639/fold0_direct_tail_dense_max12_vid006_4f/support_metrics.json \
+  --support-dir /share/home/group9/data/egocross \
+  --eval-json /share/home/group9/data/egocross/pref_answer_only_all_equal_folds/eval_answer_only_all_equal_fold0.json \
+  --output-dir egocross_outputs/support_eval/analysis_grpo_baseline_fold0
+```
+
 一次性跑多个预设候选策略：
 
 ```bash
@@ -194,11 +215,14 @@ python scripts/run_egocross_support_eval_grid.py
 默认候选包括：
 
 ```text
-direct + tail_dense + max8/12/16 + VID006=4
+baseline: direct + tail_dense + max12 + VID006=4
+diagnostic: direct + tail_dense + max8 + VID006=4
+direct + tail_dense + max12 + ENIGMA=8 + VID006=4
 direct + endpoint + max12 + VID006=4
 direct + uniform + max12 + VID006=4
-strict_direct + tail_dense + max12 + VID006=4
 ```
+
+Current default grid intentionally excludes historical negative or unstable branches such as `max16` and `strict_direct`; they remain available only through explicit `--candidates` names. Use `--list-candidates` to inspect the registry.
 
 汇总表：
 
@@ -213,6 +237,27 @@ python scripts/run_egocross_support_eval_grid.py \
   --base-url http://127.0.0.1:8000/v1 \
   --support-dir /share/home/group9/data/egocross \
   --out-root egocross_outputs/support_eval
+```
+
+Fold validation example:
+
+```bash
+python scripts/run_egocross_support_eval_grid.py \
+  --support-dir /share/home/group9/data/egocross \
+  --eval-json /share/home/group9/data/egocross/pref_answer_only_all_equal_folds/eval_answer_only_all_equal_fold0.json \
+  --base-url http://127.0.0.1:8000/v1 \
+  --out-root egocross_outputs/support_eval/grpo_infer_grid_fold0_${STAMP} \
+  --log-dir logs/support_eval_grid_fold0_${STAMP}
+```
+
+Promotion gate for any inference router:
+
+```text
+1. Full support must beat baseline by at least one sample.
+2. Four-fold mean must beat 0.8625, with at least 3/4 folds not below baseline.
+3. coverage=1.0, parse_fail=0, error_fallback=0.
+4. No obvious per-domain collapse and no answer distribution collapse.
+5. If these fail, record a support negative result and do not run hidden test.
 ```
 
 默认不覆盖已有非空输出目录；如要只打印命令不运行，使用 `--dry-run`。
@@ -260,6 +305,7 @@ submission_template.json               官方提交模板，禁止覆盖
 scripts/egocross_router_infer.py        当前主推理脚本
 scripts/egocross_support_eval.py        support set 固定策略验证脚本
 scripts/run_egocross_support_eval_grid.py
+scripts/egocross_support_analyze.py     support/fold prediction diagnostics
 scripts/egocross_blend_submit.py        历史 blend 工具
 scripts/prepare_egocross_weighted_answer_only.py
 scripts/prepare_egocross_preference_answer_only.py
@@ -348,6 +394,7 @@ CoT/few-shot/enhanced reasoning: 历史上均未超过 direct/router，不建议
 | GRPO direct endpoint max8 | 0.526646 | 0.526502 | 0.526531 | 0.459350 | 0.617486 | 低于 tail_dense |
 | GRPO direct tail_dense max8 | 0.529781 | 0.533569 | 0.530612 | 0.459350 | 0.617486 | 采帧改进有效 |
 | GRPO direct tail_dense max12 | 0.536050 | 0.533569 | 0.538776 | 0.459350 | 0.639344 | 当前最强候选 |
+| DPO LoRA B from GRPO direct tail_dense max12 | 0.526646 | 0.526502 | 0.542857 | 0.434959 | 0.628415 | fixed challenger run; lower than GRPO best, do not promote |
 | GRPO direct tail_dense max16 | 0.532915 | 0.522968 | 0.538776 | 0.459350 | 0.639344 | 低于 max12，Surgery 回落 |
 | GRPO ctx65536 direct tail_dense max12 no VID006 route temp0 | 0.536050 | 0.533569 | 0.538776 | 0.459350 | 0.639344 | 与当前最佳同分；长上下文可避免特殊 VID006 route，但无提分 |
 | GRPO ctx65536 direct tail_dense max24 | 0.531870 | 0.522968 | 0.542857 | 0.459350 | 0.628415 | 长上下文更多帧提升 Industry，但损伤 Surgery/Animal |
@@ -658,4 +705,50 @@ GRPO baseline	direct_tail_dense_max12_vid006_4f
 DPO LoRA A	direct_tail_dense_max12_vid006_4f									
 DPO LoRA B	direct_tail_dense_max12_vid006_4f									
 DPO LoRA C	direct_tail_dense_max12_vid006_4f									
+```
+
+Result record, 2026-05-10:
+```text
+Fold heldout protocol:
+GRPO baseline fold acc: 0.90, 0.90, 0.85, 0.80; mean 0.8625.
+DPO LoRA A fold acc:    0.95, 0.90, 0.90, 0.70; mean 0.8625.
+DPO LoRA B fold acc:    0.95, 0.90, 0.90, 0.75; mean 0.8750.
+DPO LoRA C fold acc:    0.95, 0.85, 0.90, 0.70; mean 0.8500.
+
+Winner selected from fold validation: B
+config: configs/egocross_dpo_lora_from_grpo_all_equal_wrong3_fmt1_lr5e6_beta003_ftx005_ep1.yaml
+merged model: saves/egocross/qwen3vl4b/dpo_lora_from_grpo_all_equal_wrong3_fmt1_lr5e6_beta003_ftx005_ep1_memsafe_ctx24576_px131k_merged
+
+Full support eval for B:
+overall_acc: 0.862500 (69/80)
+Animal: 0.850000 (17/20)
+Industry: 0.900000 (18/20)
+Surgery: 0.900000 (18/20)
+XSports: 0.800000 (16/20)
+answer_only_format_rate: 1.000000
+coverage: 1.000000
+parse_fail/error/error_fallback: 0/0/0
+answer_dist: A=17, B=19, C=20, D=24
+
+Fixed test evaluation for B, same inference strategy:
+direct + tail_dense + max12 + VID006=4 + temperature=0
+Overall: 0.526646
+Surgery: 0.526502
+Industry: 0.542857
+XSports: 0.434959
+Animal: 0.628415
+coverage: 1.0
+```
+
+Conclusion:
+```text
+LoRA DPO from GRPO was a valid conservative challenger but did not beat the current GRPO best test record.
+Do not promote DPO LoRA B as the main submission candidate.
+Keep current best as:
+/share/home/group9/why/rl_grpo_v2/output/egocross_grpo_answer_v7/v3-20260507-113212
+direct + tail_dense + max12 + VID006=4 + temperature=0
+egocross_outputs/why_grpo_direct_tail_dense_max12_vid006_4f
+
+This fixed challenger result is recorded for audit/history only. Do not use this hidden result to tune prompt, router, frame sampling, beta, or checkpoint selection.
+If training is revisited, use support/fold diagnostics first; prefer new data or stronger public validation rather than another small hidden-driven DPO sweep.
 ```
