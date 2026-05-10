@@ -1,0 +1,572 @@
+[
+  {
+    "id": "Animal_1",
+    "question_id": "Animal_1",
+    "dataset": "EgoPet",
+    "domain": "Animal",
+    "question_type": "animal_identification",
+    "gold_answer": "B",
+    "answer": "B",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "B",
+        "raw_output": "B",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What type of animal is featured in this egocentric video segment?\nA) Cheetah\nB) Cat\nC) Alligator\nD) Shark\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What type of animal is featured in this egocentric video segment?\nA) Cheetah\nB) Cat\nC) Alligator\nD) Shark\nAnswer:",
+    "raw_output": "B"
+  },
+  {
+    "id": "Animal_5",
+    "question_id": "Animal_5",
+    "dataset": "EgoPet",
+    "domain": "Animal",
+    "question_type": "object_interaction",
+    "gold_answer": "A",
+    "answer": "A",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "A",
+        "raw_output": "A",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What object is the cat interacting with in this video segment?\nA) Cat\nB) Bench\nC) Food\nD) Water\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What object is the cat interacting with in this video segment?\nA) Cat\nB) Bench\nC) Food\nD) Water\nAnswer:",
+    "raw_output": "A"
+  },
+  {
+    "id": "Animal_9",
+    "question_id": "Animal_9",
+    "dataset": "EgoPet",
+    "domain": "Animal",
+    "question_type": "object_interaction",
+    "gold_answer": "A",
+    "answer": "B",
+    "correct": false,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "B",
+        "raw_output": "B",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What object is the cat interacting with in this video segment?\nA) Other animal\nB) Plant\nC) Toy\nD) Vehicle\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What object is the cat interacting with in this video segment?\nA) Other animal\nB) Plant\nC) Toy\nD) Vehicle\nAnswer:",
+    "raw_output": "B"
+  },
+  {
+    "id": "Animal_13",
+    "question_id": "Animal_13",
+    "dataset": "EgoPet",
+    "domain": "Animal",
+    "question_type": "object_interaction",
+    "gold_answer": "B",
+    "answer": "B",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "B",
+        "raw_output": "B",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What object is the cat interacting with in this video segment?\nA) Plant\nB) Water\nC) Dog\nD) Other animal\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What object is the cat interacting with in this video segment?\nA) Plant\nB) Water\nC) Dog\nD) Other animal\nAnswer:",
+    "raw_output": "B"
+  },
+  {
+    "id": "Animal_17",
+    "question_id": "Animal_17",
+    "dataset": "EgoPet",
+    "domain": "Animal",
+    "question_type": "object_interaction",
+    "gold_answer": "B",
+    "answer": "B",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "B",
+        "raw_output": "B",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What object is the cat interacting with in this video segment?\nA) Dog\nB) Cat\nC) Vehicle\nD) Filament\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What object is the cat interacting with in this video segment?\nA) Dog\nB) Cat\nC) Vehicle\nD) Filament\nAnswer:",
+    "raw_output": "B"
+  },
+  {
+    "id": "Surgery_1",
+    "question_id": "Surgery_1",
+    "dataset": "CholecTrack20",
+    "domain": "Surgery",
+    "question_type": "not_visible",
+    "gold_answer": "B",
+    "answer": "B",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "B",
+        "raw_output": "B",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Which surgical instrument is NOT visible in the video segment from 0.00s to 60.00s?\nA) hook\nB) scissors\nC) clipper\nD) grasper\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Which surgical instrument is NOT visible in the video segment from 0.00s to 60.00s?\nA) hook\nB) scissors\nC) clipper\nD) grasper\nAnswer:",
+    "raw_output": "B"
+  },
+  {
+    "id": "Surgery_5",
+    "question_id": "Surgery_5",
+    "dataset": "CholecTrack20",
+    "domain": "Surgery",
+    "question_type": "region_localization",
+    "gold_answer": "D",
+    "answer": "D",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "D",
+        "raw_output": "D",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Approximately in which region of the view was the 'hook' (operated by main surgeon right hand) located around timestamp 9.89s?\nA) center-left\nB) center-right\nC) bottom-center\nD) top-center\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Approximately in which region of the view was the 'hook' (operated by main surgeon right hand) located around timestamp 9.89s?\nA) center-left\nB) center-right\nC) bottom-center\nD) top-center\nAnswer:",
+    "raw_output": "D"
+  },
+  {
+    "id": "Surgery_9",
+    "question_id": "Surgery_9",
+    "dataset": "CholecTrack20",
+    "domain": "Surgery",
+    "question_type": "not_visible",
+    "gold_answer": "A",
+    "answer": "A",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "A",
+        "raw_output": "A",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Which surgical instrument is NOT visible in the video segment from 0.00s to 60.00s?\nA) scissors\nB) hook\nC) clipper\nD) grasper\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Which surgical instrument is NOT visible in the video segment from 0.00s to 60.00s?\nA) scissors\nB) hook\nC) clipper\nD) grasper\nAnswer:",
+    "raw_output": "A"
+  },
+  {
+    "id": "Surgery_13",
+    "question_id": "Surgery_13",
+    "dataset": "EgoSurgery",
+    "domain": "Surgery",
+    "question_type": "not_visible",
+    "gold_answer": "C",
+    "answer": "C",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "C",
+        "raw_output": "C",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Which of the following objects was NOT visible in the video segment from 0.0s to 112s?\nA) Tweezers\nB) Suction Cannula\nC) Hook\nD) Scalpel\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Which of the following objects was NOT visible in the video segment from 0.0s to 112s?\nA) Tweezers\nB) Suction Cannula\nC) Hook\nD) Scalpel\nAnswer:",
+    "raw_output": "C"
+  },
+  {
+    "id": "Surgery_17",
+    "question_id": "Surgery_17",
+    "dataset": "EgoSurgery",
+    "domain": "Surgery",
+    "question_type": "region_localization",
+    "gold_answer": "C",
+    "answer": "D",
+    "correct": false,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "D",
+        "raw_output": "D",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Approximately in which region of the view was the 'Scissors' located when the operator's right hand was interacting with it (around timestamp 6s) in the segment from 0s to 24s?\nA) center-right\nB) center-left\nC) top-right\nD) bottom-right\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Approximately in which region of the view was the 'Scissors' located when the operator's right hand was interacting with it (around timestamp 6s) in the segment from 0s to 24s?\nA) center-right\nB) center-left\nC) top-right\nD) bottom-right\nAnswer:",
+    "raw_output": "D"
+  },
+  {
+    "id": "Industry_1",
+    "question_id": "Industry_1",
+    "dataset": "ENIGMA",
+    "domain": "Industry",
+    "question_type": "counting",
+    "gold_answer": "D",
+    "answer": "D",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "D",
+        "raw_output": "D",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: How many distinct types of objects (e.g. tools, components, buttons as a single category) were visible in the video segment from 0.00s to 10.00s?\nA) 10\nB) 11\nC) 12\nD) 8\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: How many distinct types of objects (e.g. tools, components, buttons as a single category) were visible in the video segment from 0.00s to 10.00s?\nA) 10\nB) 11\nC) 12\nD) 8\nAnswer:",
+    "raw_output": "D"
+  },
+  {
+    "id": "Industry_5",
+    "question_id": "Industry_5",
+    "dataset": "ENIGMA",
+    "domain": "Industry",
+    "question_type": "counting",
+    "gold_answer": "A",
+    "answer": "A",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "A",
+        "raw_output": "A",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: How many distinct types of objects (e.g. tools, components, buttons as a single category) were visible in the video segment from 0.00s to 10.00s?\nA) 10\nB) 11\nC) 12\nD) 13\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: How many distinct types of objects (e.g. tools, components, buttons as a single category) were visible in the video segment from 0.00s to 10.00s?\nA) 10\nB) 11\nC) 12\nD) 13\nAnswer:",
+    "raw_output": "A"
+  },
+  {
+    "id": "Industry_9",
+    "question_id": "Industry_9",
+    "dataset": "ENIGMA",
+    "domain": "Industry",
+    "question_type": "next_interaction",
+    "gold_answer": "A",
+    "answer": "A",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok_after_frame_retry",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 8,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "context_length_error",
+        "error": "Error code: 400 - {'error': {'message': \"Input length (34200) exceeds model's maximum context length (32768).\", 'type': 'BadRequestError', 'param': None, 'code': 400}}"
+      },
+      {
+        "max_frames": 8,
+        "status": "ok",
+        "answer": "A",
+        "raw_output": "A",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Based on the activity observed up to 30.00s, what is the predicted next type of interaction for the operator's left hand?\nA) contact the board\nB) contact the electric screwdriver\nC) contact the oscilloscope\nD) contact the oscilloscope component\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Based on the activity observed up to 30.00s, what is the predicted next type of interaction for the operator's left hand?\nA) contact the board\nB) contact the electric screwdriver\nC) contact the oscilloscope\nD) contact the oscilloscope component\nAnswer:",
+    "raw_output": "A"
+  },
+  {
+    "id": "Industry_13",
+    "question_id": "Industry_13",
+    "dataset": "ENIGMA",
+    "domain": "Industry",
+    "question_type": "counting",
+    "gold_answer": "B",
+    "answer": "B",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "B",
+        "raw_output": "B",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: How many distinct types of objects (e.g. tools, components, buttons as a single category) were visible in the video segment from 0.00s to 10.00s?\nA) 0\nB) 1\nC) 2\nD) 3\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: How many distinct types of objects (e.g. tools, components, buttons as a single category) were visible in the video segment from 0.00s to 10.00s?\nA) 0\nB) 1\nC) 2\nD) 3\nAnswer:",
+    "raw_output": "B"
+  },
+  {
+    "id": "Industry_17",
+    "question_id": "Industry_17",
+    "dataset": "ENIGMA",
+    "domain": "Industry",
+    "question_type": "counting",
+    "gold_answer": "D",
+    "answer": "D",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok_after_frame_retry",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 8,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "context_length_error",
+        "error": "Error code: 400 - {'error': {'message': \"Input length (34204) exceeds model's maximum context length (32768).\", 'type': 'BadRequestError', 'param': None, 'code': 400}}"
+      },
+      {
+        "max_frames": 8,
+        "status": "ok",
+        "answer": "D",
+        "raw_output": "D",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: How many distinct types of objects (e.g. tools, components, buttons as a single category) were visible in the video segment from 0.00s to 10.00s?\nA) 10\nB) 11\nC) 12\nD) 9\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: How many distinct types of objects (e.g. tools, components, buttons as a single category) were visible in the video segment from 0.00s to 10.00s?\nA) 10\nB) 11\nC) 12\nD) 9\nAnswer:",
+    "raw_output": "D"
+  },
+  {
+    "id": "XSports_1",
+    "question_id": "XSports_1",
+    "dataset": "ExtrameSportFPV",
+    "domain": "XSports",
+    "question_type": "next_direction",
+    "gold_answer": "B",
+    "answer": "B",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "B",
+        "raw_output": "B",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Based on the video segment, what is the next direction of movement?\nA) Curve right\nB) Right\nC) Curve left\nD) Left then right\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Based on the video segment, what is the next direction of movement?\nA) Curve right\nB) Right\nC) Curve left\nD) Left then right\nAnswer:",
+    "raw_output": "B"
+  },
+  {
+    "id": "XSports_5",
+    "question_id": "XSports_5",
+    "dataset": "ExtrameSportFPV",
+    "domain": "XSports",
+    "question_type": "next_direction",
+    "gold_answer": "A",
+    "answer": "A",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "A",
+        "raw_output": "A",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Based on the video segment, what is the next direction of movement?\nA) Right\nB) Left\nC) Left then right\nD) Curve left\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Based on the video segment, what is the next direction of movement?\nA) Right\nB) Left\nC) Left then right\nD) Curve left\nAnswer:",
+    "raw_output": "A"
+  },
+  {
+    "id": "XSports_9",
+    "question_id": "XSports_9",
+    "dataset": "ExtrameSportFPV",
+    "domain": "XSports",
+    "question_type": "action_sequence",
+    "gold_answer": "D",
+    "answer": "D",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "D",
+        "raw_output": "D",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What sequence of actions is performed in the time segment from 0s to 41s?\nA) Right → Bumpyforward → Right\nB) Leftright → Run → Right\nC) Leftright → Run → Curveright\nD) Curveleft → Forward → Curveleft\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What sequence of actions is performed in the time segment from 0s to 41s?\nA) Right → Bumpyforward → Right\nB) Leftright → Run → Right\nC) Leftright → Run → Curveright\nD) Curveleft → Forward → Curveleft\nAnswer:",
+    "raw_output": "D"
+  },
+  {
+    "id": "XSports_13",
+    "question_id": "XSports_13",
+    "dataset": "ExtrameSportFPV",
+    "domain": "XSports",
+    "question_type": "temporal_localization",
+    "gold_answer": "B",
+    "answer": "B",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "B",
+        "raw_output": "B",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: At what approximate time does the 'curveleft' action begin in this video segment?\nA) 13.8s\nB) 7.2s\nC) 9.7s\nD) 1.4s\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: At what approximate time does the 'curveleft' action begin in this video segment?\nA) 13.8s\nB) 7.2s\nC) 9.7s\nD) 1.4s\nAnswer:",
+    "raw_output": "B"
+  },
+  {
+    "id": "XSports_17",
+    "question_id": "XSports_17",
+    "dataset": "ExtrameSportFPV",
+    "domain": "XSports",
+    "question_type": "temporal_localization",
+    "gold_answer": "D",
+    "answer": "D",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "D",
+        "raw_output": "D",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: At what approximate time does the 'walk' action begin in this video segment?\nA) 11.3s\nB) 4.2s\nC) 6.5s\nD) 1.6s\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: At what approximate time does the 'walk' action begin in this video segment?\nA) 11.3s\nB) 4.2s\nC) 6.5s\nD) 1.6s\nAnswer:",
+    "raw_output": "D"
+  }
+]

@@ -1,0 +1,149 @@
+{
+  "strategy": {
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "max_tokens": 8,
+    "temperature": 0.0,
+    "vote": false,
+    "frame_route": [
+      "VID006=4"
+    ],
+    "only_domains": null,
+    "eval_json": "/share/home/group9/data/egocross/pref_answer_only_all_equal_folds/eval_answer_only_all_equal_fold2.json"
+  },
+  "overall": {
+    "correct": 18,
+    "total": 20,
+    "acc": 0.9,
+    "answer_only_format_rate": 1.0,
+    "coverage": 1.0,
+    "parse_fail": 0,
+    "error": 0,
+    "error_fallback": 0,
+    "avg_used_frames": 11.4,
+    "runtime_seconds": 58.618,
+    "avg_runtime_seconds": 2.931
+  },
+  "by_domain": {
+    "Animal": {
+      "correct": 5,
+      "total": 5,
+      "acc": 1.0
+    },
+    "Industry": {
+      "correct": 4,
+      "total": 5,
+      "acc": 0.8
+    },
+    "Surgery": {
+      "correct": 5,
+      "total": 5,
+      "acc": 1.0
+    },
+    "XSports": {
+      "correct": 4,
+      "total": 5,
+      "acc": 0.8
+    }
+  },
+  "by_dataset": {
+    "CholecTrack20": {
+      "correct": 3,
+      "total": 3,
+      "acc": 1.0
+    },
+    "ENIGMA": {
+      "correct": 4,
+      "total": 5,
+      "acc": 0.8
+    },
+    "EgoPet": {
+      "correct": 5,
+      "total": 5,
+      "acc": 1.0
+    },
+    "EgoSurgery": {
+      "correct": 2,
+      "total": 2,
+      "acc": 1.0
+    },
+    "ExtrameSportFPV": {
+      "correct": 4,
+      "total": 5,
+      "acc": 0.8
+    }
+  },
+  "by_question_type": {
+    "action_identification": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "animal_identification": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "counting": {
+      "correct": 5,
+      "total": 5,
+      "acc": 1.0
+    },
+    "next_direction": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "not_visible": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "object_interaction": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "phase_sequence": {
+      "correct": 2,
+      "total": 2,
+      "acc": 1.0
+    },
+    "region_localization": {
+      "correct": 1,
+      "total": 2,
+      "acc": 0.5
+    },
+    "sport_identification": {
+      "correct": 1,
+      "total": 2,
+      "acc": 0.5
+    },
+    "temporal_localization": {
+      "correct": 4,
+      "total": 4,
+      "acc": 1.0
+    }
+  },
+  "status_dist": {
+    "ok": 17,
+    "ok_after_frame_retry": 3
+  },
+  "answer_dist": {
+    "A": 3,
+    "B": 4,
+    "C": 7,
+    "D": 6
+  },
+  "gold_dist": {
+    "A": 4,
+    "B": 4,
+    "C": 7,
+    "D": 5
+  },
+  "used_max_frames_dist": {
+    "12": 17,
+    "8": 3
+  }
+}

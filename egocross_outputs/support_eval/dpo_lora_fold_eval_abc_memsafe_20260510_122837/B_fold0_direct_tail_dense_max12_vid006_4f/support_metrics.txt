@@ -1,0 +1,29 @@
+overall_acc: 0.950000 (19/20)
+answer_only_format_rate: 1.000000
+coverage: 1.000000
+parse_fail: 0
+error: 0
+error_fallback: 0
+avg_used_frames: 11.400000
+runtime_seconds: 61.594
+strategy: prompt_mode=direct max_frames=12 frame_sampling=tail_dense max_tokens=8 temperature=0.0 vote=False frame_route=['VID006=4'] eval_json=/share/home/group9/data/egocross/pref_answer_only_all_equal_folds/eval_answer_only_all_equal_fold0.json
+by_domain:
+  Animal: 1.000000 (5/5)
+  Industry: 1.000000 (5/5)
+  Surgery: 1.000000 (5/5)
+  XSports: 0.800000 (4/5)
+by_question_type:
+  action_identification: 1.000000 (3/3)
+  action_sequence: 0.000000 (0/1)
+  animal_identification: 1.000000 (2/2)
+  counting: 1.000000 (1/1)
+  next_interaction: 1.000000 (2/2)
+  object_interaction: 1.000000 (2/2)
+  phase_sequence: 1.000000 (1/1)
+  region_localization: 1.000000 (3/3)
+  temporal_localization: 1.000000 (3/3)
+  tool_interaction: 1.000000 (2/2)
+status_dist: {"ok": 17, "ok_after_frame_retry": 3}
+answer_dist: {"A": 5, "B": 3, "C": 6, "D": 6}
+gold_dist: {"A": 6, "B": 3, "C": 6, "D": 5}
+used_max_frames_dist: {"12": 17, "8": 3}
