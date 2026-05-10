@@ -11,6 +11,7 @@ LOG_ROOT="${EGOCROSS_EVAL_LOG_ROOT:-logs/egocross_dpo_lora_fold_eval_abc_memsafe
 OUTPUT_ROOT="${EGOCROSS_EVAL_OUTPUT_ROOT:-egocross_outputs/support_eval/dpo_lora_fold_eval_abc_memsafe_${RUN_ID}}"
 SERVED_MODEL_NAME="${SERVED_MODEL_NAME:-egocross}"
 EXPORT_MISSING="${EXPORT_MISSING:-1}"
+PREEXPORT_ALL="${PREEXPORT_ALL:-0}"
 SKIP_EXISTING_EVAL="${SKIP_EXISTING_EVAL:-0}"
 
 export VLLM_USE_V1="${VLLM_USE_V1:-0}"
@@ -80,6 +81,41 @@ export_missing_models() {
     say "Export missing merged model: ${candidate} fold${fold}"
     bash scripts/export_egocross_dpo_lora_fold_memsafe.sh "${candidate}" "${fold}" > "${log_file}" 2>&1
   done
+}
+
+export_one_if_missing() {
+  local candidate="$1"
+  local fold="$2"
+  local model_dir="$3"
+  local log_file="${LOG_ROOT}/export_${candidate}_fold${fold}.log"
+  local lock_dir="${LOG_ROOT}/export.lock"
+  local status
+
+  if [[ -f "${model_dir}/config.json" ]]; then
+    return 0
+  fi
+  if [[ "${EXPORT_MISSING}" != "1" ]]; then
+    say "ERROR: missing merged model for ${candidate} fold${fold}: ${model_dir}"
+    return 2
+  fi
+
+  while ! mkdir "${lock_dir}" >/dev/null 2>&1; do
+    sleep 5
+  done
+
+  status=0
+  if [[ -f "${model_dir}/config.json" ]]; then
+    say "Merged model appeared while waiting: ${candidate} fold${fold}"
+  else
+    say "Lazy export merged model: ${candidate} fold${fold}"
+    bash scripts/export_egocross_dpo_lora_fold_memsafe.sh "${candidate}" "${fold}" > "${log_file}" 2>&1 || status="$?"
+  fi
+
+  rmdir "${lock_dir}" >/dev/null 2>&1 || true
+  if [[ "${status}" != "0" ]]; then
+    say "Export failed for ${candidate} fold${fold}; log=${log_file}"
+    return "${status}"
+  fi
 }
 
 wait_vllm() {
@@ -155,10 +191,7 @@ run_one() {
   local candidate fold adapter_dir model_dir output_dir eval_json server_log eval_log pid status
   IFS=: read -r candidate fold adapter_dir model_dir <<< "${task}"
 
-  if [[ ! -f "${model_dir}/config.json" ]]; then
-    say "ERROR: missing merged model for ${candidate} fold${fold}: ${model_dir}"
-    return 2
-  fi
+  export_one_if_missing "${candidate}" "${fold}" "${model_dir}"
 
   output_dir="${OUTPUT_ROOT}/${candidate}_fold${fold}_direct_tail_dense_max12_vid006_4f"
   eval_json="${SUPPORT_DIR}/pref_answer_only_all_equal_folds/eval_answer_only_all_equal_fold${fold}.json"
@@ -243,7 +276,9 @@ trap cleanup EXIT
 
 build_tasks
 say "tasks=${#TASKS[@]} candidates=${CANDIDATE_LIST[*]} folds=${FOLD_LIST[*]} gpu_lanes=${GPU_LANE_LIST[*]}"
-export_missing_models
+if [[ "${PREEXPORT_ALL}" == "1" ]]; then
+  export_missing_models
+fi
 
 pids=()
 for lane_index in "${!GPU_LANE_LIST[@]}"; do

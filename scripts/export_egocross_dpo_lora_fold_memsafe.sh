@@ -41,6 +41,12 @@ if [[ ! -d "${adapter_dir}" ]]; then
 fi
 
 export_dir="${adapter_dir}_merged"
+if [[ -d "${export_dir}" && ! -f "${export_dir}/config.json" && "${CLEAN_PARTIAL_EXPORT:-1}" == "1" ]]; then
+  partial_dir="${export_dir}.partial.$(date +%Y%m%d_%H%M%S)"
+  echo "Found partial export without config.json; moving it to ${partial_dir}"
+  mv "${export_dir}" "${partial_dir}"
+fi
+
 mkdir -p logs/egocross_export_configs
 export_config="logs/egocross_export_configs/export_${candidate}_fold${fold}_${suffix}_memsafe.yaml"
 
