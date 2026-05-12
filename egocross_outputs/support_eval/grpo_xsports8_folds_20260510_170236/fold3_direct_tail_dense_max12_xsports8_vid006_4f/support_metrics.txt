@@ -1,0 +1,38 @@
+overall_acc: 0.800000 (16/20)
+answer_only_format_rate: 1.000000
+coverage: 1.000000
+parse_fail: 0
+error: 0
+error_fallback: 0
+avg_used_frames: 10.200000
+runtime_seconds: 52.521
+strategy: prompt_mode=direct max_frames=12 frame_sampling=tail_dense max_tokens=8 temperature=0.0 vote=False frame_route=['VID006=4', 'ExtrameSportFPV=8'] eval_json=/share/home/group9/data/egocross/pref_answer_only_all_equal_folds/eval_answer_only_all_equal_fold3.json
+by_domain:
+  Animal: 0.600000 (3/5)
+  Industry: 0.800000 (4/5)
+  Surgery: 1.000000 (5/5)
+  XSports: 0.800000 (4/5)
+by_question_type:
+  action_identification: 0.000000 (0/1)
+  action_sequence: 1.000000 (2/2)
+  next_interaction: 1.000000 (3/3)
+  not_visible: 1.000000 (2/2)
+  object_interaction: 0.666667 (2/3)
+  phase_sequence: 1.000000 (2/2)
+  temporal_localization: 0.600000 (3/5)
+  tool_interaction: 1.000000 (2/2)
+by_video:
+  CholecTrack20/VID103: 1.000000 (2/2)
+  ENIGMA/111: 1.000000 (4/4)
+  ENIGMA/157: 0.000000 (0/1)
+  EgoPet/005: 1.000000 (1/1)
+  EgoPet/022: 1.000000 (2/2)
+  EgoPet/036: 0.000000 (0/1)
+  EgoPet/039: 0.000000 (0/1)
+  EgoSurgery/15: 1.000000 (3/3)
+  ExtrameSportFPV/VID045: 0.666667 (2/3)
+  ExtrameSportFPV/VID059: 1.000000 (2/2)
+status_dist: {"ok": 16, "ok_after_frame_retry": 4}
+answer_dist: {"A": 5, "B": 3, "C": 5, "D": 7}
+gold_dist: {"A": 3, "B": 6, "C": 3, "D": 8}
+used_max_frames_dist: {"12": 11, "8": 9}

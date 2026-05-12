@@ -1,0 +1,192 @@
+{
+  "strategy": {
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "max_tokens": 8,
+    "temperature": 0.0,
+    "vote": false,
+    "frame_route": [
+      "VID006=4",
+      "VID059=8"
+    ],
+    "only_domains": null,
+    "eval_json": "/share/home/group9/data/egocross/pref_answer_only_all_equal_folds/eval_answer_only_all_equal_fold1.json"
+  },
+  "overall": {
+    "correct": 18,
+    "total": 20,
+    "acc": 0.9,
+    "answer_only_format_rate": 1.0,
+    "coverage": 1.0,
+    "parse_fail": 0,
+    "error": 0,
+    "error_fallback": 0,
+    "avg_used_frames": 11.4,
+    "runtime_seconds": 50.658,
+    "avg_runtime_seconds": 2.533
+  },
+  "by_domain": {
+    "Animal": {
+      "correct": 4,
+      "total": 5,
+      "acc": 0.8
+    },
+    "Industry": {
+      "correct": 5,
+      "total": 5,
+      "acc": 1.0
+    },
+    "Surgery": {
+      "correct": 4,
+      "total": 5,
+      "acc": 0.8
+    },
+    "XSports": {
+      "correct": 5,
+      "total": 5,
+      "acc": 1.0
+    }
+  },
+  "by_dataset": {
+    "CholecTrack20": {
+      "correct": 3,
+      "total": 3,
+      "acc": 1.0
+    },
+    "ENIGMA": {
+      "correct": 5,
+      "total": 5,
+      "acc": 1.0
+    },
+    "EgoPet": {
+      "correct": 4,
+      "total": 5,
+      "acc": 0.8
+    },
+    "EgoSurgery": {
+      "correct": 1,
+      "total": 2,
+      "acc": 0.5
+    },
+    "ExtrameSportFPV": {
+      "correct": 5,
+      "total": 5,
+      "acc": 1.0
+    }
+  },
+  "by_question_type": {
+    "action_sequence": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "animal_identification": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "counting": {
+      "correct": 4,
+      "total": 4,
+      "acc": 1.0
+    },
+    "next_direction": {
+      "correct": 2,
+      "total": 2,
+      "acc": 1.0
+    },
+    "next_interaction": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "not_visible": {
+      "correct": 3,
+      "total": 3,
+      "acc": 1.0
+    },
+    "object_interaction": {
+      "correct": 3,
+      "total": 4,
+      "acc": 0.75
+    },
+    "region_localization": {
+      "correct": 1,
+      "total": 2,
+      "acc": 0.5
+    },
+    "temporal_localization": {
+      "correct": 2,
+      "total": 2,
+      "acc": 1.0
+    }
+  },
+  "by_video": {
+    "CholecTrack20/VID103": {
+      "correct": 3,
+      "total": 3,
+      "acc": 1.0
+    },
+    "ENIGMA/111": {
+      "correct": 3,
+      "total": 3,
+      "acc": 1.0
+    },
+    "ENIGMA/157": {
+      "correct": 2,
+      "total": 2,
+      "acc": 1.0
+    },
+    "EgoPet/022": {
+      "correct": 1,
+      "total": 2,
+      "acc": 0.5
+    },
+    "EgoPet/036": {
+      "correct": 2,
+      "total": 2,
+      "acc": 1.0
+    },
+    "EgoPet/039": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "EgoSurgery/15": {
+      "correct": 1,
+      "total": 2,
+      "acc": 0.5
+    },
+    "ExtrameSportFPV/VID045": {
+      "correct": 4,
+      "total": 4,
+      "acc": 1.0
+    },
+    "ExtrameSportFPV/VID059": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    }
+  },
+  "status_dist": {
+    "ok": 18,
+    "ok_after_frame_retry": 2
+  },
+  "answer_dist": {
+    "A": 5,
+    "B": 9,
+    "C": 1,
+    "D": 5
+  },
+  "gold_dist": {
+    "A": 6,
+    "B": 7,
+    "C": 2,
+    "D": 5
+  },
+  "used_max_frames_dist": {
+    "12": 17,
+    "8": 3
+  }
+}

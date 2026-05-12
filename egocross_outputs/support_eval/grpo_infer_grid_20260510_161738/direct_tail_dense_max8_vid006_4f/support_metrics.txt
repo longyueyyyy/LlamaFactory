@@ -1,0 +1,44 @@
+overall_acc: 0.862500 (69/80)
+answer_only_format_rate: 1.000000
+coverage: 1.000000
+parse_fail: 0
+error: 0
+error_fallback: 0
+avg_used_frames: 8.000000
+runtime_seconds: 142.935
+strategy: prompt_mode=direct max_frames=8 frame_sampling=tail_dense max_tokens=8 temperature=0.0 vote=False frame_route=['VID006=4']
+by_domain:
+  Animal: 0.750000 (15/20)
+  Industry: 0.900000 (18/20)
+  Surgery: 0.950000 (19/20)
+  XSports: 0.850000 (17/20)
+by_question_type:
+  action_identification: 0.600000 (3/5)
+  action_sequence: 1.000000 (4/4)
+  animal_identification: 0.750000 (3/4)
+  counting: 0.900000 (9/10)
+  next_direction: 1.000000 (3/3)
+  next_interaction: 1.000000 (6/6)
+  not_visible: 1.000000 (6/6)
+  object_interaction: 0.800000 (8/10)
+  phase_sequence: 1.000000 (5/5)
+  region_localization: 0.857143 (6/7)
+  sport_identification: 0.500000 (1/2)
+  temporal_localization: 0.785714 (11/14)
+  tool_interaction: 1.000000 (4/4)
+by_video:
+  CholecTrack20/VID103: 0.900000 (9/10)
+  ENIGMA/111: 1.000000 (11/11)
+  ENIGMA/157: 0.777778 (7/9)
+  EgoPet/005: 1.000000 (4/4)
+  EgoPet/022: 0.600000 (3/5)
+  EgoPet/036: 0.833333 (5/6)
+  EgoPet/039: 0.500000 (1/2)
+  EgoPet/093: 0.666667 (2/3)
+  EgoSurgery/15: 1.000000 (10/10)
+  ExtrameSportFPV/VID045: 0.909091 (10/11)
+  ExtrameSportFPV/VID059: 0.777778 (7/9)
+status_dist: {"ok": 80}
+answer_dist: {"A": 18, "B": 16, "C": 24, "D": 22}
+gold_dist: {"A": 19, "B": 20, "C": 18, "D": 23}
+used_max_frames_dist: {"8": 80}

@@ -1,0 +1,555 @@
+{
+  "warnings": [],
+  "strategy": {
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "max_tokens": 8,
+    "temperature": 0.0,
+    "vote": false,
+    "frame_route": [
+      "VID006=4"
+    ],
+    "only_domains": null,
+    "eval_json": null
+  },
+  "overall": {
+    "correct": 69,
+    "total": 80,
+    "acc": 0.8625,
+    "answer_only_format_rate": 1.0,
+    "coverage": 1.0,
+    "parse_fail": 0,
+    "error": 0,
+    "error_fallback": 0,
+    "avg_used_frames": 11.4,
+    "runtime_seconds": 201.942
+  },
+  "by_domain": {
+    "Animal": {
+      "correct": 16,
+      "total": 20,
+      "acc": 0.8
+    },
+    "Industry": {
+      "correct": 18,
+      "total": 20,
+      "acc": 0.9
+    },
+    "Surgery": {
+      "correct": 19,
+      "total": 20,
+      "acc": 0.95
+    },
+    "XSports": {
+      "correct": 16,
+      "total": 20,
+      "acc": 0.8
+    }
+  },
+  "by_question_type": {
+    "action_identification": {
+      "correct": 3,
+      "total": 5,
+      "acc": 0.6
+    },
+    "action_sequence": {
+      "correct": 3,
+      "total": 4,
+      "acc": 0.75
+    },
+    "animal_identification": {
+      "correct": 4,
+      "total": 4,
+      "acc": 1.0
+    },
+    "counting": {
+      "correct": 10,
+      "total": 10,
+      "acc": 1.0
+    },
+    "next_direction": {
+      "correct": 3,
+      "total": 3,
+      "acc": 1.0
+    },
+    "next_interaction": {
+      "correct": 6,
+      "total": 6,
+      "acc": 1.0
+    },
+    "not_visible": {
+      "correct": 6,
+      "total": 6,
+      "acc": 1.0
+    },
+    "object_interaction": {
+      "correct": 8,
+      "total": 10,
+      "acc": 0.8
+    },
+    "phase_sequence": {
+      "correct": 5,
+      "total": 5,
+      "acc": 1.0
+    },
+    "region_localization": {
+      "correct": 5,
+      "total": 7,
+      "acc": 0.714286
+    },
+    "sport_identification": {
+      "correct": 1,
+      "total": 2,
+      "acc": 0.5
+    },
+    "temporal_localization": {
+      "correct": 11,
+      "total": 14,
+      "acc": 0.785714
+    },
+    "tool_interaction": {
+      "correct": 4,
+      "total": 4,
+      "acc": 1.0
+    }
+  },
+  "by_video": {
+    "CholecTrack20/VID103": {
+      "correct": 10,
+      "total": 10,
+      "acc": 1.0
+    },
+    "ENIGMA/111": {
+      "correct": 11,
+      "total": 11,
+      "acc": 1.0
+    },
+    "ENIGMA/157": {
+      "correct": 7,
+      "total": 9,
+      "acc": 0.777778
+    },
+    "EgoPet/005": {
+      "correct": 4,
+      "total": 4,
+      "acc": 1.0
+    },
+    "EgoPet/022": {
+      "correct": 3,
+      "total": 5,
+      "acc": 0.6
+    },
+    "EgoPet/036": {
+      "correct": 5,
+      "total": 6,
+      "acc": 0.833333
+    },
+    "EgoPet/039": {
+      "correct": 1,
+      "total": 2,
+      "acc": 0.5
+    },
+    "EgoPet/093": {
+      "correct": 3,
+      "total": 3,
+      "acc": 1.0
+    },
+    "EgoSurgery/15": {
+      "correct": 9,
+      "total": 10,
+      "acc": 0.9
+    },
+    "ExtrameSportFPV/VID045": {
+      "correct": 10,
+      "total": 11,
+      "acc": 0.909091
+    },
+    "ExtrameSportFPV/VID059": {
+      "correct": 6,
+      "total": 9,
+      "acc": 0.666667
+    }
+  },
+  "by_video_question_type": {
+    "CholecTrack20/VID103\tcounting": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "CholecTrack20/VID103\tnot_visible": {
+      "correct": 2,
+      "total": 2,
+      "acc": 1.0
+    },
+    "CholecTrack20/VID103\tphase_sequence": {
+      "correct": 5,
+      "total": 5,
+      "acc": 1.0
+    },
+    "CholecTrack20/VID103\tregion_localization": {
+      "correct": 2,
+      "total": 2,
+      "acc": 1.0
+    },
+    "ENIGMA/111\tcounting": {
+      "correct": 4,
+      "total": 4,
+      "acc": 1.0
+    },
+    "ENIGMA/111\tnext_interaction": {
+      "correct": 4,
+      "total": 4,
+      "acc": 1.0
+    },
+    "ENIGMA/111\tnot_visible": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "ENIGMA/111\tregion_localization": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "ENIGMA/111\ttemporal_localization": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "ENIGMA/157\tcounting": {
+      "correct": 3,
+      "total": 3,
+      "acc": 1.0
+    },
+    "ENIGMA/157\tnext_interaction": {
+      "correct": 2,
+      "total": 2,
+      "acc": 1.0
+    },
+    "ENIGMA/157\tnot_visible": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "ENIGMA/157\tregion_localization": {
+      "correct": 1,
+      "total": 2,
+      "acc": 0.5
+    },
+    "ENIGMA/157\ttemporal_localization": {
+      "correct": 0,
+      "total": 1,
+      "acc": 0.0
+    },
+    "EgoPet/005\tanimal_identification": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "EgoPet/005\tobject_interaction": {
+      "correct": 2,
+      "total": 2,
+      "acc": 1.0
+    },
+    "EgoPet/005\ttemporal_localization": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "EgoPet/022\tanimal_identification": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "EgoPet/022\tobject_interaction": {
+      "correct": 1,
+      "total": 2,
+      "acc": 0.5
+    },
+    "EgoPet/022\ttemporal_localization": {
+      "correct": 1,
+      "total": 2,
+      "acc": 0.5
+    },
+    "EgoPet/036\tanimal_identification": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "EgoPet/036\tobject_interaction": {
+      "correct": 2,
+      "total": 2,
+      "acc": 1.0
+    },
+    "EgoPet/036\ttemporal_localization": {
+      "correct": 2,
+      "total": 3,
+      "acc": 0.666667
+    },
+    "EgoPet/039\tobject_interaction": {
+      "correct": 1,
+      "total": 2,
+      "acc": 0.5
+    },
+    "EgoPet/093\tanimal_identification": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "EgoPet/093\tobject_interaction": {
+      "correct": 2,
+      "total": 2,
+      "acc": 1.0
+    },
+    "EgoSurgery/15\tcounting": {
+      "correct": 2,
+      "total": 2,
+      "acc": 1.0
+    },
+    "EgoSurgery/15\tnot_visible": {
+      "correct": 2,
+      "total": 2,
+      "acc": 1.0
+    },
+    "EgoSurgery/15\tregion_localization": {
+      "correct": 1,
+      "total": 2,
+      "acc": 0.5
+    },
+    "EgoSurgery/15\ttool_interaction": {
+      "correct": 4,
+      "total": 4,
+      "acc": 1.0
+    },
+    "ExtrameSportFPV/VID045\taction_identification": {
+      "correct": 1,
+      "total": 2,
+      "acc": 0.5
+    },
+    "ExtrameSportFPV/VID045\taction_sequence": {
+      "correct": 2,
+      "total": 2,
+      "acc": 1.0
+    },
+    "ExtrameSportFPV/VID045\tnext_direction": {
+      "correct": 3,
+      "total": 3,
+      "acc": 1.0
+    },
+    "ExtrameSportFPV/VID045\tsport_identification": {
+      "correct": 1,
+      "total": 1,
+      "acc": 1.0
+    },
+    "ExtrameSportFPV/VID045\ttemporal_localization": {
+      "correct": 3,
+      "total": 3,
+      "acc": 1.0
+    },
+    "ExtrameSportFPV/VID059\taction_identification": {
+      "correct": 2,
+      "total": 3,
+      "acc": 0.666667
+    },
+    "ExtrameSportFPV/VID059\taction_sequence": {
+      "correct": 1,
+      "total": 2,
+      "acc": 0.5
+    },
+    "ExtrameSportFPV/VID059\tsport_identification": {
+      "correct": 0,
+      "total": 1,
+      "acc": 0.0
+    },
+    "ExtrameSportFPV/VID059\ttemporal_localization": {
+      "correct": 3,
+      "total": 3,
+      "acc": 1.0
+    }
+  },
+  "status_dist": {
+    "ok": 68,
+    "ok_after_frame_retry": 12
+  },
+  "used_max_frames_dist": {
+    "12": 68,
+    "8": 12
+  },
+  "answer_dist": {
+    "A": 17,
+    "B": 18,
+    "C": 21,
+    "D": 24
+  },
+  "gold_dist": {
+    "A": 19,
+    "B": 20,
+    "C": 18,
+    "D": 23
+  },
+  "error_by_domain_question_type": {
+    "Animal\tobject_interaction": 2,
+    "Animal\ttemporal_localization": 2,
+    "Industry\tregion_localization": 1,
+    "Industry\ttemporal_localization": 1,
+    "Surgery\tregion_localization": 1,
+    "XSports\taction_identification": 2,
+    "XSports\taction_sequence": 1,
+    "XSports\tsport_identification": 1
+  },
+  "error_by_video": {
+    "ENIGMA/157": 2,
+    "EgoPet/022": 2,
+    "EgoPet/036": 1,
+    "EgoPet/039": 1,
+    "EgoSurgery/15": 1,
+    "ExtrameSportFPV/VID045": 1,
+    "ExtrameSportFPV/VID059": 3
+  },
+  "errors": [
+    {
+      "id": "Animal_9",
+      "question_id": "Animal_9",
+      "domain": "Animal",
+      "dataset": "EgoPet",
+      "video_id": "EgoPet/022",
+      "question_type": "object_interaction",
+      "gold_answer": "A",
+      "answer": "B",
+      "status": "ok",
+      "used_max_frames": 12,
+      "frame_count": 6
+    },
+    {
+      "id": "Animal_6",
+      "question_id": "Animal_6",
+      "domain": "Animal",
+      "dataset": "EgoPet",
+      "video_id": "EgoPet/022",
+      "question_type": "temporal_localization",
+      "gold_answer": "A",
+      "answer": "C",
+      "status": "ok",
+      "used_max_frames": 12,
+      "frame_count": 10
+    },
+    {
+      "id": "Animal_19",
+      "question_id": "Animal_19",
+      "domain": "Animal",
+      "dataset": "EgoPet",
+      "video_id": "EgoPet/036",
+      "question_type": "temporal_localization",
+      "gold_answer": "B",
+      "answer": "C",
+      "status": "ok",
+      "used_max_frames": 12,
+      "frame_count": 10
+    },
+    {
+      "id": "Animal_15",
+      "question_id": "Animal_15",
+      "domain": "Animal",
+      "dataset": "EgoPet",
+      "video_id": "EgoPet/039",
+      "question_type": "object_interaction",
+      "gold_answer": "B",
+      "answer": "A",
+      "status": "ok",
+      "used_max_frames": 12,
+      "frame_count": 3
+    },
+    {
+      "id": "Industry_10",
+      "question_id": "Industry_10",
+      "domain": "Industry",
+      "dataset": "ENIGMA",
+      "video_id": "ENIGMA/157",
+      "question_type": "region_localization",
+      "gold_answer": "A",
+      "answer": "C",
+      "status": "ok",
+      "used_max_frames": 12,
+      "frame_count": 11
+    },
+    {
+      "id": "Industry_7",
+      "question_id": "Industry_7",
+      "domain": "Industry",
+      "dataset": "ENIGMA",
+      "video_id": "ENIGMA/157",
+      "question_type": "temporal_localization",
+      "gold_answer": "D",
+      "answer": "C",
+      "status": "ok",
+      "used_max_frames": 12,
+      "frame_count": 11
+    },
+    {
+      "id": "Surgery_17",
+      "question_id": "Surgery_17",
+      "domain": "Surgery",
+      "dataset": "EgoSurgery",
+      "video_id": "EgoSurgery/15",
+      "question_type": "region_localization",
+      "gold_answer": "C",
+      "answer": "B",
+      "status": "ok",
+      "used_max_frames": 12,
+      "frame_count": 13
+    },
+    {
+      "id": "XSports_3",
+      "question_id": "XSports_3",
+      "domain": "XSports",
+      "dataset": "ExtrameSportFPV",
+      "video_id": "ExtrameSportFPV/VID045",
+      "question_type": "action_identification",
+      "gold_answer": "B",
+      "answer": "A",
+      "status": "ok",
+      "used_max_frames": 12,
+      "frame_count": 10
+    },
+    {
+      "id": "XSports_4",
+      "question_id": "XSports_4",
+      "domain": "XSports",
+      "dataset": "ExtrameSportFPV",
+      "video_id": "ExtrameSportFPV/VID059",
+      "question_type": "action_identification",
+      "gold_answer": "B",
+      "answer": "C",
+      "status": "ok",
+      "used_max_frames": 12,
+      "frame_count": 10
+    },
+    {
+      "id": "XSports_16",
+      "question_id": "XSports_16",
+      "domain": "XSports",
+      "dataset": "ExtrameSportFPV",
+      "video_id": "ExtrameSportFPV/VID059",
+      "question_type": "action_sequence",
+      "gold_answer": "A",
+      "answer": "D",
+      "status": "ok",
+      "used_max_frames": 12,
+      "frame_count": 10
+    },
+    {
+      "id": "XSports_10",
+      "question_id": "XSports_10",
+      "domain": "XSports",
+      "dataset": "ExtrameSportFPV",
+      "video_id": "ExtrameSportFPV/VID059",
+      "question_type": "sport_identification",
+      "gold_answer": "C",
+      "answer": "D",
+      "status": "ok",
+      "used_max_frames": 12,
+      "frame_count": 10
+    }
+  ]
+}

@@ -1,0 +1,622 @@
+[
+  {
+    "id": "Animal_3",
+    "question_id": "Animal_3",
+    "dataset": "EgoPet",
+    "domain": "Animal",
+    "question_type": "object_interaction",
+    "video_id": "EgoPet/022",
+    "frame_count": 7,
+    "gold_answer": "C",
+    "answer": "C",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "C",
+        "raw_output": "C",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What object is the cat interacting with in this video segment?\nA) Toy\nB) Floor\nC) Plant\nD) Door\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What object is the cat interacting with in this video segment?\nA) Toy\nB) Floor\nC) Plant\nD) Door\nAnswer:",
+    "raw_output": "C"
+  },
+  {
+    "id": "Animal_7",
+    "question_id": "Animal_7",
+    "dataset": "EgoPet",
+    "domain": "Animal",
+    "question_type": "temporal_localization",
+    "video_id": "EgoPet/022",
+    "frame_count": 10,
+    "gold_answer": "A",
+    "answer": "A",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "A",
+        "raw_output": "A",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: When does the cat first interact with the other animal in this video clip?\nA) 23.2-25.8 seconds\nB) 15.6-18.1 seconds\nC) 10.4-12.9 seconds\nD) 5.2-7.7 seconds\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: When does the cat first interact with the other animal in this video clip?\nA) 23.2-25.8 seconds\nB) 15.6-18.1 seconds\nC) 10.4-12.9 seconds\nD) 5.2-7.7 seconds\nAnswer:",
+    "raw_output": "A"
+  },
+  {
+    "id": "Animal_11",
+    "question_id": "Animal_11",
+    "dataset": "EgoPet",
+    "domain": "Animal",
+    "question_type": "object_interaction",
+    "video_id": "EgoPet/005",
+    "frame_count": 7,
+    "gold_answer": "B",
+    "answer": "B",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "B",
+        "raw_output": "B",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What object is the cat interacting with in this video segment?\nA) Bird\nB) Cat\nC) Water\nD) Ball\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What object is the cat interacting with in this video segment?\nA) Bird\nB) Cat\nC) Water\nD) Ball\nAnswer:",
+    "raw_output": "B"
+  },
+  {
+    "id": "Animal_15",
+    "question_id": "Animal_15",
+    "dataset": "EgoPet",
+    "domain": "Animal",
+    "question_type": "object_interaction",
+    "video_id": "EgoPet/039",
+    "frame_count": 3,
+    "gold_answer": "B",
+    "answer": "A",
+    "correct": false,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "A",
+        "raw_output": "A",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What object is the cat interacting with in this video segment?\nA) Water\nB) Food\nC) Bird\nD) Ball\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What object is the cat interacting with in this video segment?\nA) Water\nB) Food\nC) Bird\nD) Ball\nAnswer:",
+    "raw_output": "A"
+  },
+  {
+    "id": "Animal_19",
+    "question_id": "Animal_19",
+    "dataset": "EgoPet",
+    "domain": "Animal",
+    "question_type": "temporal_localization",
+    "video_id": "EgoPet/036",
+    "frame_count": 10,
+    "gold_answer": "B",
+    "answer": "C",
+    "correct": false,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "C",
+        "raw_output": "C",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: When does the cat first interact with the cat in this video clip?\nA) 15.3-18.8 seconds\nB) 6.8-10.2 seconds\nC) 1.6-5.1 seconds\nD) 11.6-15.1 seconds\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: When does the cat first interact with the cat in this video clip?\nA) 15.3-18.8 seconds\nB) 6.8-10.2 seconds\nC) 1.6-5.1 seconds\nD) 11.6-15.1 seconds\nAnswer:",
+    "raw_output": "C"
+  },
+  {
+    "id": "Surgery_3",
+    "question_id": "Surgery_3",
+    "dataset": "CholecTrack20",
+    "domain": "Surgery",
+    "question_type": "phase_sequence",
+    "video_id": "CholecTrack20/VID103",
+    "frame_count": 66,
+    "gold_answer": "A",
+    "answer": "A",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "A",
+        "raw_output": "A",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Based on the surgical activity shown in this clip, which surgical phase immediately follows the 'clipping and cutting' phase?\nA) gallbladder dissection phase\nB) carlot triangle dissection phase\nC) gallbladder extraction phase\nD) gallbladder packaging phase\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Based on the surgical activity shown in this clip, which surgical phase immediately follows the 'clipping and cutting' phase?\nA) gallbladder dissection phase\nB) carlot triangle dissection phase\nC) gallbladder extraction phase\nD) gallbladder packaging phase\nAnswer:",
+    "raw_output": "A"
+  },
+  {
+    "id": "Surgery_7",
+    "question_id": "Surgery_7",
+    "dataset": "CholecTrack20",
+    "domain": "Surgery",
+    "question_type": "phase_sequence",
+    "video_id": "CholecTrack20/VID103",
+    "frame_count": 135,
+    "gold_answer": "C",
+    "answer": "C",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "C",
+        "raw_output": "C",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Based on the surgical activity shown in this clip, which surgical phase immediately follows the 'preparation' phase?\nA) gallbladder packaging phase\nB) gallbladder extraction phase\nC) carlot triangle dissection phase\nD) clipping and cutting phase\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Based on the surgical activity shown in this clip, which surgical phase immediately follows the 'preparation' phase?\nA) gallbladder packaging phase\nB) gallbladder extraction phase\nC) carlot triangle dissection phase\nD) clipping and cutting phase\nAnswer:",
+    "raw_output": "C"
+  },
+  {
+    "id": "Surgery_11",
+    "question_id": "Surgery_11",
+    "dataset": "EgoSurgery",
+    "domain": "Surgery",
+    "question_type": "not_visible",
+    "video_id": "EgoSurgery/15",
+    "frame_count": 14,
+    "gold_answer": "B",
+    "answer": "B",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "B",
+        "raw_output": "B",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Which of the following objects was NOT visible in the video segment from 0.0s to 44s?\nA) Raspatory\nB) Scissors\nC) Tweezers\nD) Suction Cannula\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Which of the following objects was NOT visible in the video segment from 0.0s to 44s?\nA) Raspatory\nB) Scissors\nC) Tweezers\nD) Suction Cannula\nAnswer:",
+    "raw_output": "B"
+  },
+  {
+    "id": "Surgery_15",
+    "question_id": "Surgery_15",
+    "dataset": "EgoSurgery",
+    "domain": "Surgery",
+    "question_type": "tool_interaction",
+    "video_id": "EgoSurgery/15",
+    "frame_count": 10,
+    "gold_answer": "D",
+    "answer": "D",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "D",
+        "raw_output": "D",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Which tool was the operator's right hand predominantly interacting with in the video segment from 0s to 22s?\nA) Forceps\nB) Bipolar Forceps\nC) Tweezers\nD) Retractor\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Which tool was the operator's right hand predominantly interacting with in the video segment from 0s to 22s?\nA) Forceps\nB) Bipolar Forceps\nC) Tweezers\nD) Retractor\nAnswer:",
+    "raw_output": "D"
+  },
+  {
+    "id": "Surgery_19",
+    "question_id": "Surgery_19",
+    "dataset": "EgoSurgery",
+    "domain": "Surgery",
+    "question_type": "tool_interaction",
+    "video_id": "EgoSurgery/15",
+    "frame_count": 7,
+    "gold_answer": "D",
+    "answer": "D",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "D",
+        "raw_output": "D",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Which tool was the operator's left hand predominantly interacting with in the video segment from 0s to 16s?\nA) Electric Cautery\nB) Syringe\nC) Mouth Gag\nD) Tweezers\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Which tool was the operator's left hand predominantly interacting with in the video segment from 0s to 16s?\nA) Electric Cautery\nB) Syringe\nC) Mouth Gag\nD) Tweezers\nAnswer:",
+    "raw_output": "D"
+  },
+  {
+    "id": "Industry_3",
+    "question_id": "Industry_3",
+    "dataset": "ENIGMA",
+    "domain": "Industry",
+    "question_type": "next_interaction",
+    "video_id": "ENIGMA/111",
+    "frame_count": 30,
+    "gold_answer": "D",
+    "answer": "D",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok_after_frame_retry",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 8,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "context_length_error",
+        "error": "Error code: 400 - {'error': {'message': \"Input length (34197) exceeds model's maximum context length (32768).\", 'type': 'BadRequestError', 'param': None, 'code': 400}}"
+      },
+      {
+        "max_frames": 8,
+        "status": "ok",
+        "answer": "D",
+        "raw_output": "D",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Based on the activity observed up to 30.00s, what is the predicted next type of interaction for the operator?\nA) contact the oscilloscope\nB) decontact the board\nC) decontact the button\nD) decontact the oscilloscope\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Based on the activity observed up to 30.00s, what is the predicted next type of interaction for the operator?\nA) contact the oscilloscope\nB) decontact the board\nC) decontact the button\nD) decontact the oscilloscope\nAnswer:",
+    "raw_output": "D"
+  },
+  {
+    "id": "Industry_7",
+    "question_id": "Industry_7",
+    "dataset": "ENIGMA",
+    "domain": "Industry",
+    "question_type": "temporal_localization",
+    "video_id": "ENIGMA/157",
+    "frame_count": 11,
+    "gold_answer": "D",
+    "answer": "C",
+    "correct": false,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "C",
+        "raw_output": "C",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: At what approximate timestamp did the operator's right hand first perform 'contact' with the screwdriver within the video segment from 0.00s to 15.00s?\nA) 1.50s\nB) 12.17s\nC) 3.25s\nD) 8.60s\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: At what approximate timestamp did the operator's right hand first perform 'contact' with the screwdriver within the video segment from 0.00s to 15.00s?\nA) 1.50s\nB) 12.17s\nC) 3.25s\nD) 8.60s\nAnswer:",
+    "raw_output": "C"
+  },
+  {
+    "id": "Industry_11",
+    "question_id": "Industry_11",
+    "dataset": "ENIGMA",
+    "domain": "Industry",
+    "question_type": "next_interaction",
+    "video_id": "ENIGMA/111",
+    "frame_count": 40,
+    "gold_answer": "C",
+    "answer": "C",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok_after_frame_retry",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 8,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "context_length_error",
+        "error": "Error code: 400 - {'error': {'message': \"Input length (34195) exceeds model's maximum context length (32768).\", 'type': 'BadRequestError', 'param': None, 'code': 400}}"
+      },
+      {
+        "max_frames": 8,
+        "status": "ok",
+        "answer": "C",
+        "raw_output": "C",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Based on the activity observed up to 30.00s, what is the predicted next type of interaction for the operator?\nA) contact the board\nB) decontact the battery\nC) decontact the board\nD) decontact the electric screwdriver\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Based on the activity observed up to 30.00s, what is the predicted next type of interaction for the operator?\nA) contact the board\nB) decontact the battery\nC) decontact the board\nD) decontact the electric screwdriver\nAnswer:",
+    "raw_output": "C"
+  },
+  {
+    "id": "Industry_15",
+    "question_id": "Industry_15",
+    "dataset": "ENIGMA",
+    "domain": "Industry",
+    "question_type": "next_interaction",
+    "video_id": "ENIGMA/111",
+    "frame_count": 39,
+    "gold_answer": "D",
+    "answer": "D",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok_after_frame_retry",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 8,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "context_length_error",
+        "error": "Error code: 400 - {'error': {'message': \"Input length (34197) exceeds model's maximum context length (32768).\", 'type': 'BadRequestError', 'param': None, 'code': 400}}"
+      },
+      {
+        "max_frames": 8,
+        "status": "ok",
+        "answer": "D",
+        "raw_output": "D",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Based on the activity observed up to 30.00s, what is the predicted next type of interaction for the operator's left hand?\nA) contact the board\nB) contact the button\nC) contact the electric screwdriver\nD) contact the power supply cables\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Based on the activity observed up to 30.00s, what is the predicted next type of interaction for the operator's left hand?\nA) contact the board\nB) contact the button\nC) contact the electric screwdriver\nD) contact the power supply cables\nAnswer:",
+    "raw_output": "D"
+  },
+  {
+    "id": "Industry_19",
+    "question_id": "Industry_19",
+    "dataset": "ENIGMA",
+    "domain": "Industry",
+    "question_type": "not_visible",
+    "video_id": "ENIGMA/111",
+    "frame_count": 12,
+    "gold_answer": "A",
+    "answer": "A",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok_after_frame_retry",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 8,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "context_length_error",
+        "error": "Error code: 400 - {'error': {'message': \"Input length (34201) exceeds model's maximum context length (32768).\", 'type': 'BadRequestError', 'param': None, 'code': 400}}"
+      },
+      {
+        "max_frames": 8,
+        "status": "ok",
+        "answer": "A",
+        "raw_output": "A",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Which of the following objects (using refined categories like 'button' for all buttons) was NOT visible in the video segment from 0.00s to 10.00s?\nA) battery\nB) oscilloscope\nC) oscilloscope component\nD) power supply\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: Which of the following objects (using refined categories like 'button' for all buttons) was NOT visible in the video segment from 0.00s to 10.00s?\nA) battery\nB) oscilloscope\nC) oscilloscope component\nD) power supply\nAnswer:",
+    "raw_output": "A"
+  },
+  {
+    "id": "XSports_3",
+    "question_id": "XSports_3",
+    "dataset": "ExtrameSportFPV",
+    "domain": "XSports",
+    "question_type": "action_identification",
+    "video_id": "ExtrameSportFPV/VID045",
+    "frame_count": 10,
+    "gold_answer": "B",
+    "answer": "A",
+    "correct": false,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "A",
+        "raw_output": "A",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What action is being performed in the video segment from 0s to 2s?\nA) Spin\nB) Jump\nC) Vault\nD) Climb\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What action is being performed in the video segment from 0s to 2s?\nA) Spin\nB) Jump\nC) Vault\nD) Climb\nAnswer:",
+    "raw_output": "A"
+  },
+  {
+    "id": "XSports_7",
+    "question_id": "XSports_7",
+    "dataset": "ExtrameSportFPV",
+    "domain": "XSports",
+    "question_type": "temporal_localization",
+    "video_id": "ExtrameSportFPV/VID045",
+    "frame_count": 10,
+    "gold_answer": "D",
+    "answer": "D",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "D",
+        "raw_output": "D",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: At what approximate time does the 'jump' action begin in this video segment?\nA) 11.8s\nB) 8.9s\nC) 14.1s\nD) 2.2s\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: At what approximate time does the 'jump' action begin in this video segment?\nA) 11.8s\nB) 8.9s\nC) 14.1s\nD) 2.2s\nAnswer:",
+    "raw_output": "D"
+  },
+  {
+    "id": "XSports_11",
+    "question_id": "XSports_11",
+    "dataset": "ExtrameSportFPV",
+    "domain": "XSports",
+    "question_type": "action_sequence",
+    "video_id": "ExtrameSportFPV/VID045",
+    "frame_count": 10,
+    "gold_answer": "D",
+    "answer": "D",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 12,
+    "used_max_frames": 12,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 12,
+        "status": "ok",
+        "answer": "D",
+        "raw_output": "D",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What sequence of actions is performed in the time segment from 0s to 20s?\nA) Run → Leftright → Bumpyforward\nB) Walk → Right → Walk\nC) Run → Curveright → Walk\nD) Forward → Curveleft → Forward\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What sequence of actions is performed in the time segment from 0s to 20s?\nA) Run → Leftright → Bumpyforward\nB) Walk → Right → Walk\nC) Run → Curveright → Walk\nD) Forward → Curveleft → Forward\nAnswer:",
+    "raw_output": "D"
+  },
+  {
+    "id": "XSports_15",
+    "question_id": "XSports_15",
+    "dataset": "ExtrameSportFPV",
+    "domain": "XSports",
+    "question_type": "action_sequence",
+    "video_id": "ExtrameSportFPV/VID059",
+    "frame_count": 10,
+    "gold_answer": "B",
+    "answer": "B",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 8,
+    "used_max_frames": 8,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 8,
+        "status": "ok",
+        "answer": "B",
+        "raw_output": "B",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What sequence of actions is performed in the time segment from 3s to 12s?\nA) Fly → Forward → Spin\nB) Flip → Run → Jump\nC) Fly → Forward → Fly\nD) Roll → Forward → Roll\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: What sequence of actions is performed in the time segment from 3s to 12s?\nA) Fly → Forward → Spin\nB) Flip → Run → Jump\nC) Fly → Forward → Fly\nD) Roll → Forward → Roll\nAnswer:",
+    "raw_output": "B"
+  },
+  {
+    "id": "XSports_19",
+    "question_id": "XSports_19",
+    "dataset": "ExtrameSportFPV",
+    "domain": "XSports",
+    "question_type": "temporal_localization",
+    "video_id": "ExtrameSportFPV/VID059",
+    "frame_count": 10,
+    "gold_answer": "D",
+    "answer": "D",
+    "correct": true,
+    "answer_only_format": true,
+    "status": "ok",
+    "prompt_mode": "direct",
+    "max_frames": 8,
+    "used_max_frames": 8,
+    "frame_sampling": "tail_dense",
+    "temperature": 0.0,
+    "frame_attempts": [
+      {
+        "max_frames": 8,
+        "status": "ok",
+        "answer": "D",
+        "raw_output": "D",
+        "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: At what approximate time does the 'flip' action begin in this video segment?\nA) 2.5s\nB) 12.8s\nC) 9.6s\nD) 6.1s\nAnswer:"
+      }
+    ],
+    "prompt": "Answer the multiple-choice question using only one letter: A, B, C, or D.\nDo not explain.\n\nQuestion: At what approximate time does the 'flip' action begin in this video segment?\nA) 2.5s\nB) 12.8s\nC) 9.6s\nD) 6.1s\nAnswer:",
+    "raw_output": "D"
+  }
+]

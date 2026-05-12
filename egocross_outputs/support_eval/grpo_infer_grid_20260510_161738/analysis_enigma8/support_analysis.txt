@@ -1,0 +1,58 @@
+overall_acc: 0.862500 (69/80)
+answer_only_format_rate: 1.000000
+coverage: 1.000000
+parse_fail: 0
+error: 0
+error_fallback: 0
+avg_used_frames: 11.0
+runtime_seconds: 161.924
+strategy: prompt_mode=direct max_frames=12 frame_sampling=tail_dense max_tokens=8 temperature=0.0 vote=False frame_route=['ENIGMA=8', 'VID006=4']
+by_domain:
+  Animal: 0.800000 (16/20)
+  Industry: 0.900000 (18/20)
+  Surgery: 0.950000 (19/20)
+  XSports: 0.800000 (16/20)
+by_question_type:
+  action_identification: 0.600000 (3/5)
+  action_sequence: 0.750000 (3/4)
+  animal_identification: 1.000000 (4/4)
+  counting: 1.000000 (10/10)
+  next_direction: 1.000000 (3/3)
+  next_interaction: 1.000000 (6/6)
+  not_visible: 1.000000 (6/6)
+  object_interaction: 0.800000 (8/10)
+  phase_sequence: 1.000000 (5/5)
+  region_localization: 0.714286 (5/7)
+  sport_identification: 0.500000 (1/2)
+  temporal_localization: 0.785714 (11/14)
+  tool_interaction: 1.000000 (4/4)
+by_video:
+  CholecTrack20/VID103: 1.000000 (10/10)
+  ENIGMA/111: 1.000000 (11/11)
+  ENIGMA/157: 0.777778 (7/9)
+  EgoPet/005: 1.000000 (4/4)
+  EgoPet/022: 0.600000 (3/5)
+  EgoPet/036: 0.833333 (5/6)
+  EgoPet/039: 0.500000 (1/2)
+  EgoPet/093: 1.000000 (3/3)
+  EgoSurgery/15: 0.900000 (9/10)
+  ExtrameSportFPV/VID045: 0.909091 (10/11)
+  ExtrameSportFPV/VID059: 0.666667 (6/9)
+status_dist: {"ok": 80}
+used_max_frames_dist: {"12": 60, "8": 20}
+answer_dist: {"A": 17, "B": 18, "C": 21, "D": 24}
+gold_dist: {"A": 19, "B": 20, "C": 18, "D": 23}
+error_by_domain_question_type: {"Animal\tobject_interaction": 2, "Animal\ttemporal_localization": 2, "Industry\tregion_localization": 1, "Industry\ttemporal_localization": 1, "Surgery\tregion_localization": 1, "XSports\taction_identification": 2, "XSports\taction_sequence": 1, "XSports\tsport_identification": 1}
+error_by_video: {"ENIGMA/157": 2, "EgoPet/022": 2, "EgoPet/036": 1, "EgoPet/039": 1, "EgoSurgery/15": 1, "ExtrameSportFPV/VID045": 1, "ExtrameSportFPV/VID059": 3}
+errors:
+  Animal_9 Animal EgoPet/022 object_interaction gold=A pred=B status=ok used=12
+  Animal_6 Animal EgoPet/022 temporal_localization gold=A pred=C status=ok used=12
+  Animal_19 Animal EgoPet/036 temporal_localization gold=B pred=C status=ok used=12
+  Animal_15 Animal EgoPet/039 object_interaction gold=B pred=A status=ok used=12
+  Industry_10 Industry ENIGMA/157 region_localization gold=A pred=C status=ok used=8
+  Industry_7 Industry ENIGMA/157 temporal_localization gold=D pred=C status=ok used=8
+  Surgery_17 Surgery EgoSurgery/15 region_localization gold=C pred=B status=ok used=12
+  XSports_3 XSports ExtrameSportFPV/VID045 action_identification gold=B pred=A status=ok used=12
+  XSports_4 XSports ExtrameSportFPV/VID059 action_identification gold=B pred=C status=ok used=12
+  XSports_16 XSports ExtrameSportFPV/VID059 action_sequence gold=A pred=D status=ok used=12
+  XSports_10 XSports ExtrameSportFPV/VID059 sport_identification gold=C pred=D status=ok used=12
