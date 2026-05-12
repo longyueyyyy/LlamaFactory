@@ -221,6 +221,81 @@
       "assistant_tag": "assistant"
     }
   },
+  "egocross_kto_answer_reward_perm4_wrong3_fmt2": {
+    "file_name": "/share/home/group9/data/egocross/train_kto_answer_reward_perm4_wrong3_fmt2_seed2026.json",
+    "formatting": "sharegpt",
+    "columns": {
+      "messages": "messages",
+      "images": "images",
+      "kto_tag": "kto_tag"
+    },
+    "tags": {
+      "role_tag": "role",
+      "content_tag": "content",
+      "user_tag": "user",
+      "assistant_tag": "assistant"
+    }
+  },
+  "egocross_kto_answer_reward_perm4_wrong3_fmt2_fold0": {
+    "file_name": "/share/home/group9/data/egocross/kto_answer_reward_perm4_wrong3_fmt2_folds/train_kto_answer_reward_perm4_wrong3_fmt2_fold0.json",
+    "formatting": "sharegpt",
+    "columns": {
+      "messages": "messages",
+      "images": "images",
+      "kto_tag": "kto_tag"
+    },
+    "tags": {
+      "role_tag": "role",
+      "content_tag": "content",
+      "user_tag": "user",
+      "assistant_tag": "assistant"
+    }
+  },
+  "egocross_kto_answer_reward_perm4_wrong3_fmt2_fold1": {
+    "file_name": "/share/home/group9/data/egocross/kto_answer_reward_perm4_wrong3_fmt2_folds/train_kto_answer_reward_perm4_wrong3_fmt2_fold1.json",
+    "formatting": "sharegpt",
+    "columns": {
+      "messages": "messages",
+      "images": "images",
+      "kto_tag": "kto_tag"
+    },
+    "tags": {
+      "role_tag": "role",
+      "content_tag": "content",
+      "user_tag": "user",
+      "assistant_tag": "assistant"
+    }
+  },
+  "egocross_kto_answer_reward_perm4_wrong3_fmt2_fold2": {
+    "file_name": "/share/home/group9/data/egocross/kto_answer_reward_perm4_wrong3_fmt2_folds/train_kto_answer_reward_perm4_wrong3_fmt2_fold2.json",
+    "formatting": "sharegpt",
+    "columns": {
+      "messages": "messages",
+      "images": "images",
+      "kto_tag": "kto_tag"
+    },
+    "tags": {
+      "role_tag": "role",
+      "content_tag": "content",
+      "user_tag": "user",
+      "assistant_tag": "assistant"
+    }
+  },
+  "egocross_kto_answer_reward_perm4_wrong3_fmt2_fold3": {
+    "file_name": "/share/home/group9/data/egocross/kto_answer_reward_perm4_wrong3_fmt2_folds/train_kto_answer_reward_perm4_wrong3_fmt2_fold3.json",
+    "formatting": "sharegpt",
+    "columns": {
+      "messages": "messages",
+      "images": "images",
+      "kto_tag": "kto_tag"
+    },
+    "tags": {
+      "role_tag": "role",
+      "content_tag": "content",
+      "user_tag": "user",
+      "assistant_tag": "assistant"
+    }
+  },
   "mllm_audio_demo": {
     "file_name": "mllm_audio_demo.json",
     "formatting": "sharegpt",

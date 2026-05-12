@@ -1,46 +1,79 @@
-# EgoCross Experiment README
+﻿# EgoCross Experiment README
 
-本文档是 EgoCross 项目的当前交接记录。目标是让后续接手者快速知道：当前最强方案、服务器路径、合规边界、关键脚本、已经尝试过的方向，以及哪些文件不能覆盖。
+## 0. RL Training Handoff For New Codex
 
-## 1. 项目概况
+This README is a historical appendix. It is intentionally long. For a new RL-training-focused Codex session:
 
-任务形式：
+1. Read `agents.md` completely.
+2. Do **not** read this README end to end.
+3. Use `rg` to pull only the needed historical fragments.
+
+Current mission:
 
 ```text
-多帧第一视角视频帧 + 多选题文本 -> 输出 A/B/C/D
+Focus on RL/model training from scratch or from a strong base.
+Do not continue hidden-test-driven inference tuning.
+The current best remains the external GRPO model with direct + tail_dense + max12 + VID006=4.
+Any new model must be selected by support/fold diagnostics before a single fixed hidden evaluation.
 ```
 
-最终提交只需要：
+Recommended selective searches:
+
+```bash
+rg -n -C 4 "0\\.536050|Fixed challenger|DPO LoRA B|XSports=8|VID059=8|Dynamic frame|GRPO direct tail_dense max12" README_EGOCROSS_lsg.md
+rg -n -C 4 "hidden|leaderboard|Do not|submission_template|Do not promote|Do not overwrite" README_EGOCROSS_lsg.md
+rg -n -C 5 "Conservative LoRA DPO|Current DPO memory profile|Fold protocol|Promotion criteria|Result record|GRPO baseline" README_EGOCROSS_lsg.md
+rg -n -C 4 "vLLM|Qwen3|rope_scaling|max-model-len|context length|mm_hash|deepstack" README_EGOCROSS_lsg.md
+rg -n -C 3 "CODE=/share|SUPPORT=/share|support-dir|submission_template|egocross_support_eval|router_infer|fold" README_EGOCROSS_lsg.md
+```
+
+Short history summary:
+
+```text
+Current best fixed test:
+/share/home/group9/why/rl_grpo_v2/output/egocross_grpo_answer_v7/v3-20260507-113212
+direct + tail_dense + max12 + VID006=4 + temperature=0
+Overall 0.536050, coverage 1.0.
+
+Prior DPO LoRA B:
+fold/support looked stable, but fixed test Overall 0.526646; do not repeat that exact small DPO sweep as the main plan.
+
+Recent inference diagnostics:
+ENIGMA=8 improved runtime only; XSports=8/VID059=8 were support/fold positive but related fixed test tied current best; dynamic query_diverse did not improve support.
+These are historical records, not hidden-feedback tuning signals.
+```
+
+鏈枃妗ｆ槸 EgoCross 椤圭洰鐨勫綋鍓嶄氦鎺ヨ褰曘€傜洰鏍囨槸璁╁悗缁帴鎵嬭€呭揩閫熺煡閬擄細褰撳墠鏈€寮烘柟妗堛€佹湇鍔″櫒璺緞銆佸悎瑙勮竟鐣屻€佸叧閿剼鏈€佸凡缁忓皾璇曡繃鐨勬柟鍚戯紝浠ュ強鍝簺鏂囦欢涓嶈兘瑕嗙洊銆?
+## 1. 椤圭洰姒傚喌
+
+浠诲姟褰㈠紡锛?
+```text
+澶氬抚绗竴瑙嗚瑙嗛甯?+ 澶氶€夐鏂囨湰 -> 杈撳嚭 A/B/C/D
+```
+
+鏈€缁堟彁浜ゅ彧闇€瑕侊細
 
 ```text
 submission.zip
-└── predictions.json
+鈹斺攢鈹€ predictions.json
 ```
 
-`predictions.json` 每题只填一个答案字母，不提交解释、CoT 或中间证据。
+`predictions.json` 姣忛鍙～涓€涓瓟妗堝瓧姣嶏紝涓嶆彁浜よВ閲娿€丆oT 鎴栦腑闂磋瘉鎹€?
+## 2. 姣旇禌鍚堣瑙勫垯
 
-## 2. 比赛合规规则
-
-必须遵守：
-
+蹇呴』閬靛畧锛?
 ```text
 Do not attempt to infer hidden labels by probing, reverse engineering, or exploiting evaluation behavior.
 Manual per-example labeling of hidden test data is prohibited.
 ```
 
-本项目执行规则：
+鏈」鐩墽琛岃鍒欙細
 
 ```text
-1. 不通过反复提交 hidden test、观察榜单/domain 分数来反推标签、定位错误样本或调整 router/fallback/prompt。
-2. 不手工标注 hidden test 样本。
-3. 推理策略应在提交前固定，依据公开 support/validation、训练日志、格式稳定性、coverage、运行错误率等非 hidden-label 信号决定。
-4. 报告中不要写“根据 hidden 榜单反馈调整策略”。可写“基于 support set 与鲁棒性诊断选择固定推理策略，hidden test 仅用于最终评估”。
-```
+1. 涓嶉€氳繃鍙嶅鎻愪氦 hidden test銆佽瀵熸鍗?domain 鍒嗘暟鏉ュ弽鎺ㄦ爣绛俱€佸畾浣嶉敊璇牱鏈垨璋冩暣 router/fallback/prompt銆?2. 涓嶆墜宸ユ爣娉?hidden test 鏍锋湰銆?3. 鎺ㄧ悊绛栫暐搴斿湪鎻愪氦鍓嶅浐瀹氾紝渚濇嵁鍏紑 support/validation銆佽缁冩棩蹇椼€佹牸寮忕ǔ瀹氭€с€乧overage銆佽繍琛岄敊璇巼绛夐潪 hidden-label 淇″彿鍐冲畾銆?4. 鎶ュ憡涓笉瑕佸啓鈥滄牴鎹?hidden 姒滃崟鍙嶉璋冩暣绛栫暐鈥濄€傚彲鍐欌€滃熀浜?support set 涓庨瞾妫掓€ц瘖鏂€夋嫨鍥哄畾鎺ㄧ悊绛栫暐锛宧idden test 浠呯敤浜庢渶缁堣瘎浼扳€濄€?```
 
-历史 Codabench 分数只作为实验记录。后续不要把 hidden 榜单当开发集。
-
-## 3. 服务器路径
-
+鍘嗗彶 Codabench 鍒嗘暟鍙綔涓哄疄楠岃褰曘€傚悗缁笉瑕佹妸 hidden 姒滃崟褰撳紑鍙戦泦銆?
+## 3. 鏈嶅姟鍣ㄨ矾寰?
 ```bash
 CODE=/share/home/group9/lsg/LlamaFactory
 SUPPORT=/share/home/group9/data/egocross
@@ -49,8 +82,7 @@ TEST_JSON=/share/home/group9/data/egocross_full/egocross_testbed/egocross_testbe
 TEMPLATE=/share/home/group9/lsg/LlamaFactory/submission_template.json
 ```
 
-重要模型：
-
+閲嶈妯″瀷锛?
 ```text
 baseline:
 saves/egocross/qwen3vl4b/full_sft_32k_200k
@@ -62,17 +94,15 @@ external GRPO candidate:
 /share/home/group9/why/rl_grpo_v2/output/egocross_grpo_answer_v7/v3-20260507-113212
 ```
 
-本地数据镜像在仓库同级：
+鏈湴鏁版嵁闀滃儚鍦ㄤ粨搴撳悓绾э細
 
 ```text
 ../data_local/egocross
 ```
 
-本地镜像只用于非破坏性检查和脚本调试。训练/推理命令里的服务器路径不要假设本地可用。
-
-## 4. 当前最强候选
-
-当前最强方案：
+鏈湴闀滃儚鍙敤浜庨潪鐮村潖鎬ф鏌ュ拰鑴氭湰璋冭瘯銆傝缁?鎺ㄧ悊鍛戒护閲岀殑鏈嶅姟鍣ㄨ矾寰勪笉瑕佸亣璁炬湰鍦板彲鐢ㄣ€?
+## 4. 褰撳墠鏈€寮哄€欓€?
+褰撳墠鏈€寮烘柟妗堬細
 
 ```text
 model: /share/home/group9/why/rl_grpo_v2/output/egocross_grpo_answer_v7/v3-20260507-113212
@@ -84,8 +114,7 @@ router/fallback: none
 output: egocross_outputs/why_grpo_direct_tail_dense_max12_vid006_4f
 ```
 
-分数记录：
-
+鍒嗘暟璁板綍锛?
 ```text
 Overall: 0.536050
 Surgery: 0.533569
@@ -95,12 +124,9 @@ Animal: 0.639344
 coverage: 1.0
 ```
 
-当前建议：先保留这版作为提交候选，不继续基于 hidden 榜单反馈做细调。`ctx65536 + max12 + no VID006 route + temp0` 已复现同分 0.536050，但工程复杂度更高；`max_frames=16`、`ctx65536 + max24`、`temperature=0.2` 和 `temperature=0.7 + vote` 均低于当前最佳。
-
-## 5. 当前最佳运行命令
-
-启动 vLLM：
-
+褰撳墠寤鸿锛氬厛淇濈暀杩欑増浣滀负鎻愪氦鍊欓€夛紝涓嶇户缁熀浜?hidden 姒滃崟鍙嶉鍋氱粏璋冦€俙ctx65536 + max12 + no VID006 route + temp0` 宸插鐜板悓鍒?0.536050锛屼絾宸ョ▼澶嶆潅搴︽洿楂橈紱`max_frames=16`銆乣ctx65536 + max24`銆乣temperature=0.2` 鍜?`temperature=0.7 + vote` 鍧囦綆浜庡綋鍓嶆渶浣炽€?
+## 5. 褰撳墠鏈€浣宠繍琛屽懡浠?
+鍚姩 vLLM锛?
 ```bash
 cd /share/home/group9/lsg/LlamaFactory
 conda activate lsg
@@ -119,13 +145,13 @@ VLLM_USE_V1=0 CUDA_VISIBLE_DEVICES=4 python -m vllm.entrypoints.openai.api_serve
   --mm-processor-cache-gb 0
 ```
 
-检查服务：
+妫€鏌ユ湇鍔★細
 
 ```bash
 curl http://127.0.0.1:8000/v1/models
 ```
 
-跑当前最强候选：
+璺戝綋鍓嶆渶寮哄€欓€夛細
 
 ```bash
 cd /share/home/group9/lsg/LlamaFactory
@@ -142,26 +168,22 @@ python scripts/egocross_router_infer.py \
   2>&1 | tee logs/why_grpo_direct_tail_dense_max12_vid006_4f.log
 ```
 
-输出检查：
+杈撳嚭妫€鏌ワ細
 
 ```bash
 cat egocross_outputs/why_grpo_direct_tail_dense_max12_vid006_4f/metrics_summary.txt
 ```
 
-如果 `status_dist` 里有大量 `error_fallback`，不要提交该结果。
+濡傛灉 `status_dist` 閲屾湁澶ч噺 `error_fallback`锛屼笉瑕佹彁浜よ缁撴灉銆?
+## 5.1 Support 鍥哄畾绛栫暐楠岃瘉
 
-## 5.1 Support 固定策略验证
-
-后续如果要比较 prompt / frame_sampling / max_frames，优先在公开 support set 上固定策略后验证，不要根据 hidden 榜单反馈继续调。
-
-支持脚本：
-
+鍚庣画濡傛灉瑕佹瘮杈?prompt / frame_sampling / max_frames锛屼紭鍏堝湪鍏紑 support set 涓婂浐瀹氱瓥鐣ュ悗楠岃瘉锛屼笉瑕佹牴鎹?hidden 姒滃崟鍙嶉缁х画璋冦€?
+鏀寔鑴氭湰锛?
 ```bash
 scripts/egocross_support_eval.py
 ```
 
-示例：验证当前最强策略在 support set 上的 acc：
-
+绀轰緥锛氶獙璇佸綋鍓嶆渶寮虹瓥鐣ュ湪 support set 涓婄殑 acc锛?
 ```bash
 cd /share/home/group9/lsg/LlamaFactory
 
@@ -175,8 +197,7 @@ python scripts/egocross_support_eval.py \
   --output-dir egocross_outputs/support_eval/grpo_direct_tail_dense_max12_vid006_4f
 ```
 
-输出文件：
-
+杈撳嚭鏂囦欢锛?
 ```text
 support_predictions.json
 support_metrics.json
@@ -204,7 +225,7 @@ python scripts/egocross_support_analyze.py \
   --output-dir egocross_outputs/support_eval/analysis_grpo_baseline_fold0
 ```
 
-一次性跑多个预设候选策略：
+涓€娆℃€ц窇澶氫釜棰勮鍊欓€夌瓥鐣ワ細
 
 ```bash
 cd /share/home/group9/lsg/LlamaFactory
@@ -212,7 +233,7 @@ cd /share/home/group9/lsg/LlamaFactory
 python scripts/run_egocross_support_eval_grid.py
 ```
 
-默认候选包括：
+榛樿鍊欓€夊寘鎷細
 
 ```text
 baseline: direct + tail_dense + max12 + VID006=4
@@ -248,13 +269,12 @@ python scripts/egocross_preview_frame_sampling.py \
 
 `query_diverse` and `query_diverse_tail` are lightweight, deterministic samplers. They use public input metadata only: question type, question/options text, option time ranges when present, timeline coverage, and diversity. They do not use labels, hidden feedback, CoT, voting, or extra trained weights.
 
-汇总表：
-
+姹囨€昏〃锛?
 ```text
 egocross_outputs/support_eval/_grid_summary.tsv
 ```
 
-可选环境变量：
+鍙€夌幆澧冨彉閲忥細
 
 ```bash
 python scripts/run_egocross_support_eval_grid.py \
@@ -384,9 +404,48 @@ However, it was explored after a related fixed hidden test for ExtrameSportFPV=8
 Record as a support/fold diagnostic candidate only; do not run an additional hidden test for this rule in the same feedback cycle.
 ```
 
-默认不覆盖已有非空输出目录；如要只打印命令不运行，使用 `--dry-run`。
+Dynamic frame selection support result, 2026-05-10:
 
-服务器 support 选策略建议流程：
+```text
+run: egocross_outputs/support_eval/grpo_dynamic_frame_20260510_210129
+fixed settings: external GRPO v3 + direct + max12 + VID006=4 + temperature=0 + answer-only
+
+direct_query_diverse_max12_vid006_4f:
+overall_acc: 0.862500 (69/80)
+Animal/Surgery/Industry/XSports: 0.800000 / 0.950000 / 0.900000 / 0.800000
+answer_only_format_rate: 1.000000
+coverage: 1.000000
+parse_fail/error/error_fallback: 0/0/0
+avg_used_frames: 11.4
+runtime_seconds: 212.377
+status_dist: {"ok": 68, "ok_after_frame_retry": 12}
+used_max_frames_dist: {"12": 68, "8": 12}
+answer_dist: {"A": 17, "B": 18, "C": 21, "D": 24}
+Conclusion: tied baseline on support; no fold/test promotion.
+
+direct_query_diverse_tail_max12_vid006_4f:
+overall_acc: 0.850000 (68/80)
+Animal/Surgery/Industry/XSports: 0.800000 / 0.950000 / 0.850000 / 0.800000
+answer_only_format_rate: 1.000000
+coverage: 1.000000
+parse_fail/error/error_fallback: 0/0/0
+avg_used_frames: 11.4
+runtime_seconds: 211.015
+status_dist: {"ok": 68, "ok_after_frame_retry": 12}
+used_max_frames_dist: {"12": 68, "8": 12}
+answer_dist: {"A": 17, "B": 18, "C": 22, "D": 23}
+Conclusion: support negative; do not retry on hidden test.
+
+Prediction-diff analysis:
+query_diverse changed 0/80 predictions vs baseline, so the current heuristic is effectively answer-equivalent to tail_dense on support.
+query_diverse_tail changed only one prediction vs baseline:
+Industry_8 / ENIGMA/111 / counting, gold=D, baseline=D correct, query_diverse_tail=C wrong.
+Frame preview showed Industry_8 has exactly 12 frames and max_frames=12, so tail_dense/query_diverse/query_diverse_tail use the same frames for that sample.
+This suggests the observed one-sample drop is not a useful frame-selection signal; treat query_diverse_tail as support-negative and do not tune it further without a new support-only design.
+```
+
+榛樿涓嶈鐩栧凡鏈夐潪绌鸿緭鍑虹洰褰曪紱濡傝鍙墦鍗板懡浠や笉杩愯锛屼娇鐢?`--dry-run`銆?
+鏈嶅姟鍣?support 閫夌瓥鐣ュ缓璁祦绋嬶細
 
 ```bash
 cd /share/home/group9/lsg/LlamaFactory
@@ -400,142 +459,105 @@ python scripts/run_egocross_support_eval_grid.py \
   --log-dir logs/support_eval_grid_${STAMP}
 ```
 
-跑完查看汇总：
+璺戝畬鏌ョ湅姹囨€伙細
 
 ```bash
 cat egocross_outputs/support_eval/grpo_grid_${STAMP}/_grid_summary.tsv
 ```
 
-选择规则：
-
+閫夋嫨瑙勫垯锛?
 ```text
-1. 先看 overall support acc。
-2. 若 overall 接近，优先 answer_only_format_rate=1.0、status_dist 无 error、used_max_frames_dist 不频繁降帧的策略。
-3. 再看 per-domain，避免某个 domain 明显崩掉。
-4. 选定后用同一组 prompt/frame_sampling/max_frames/VID006 配置跑 test；不要根据 hidden 榜单再改策略。
-```
+1. 鍏堢湅 overall support acc銆?2. 鑻?overall 鎺ヨ繎锛屼紭鍏?answer_only_format_rate=1.0銆乻tatus_dist 鏃?error銆乽sed_max_frames_dist 涓嶉绻侀檷甯х殑绛栫暐銆?3. 鍐嶇湅 per-domain锛岄伩鍏嶆煇涓?domain 鏄庢樉宕╂帀銆?4. 閫夊畾鍚庣敤鍚屼竴缁?prompt/frame_sampling/max_frames/VID006 閰嶇疆璺?test锛涗笉瑕佹牴鎹?hidden 姒滃崟鍐嶆敼绛栫暐銆?```
 
-建议策略：预先列出少量候选，例如 `uniform/endpoint/tail_dense`、`max8/max12`、`direct/strict_direct`，一次性在 support 上比较 overall、per-domain、per-question-type、answer-only 格式率和 error rate。选定后直接应用到 test；不要再用 hidden domain 分数反推修改。
+寤鸿绛栫暐锛氶鍏堝垪鍑哄皯閲忓€欓€夛紝渚嬪 `uniform/endpoint/tail_dense`銆乣max8/max12`銆乣direct/strict_direct`锛屼竴娆℃€у湪 support 涓婃瘮杈?overall銆乸er-domain銆乸er-question-type銆乤nswer-only 鏍煎紡鐜囧拰 error rate銆傞€夊畾鍚庣洿鎺ュ簲鐢ㄥ埌 test锛涗笉瑕佸啀鐢?hidden domain 鍒嗘暟鍙嶆帹淇敼銆?
+## 6. 鏂囦欢缁撴瀯
 
-## 6. 文件结构
-
-关键文件分布：
-
+鍏抽敭鏂囦欢鍒嗗竷锛?
 ```text
-README_EGOCROSS_lsg.md                 当前实验交接 README
-agents.md                              长期 agent 规则和当前最佳命令
-submission_template.json               官方提交模板，禁止覆盖
-
-scripts/egocross_router_infer.py        当前主推理脚本
-scripts/egocross_support_eval.py        support set 固定策略验证脚本
+README_EGOCROSS_lsg.md                 褰撳墠瀹為獙浜ゆ帴 README
+agents.md                              闀挎湡 agent 瑙勫垯鍜屽綋鍓嶆渶浣冲懡浠?submission_template.json               瀹樻柟鎻愪氦妯℃澘锛岀姝㈣鐩?
+scripts/egocross_router_infer.py        褰撳墠涓绘帹鐞嗚剼鏈?scripts/egocross_support_eval.py        support set 鍥哄畾绛栫暐楠岃瘉鑴氭湰
 scripts/run_egocross_support_eval_grid.py
 scripts/egocross_support_analyze.py     support/fold prediction diagnostics
 scripts/egocross_preview_frame_sampling.py
-scripts/egocross_blend_submit.py        历史 blend 工具
+scripts/egocross_blend_submit.py        鍘嗗彶 blend 宸ュ叿
 scripts/prepare_egocross_weighted_answer_only.py
 scripts/prepare_egocross_preference_answer_only.py
 
-configs/egocross_*.yaml                 EgoCross 训练配置
-data/dataset_info.json                  LLaMA-Factory 数据集注册
-egocross_outputs/                       历史输出目录，每个实验单独建目录
+configs/egocross_*.yaml                 EgoCross 璁粌閰嶇疆
+data/dataset_info.json                  LLaMA-Factory 鏁版嵁闆嗘敞鍐?egocross_outputs/                       鍘嗗彶杈撳嚭鐩綍锛屾瘡涓疄楠屽崟鐙缓鐩綍
 ```
 
-根目录旧脚本：
-
+鏍圭洰褰曟棫鑴氭湰锛?
 ```text
 generate_egocross_submission.py
 generate_egocross_submission_cot_test.py
 generate_egocross_submission_shortcot_test.py
 ```
 
-这些是历史入口，保留用于复现；新实验优先使用 `scripts/egocross_router_infer.py`。
+杩欎簺鏄巻鍙插叆鍙ｏ紝淇濈暀鐢ㄤ簬澶嶇幇锛涙柊瀹為獙浼樺厛浣跨敤 `scripts/egocross_router_infer.py`銆?
+## 7. 鎺ㄧ悊鑴氭湰鑳藉姏
 
-## 7. 推理脚本能力
-
-主脚本：
+涓昏剼鏈細
 
 ```bash
 scripts/egocross_router_infer.py
 ```
 
-支持：
-
+鏀寔锛?
 ```text
-1. 按 dataset/domain 路由 prompt mode 和 max_frames。
-2. 只跑部分 domain，其他样本用 fallback submission 填满完整输出。
-3. 保存 predictions.json、raw_outputs.json、metrics_summary.txt、submission.zip。
-4. 对明确 context length 400 错误自动降帧 retry。
-5. frame sampling: uniform / endpoint / tail_dense / query_diverse / query_diverse_tail。
-6. query_diverse modes use question type/options/time ranges plus deterministic diversity; no labels or hidden feedback.
-7. prompt mode: direct / strict_direct / domain_direct / type_direct / domain_type_direct。
-8. option-order voting，但当前 GRPO 模型上 voting 实测不佳。
-9. `--temperature` 控制采样温度；默认是 0.0，历史 direct/vote 实验均为 deterministic 推理。
-```
+1. 鎸?dataset/domain 璺敱 prompt mode 鍜?max_frames銆?2. 鍙窇閮ㄥ垎 domain锛屽叾浠栨牱鏈敤 fallback submission 濉弧瀹屾暣杈撳嚭銆?3. 淇濆瓨 predictions.json銆乺aw_outputs.json銆乵etrics_summary.txt銆乻ubmission.zip銆?4. 瀵规槑纭?context length 400 閿欒鑷姩闄嶅抚 retry銆?5. frame sampling: uniform / endpoint / tail_dense / query_diverse / query_diverse_tail銆?6. query_diverse modes use question type/options/time ranges plus deterministic diversity; no labels or hidden feedback.
+7. prompt mode: direct / strict_direct / domain_direct / type_direct / domain_type_direct銆?8. option-order voting锛屼絾褰撳墠 GRPO 妯″瀷涓?voting 瀹炴祴涓嶄匠銆?9. `--temperature` 鎺у埗閲囨牱娓╁害锛涢粯璁ゆ槸 0.0锛屽巻鍙?direct/vote 瀹為獙鍧囦负 deterministic 鎺ㄧ悊銆?```
 
-降帧序列：
-
+闄嶅抚搴忓垪锛?
 ```text
-start -> 12 -> 8 -> 6 -> 4 -> 2 -> 1 中不超过 start 的序列
-```
+start -> 12 -> 8 -> 6 -> 4 -> 2 -> 1 涓笉瓒呰繃 start 鐨勫簭鍒?```
 
-例如：
-
+渚嬪锛?
 ```text
 max_frames=12: 12 -> 8 -> 6 -> 4 -> 2 -> 1
 VID006=4: 4 -> 2 -> 1
 ```
 
-采帧策略：
-
+閲囧抚绛栫暐锛?
 ```text
-uniform: 默认旧行为，均匀取 max_frames 帧，但不保证包含最后一帧。
-endpoint: 包含首尾帧，中间均匀取样。
-tail_dense: 包含首尾帧，并把更多采样点分配到视频后半段。
-query_diverse: query-aware deterministic coverage/diversity sampler.
+uniform: 榛樿鏃ц涓猴紝鍧囧寑鍙?max_frames 甯э紝浣嗕笉淇濊瘉鍖呭惈鏈€鍚庝竴甯с€?endpoint: 鍖呭惈棣栧熬甯э紝涓棿鍧囧寑鍙栨牱銆?tail_dense: 鍖呭惈棣栧熬甯э紝骞舵妸鏇村閲囨牱鐐瑰垎閰嶅埌瑙嗛鍚庡崐娈点€?query_diverse: query-aware deterministic coverage/diversity sampler.
 query_diverse_tail: query-aware deterministic sampler with extra tail bias for prediction/sequence questions.
 ```
 
-当前 GRPO 模型上，`direct + tail_dense + max12 + VID006=4` 是当前最强。
-
-Prompt 经验：
-
+褰撳墠 GRPO 妯″瀷涓婏紝`direct + tail_dense + max12 + VID006=4` 鏄綋鍓嶆渶寮恒€?
+Prompt 缁忛獙锛?
 ```text
-direct: 当前最稳。
-strict_direct: 可做最小 prompt 对照。
-domain_type_direct/type_direct: 已发现可能让 answer-only GRPO 模型偏离分布。
-temperature=0.7: 可以作为 self-consistency/随机采样对照，但可能引入噪声；优先在 support 上验证。
-CoT/few-shot/enhanced reasoning: 历史上均未超过 direct/router，不建议用于最终提交。
-```
+direct: 褰撳墠鏈€绋炽€?strict_direct: 鍙仛鏈€灏?prompt 瀵圭収銆?domain_type_direct/type_direct: 宸插彂鐜板彲鑳借 answer-only GRPO 妯″瀷鍋忕鍒嗗竷銆?temperature=0.7: 鍙互浣滀负 self-consistency/闅忔満閲囨牱瀵圭収锛屼絾鍙兘寮曞叆鍣０锛涗紭鍏堝湪 support 涓婇獙璇併€?CoT/few-shot/enhanced reasoning: 鍘嗗彶涓婂潎鏈秴杩?direct/router锛屼笉寤鸿鐢ㄤ簬鏈€缁堟彁浜ゃ€?```
 
-## 8. 历史关键结果
+## 8. 鍘嗗彶鍏抽敭缁撴灉
 
-| 方案 | Overall | Surgery | Industry | XSports | Animal | 结论 |
+| 鏂规 | Overall | Surgery | Industry | XSports | Animal | 缁撹 |
 |---|---:|---:|---:|---:|---:|---|
-| baseline full SFT direct max8 | 0.480669 | 0.515901 | 0.400000 | 0.414634 | 0.622951 | 旧 baseline |
-| weighted answer-only direct | 0.481714 | 0.501767 | 0.416327 | 0.430894 | 0.606557 | 弱域提升，强域下降 |
-| old router baseline strong + weighted weak | 0.489028 | 0.515901 | 0.416327 | 0.430894 | 0.622951 | 旧最佳 |
-| CoT 49k 256 | 0.444096 | 0.508834 | 0.342857 | 0.418699 | 0.513661 | 明显下降 |
-| short CoT 49k 512 | 0.459770 | 0.515901 | 0.375510 | 0.414634 | 0.546448 | 仍低于 direct |
-| few-shot weak domains | 0.479624 | 0.515901 | 0.412245 | 0.398374 | 0.622951 | few-shot 伤 XSports |
-| enhanced short reasoning few-shot | 0.481714 | 0.515901 | 0.387755 | 0.430894 | 0.622951 | enhanced 伤 Industry |
-| external GRPO direct max8 VID006=4 | 0.528736 | 0.530035 | 0.534694 | 0.459350 | 0.612022 | 新主力模型 |
-| GRPO direct endpoint max8 | 0.526646 | 0.526502 | 0.526531 | 0.459350 | 0.617486 | 低于 tail_dense |
-| GRPO direct tail_dense max8 | 0.529781 | 0.533569 | 0.530612 | 0.459350 | 0.617486 | 采帧改进有效 |
-| GRPO direct tail_dense max12 | 0.536050 | 0.533569 | 0.538776 | 0.459350 | 0.639344 | 当前最强候选 |
+| baseline full SFT direct max8 | 0.480669 | 0.515901 | 0.400000 | 0.414634 | 0.622951 | 鏃?baseline |
+| weighted answer-only direct | 0.481714 | 0.501767 | 0.416327 | 0.430894 | 0.606557 | 寮卞煙鎻愬崌锛屽己鍩熶笅闄?|
+| old router baseline strong + weighted weak | 0.489028 | 0.515901 | 0.416327 | 0.430894 | 0.622951 | 鏃ф渶浣?|
+| CoT 49k 256 | 0.444096 | 0.508834 | 0.342857 | 0.418699 | 0.513661 | 鏄庢樉涓嬮檷 |
+| short CoT 49k 512 | 0.459770 | 0.515901 | 0.375510 | 0.414634 | 0.546448 | 浠嶄綆浜?direct |
+| few-shot weak domains | 0.479624 | 0.515901 | 0.412245 | 0.398374 | 0.622951 | few-shot 浼?XSports |
+| enhanced short reasoning few-shot | 0.481714 | 0.515901 | 0.387755 | 0.430894 | 0.622951 | enhanced 浼?Industry |
+| external GRPO direct max8 VID006=4 | 0.528736 | 0.530035 | 0.534694 | 0.459350 | 0.612022 | 鏂颁富鍔涙ā鍨?|
+| GRPO direct endpoint max8 | 0.526646 | 0.526502 | 0.526531 | 0.459350 | 0.617486 | 浣庝簬 tail_dense |
+| GRPO direct tail_dense max8 | 0.529781 | 0.533569 | 0.530612 | 0.459350 | 0.617486 | 閲囧抚鏀硅繘鏈夋晥 |
+| GRPO direct tail_dense max12 | 0.536050 | 0.533569 | 0.538776 | 0.459350 | 0.639344 | 褰撳墠鏈€寮哄€欓€?|
 | DPO LoRA B from GRPO direct tail_dense max12 | 0.526646 | 0.526502 | 0.542857 | 0.434959 | 0.628415 | fixed challenger run; lower than GRPO best, do not promote |
-| GRPO direct tail_dense max16 | 0.532915 | 0.522968 | 0.538776 | 0.459350 | 0.639344 | 低于 max12，Surgery 回落 |
-| GRPO ctx65536 direct tail_dense max12 no VID006 route temp0 | 0.536050 | 0.533569 | 0.538776 | 0.459350 | 0.639344 | 与当前最佳同分；长上下文可避免特殊 VID006 route，但无提分 |
-| GRPO ctx65536 direct tail_dense max24 | 0.531870 | 0.522968 | 0.542857 | 0.459350 | 0.628415 | 长上下文更多帧提升 Industry，但损伤 Surgery/Animal |
-| GRPO ctx65536 direct tail_dense max12 no VID006 route temp0.2 | 0.529781 | 0.522968 | 0.526531 | 0.459350 | 0.639344 | 轻微温度采样仍伤分 |
-| GRPO domain_type_direct + vote max12 | 0.472309 | 0.487633 | 0.383673 | 0.447154 | 0.601093 | 复杂 prompt 明显伤分 |
-| GRPO direct + vote max8 | 0.491118 | 0.505300 | 0.412245 | 0.451220 | 0.628415 | voting 不适合当前 GRPO |
-| GRPO direct tail_dense max12 vote temp0.7 | 0.486938 | 0.505300 | 0.420408 | 0.426829 | 0.628415 | 高温投票明显伤分，不建议继续 |
+| GRPO direct tail_dense max16 | 0.532915 | 0.522968 | 0.538776 | 0.459350 | 0.639344 | 浣庝簬 max12锛孲urgery 鍥炶惤 |
+| GRPO ctx65536 direct tail_dense max12 no VID006 route temp0 | 0.536050 | 0.533569 | 0.538776 | 0.459350 | 0.639344 | 涓庡綋鍓嶆渶浣冲悓鍒嗭紱闀夸笂涓嬫枃鍙伩鍏嶇壒娈?VID006 route锛屼絾鏃犳彁鍒?|
+| GRPO ctx65536 direct tail_dense max24 | 0.531870 | 0.522968 | 0.542857 | 0.459350 | 0.628415 | 闀夸笂涓嬫枃鏇村甯ф彁鍗?Industry锛屼絾鎹熶激 Surgery/Animal |
+| GRPO ctx65536 direct tail_dense max12 no VID006 route temp0.2 | 0.529781 | 0.522968 | 0.526531 | 0.459350 | 0.639344 | 杞诲井娓╁害閲囨牱浠嶄激鍒?|
+| GRPO domain_type_direct + vote max12 | 0.472309 | 0.487633 | 0.383673 | 0.447154 | 0.601093 | 澶嶆潅 prompt 鏄庢樉浼ゅ垎 |
+| GRPO direct + vote max8 | 0.491118 | 0.505300 | 0.412245 | 0.451220 | 0.628415 | voting 涓嶉€傚悎褰撳墠 GRPO |
+| GRPO direct tail_dense max12 vote temp0.7 | 0.486938 | 0.505300 | 0.420408 | 0.426829 | 0.628415 | 楂樻俯鎶曠エ鏄庢樉浼ゅ垎锛屼笉寤鸿缁х画 |
 
-说明：表中分数是实验记录，不应用于继续对 hidden test 做反推调参。
+璇存槑锛氳〃涓垎鏁版槸瀹為獙璁板綍锛屼笉搴旂敤浜庣户缁 hidden test 鍋氬弽鎺ㄨ皟鍙傘€?
+## 9. 璁粌鐩稿叧璁板綍
 
-## 9. 训练相关记录
-
-已完成训练：
+宸插畬鎴愯缁冿細
 
 ```text
 Full SFT baseline:
@@ -555,18 +577,15 @@ epochs: 1
 output: saves/egocross/qwen3vl4b/weighted_answer_only_full_i4_x4_lr5e6_ep1
 ```
 
-已新增但不一定已跑通的配置：
-
+宸叉柊澧炰絾涓嶄竴瀹氬凡璺戦€氱殑閰嶇疆锛?
 ```text
 configs/egocross_dpo_answer_only_full_all_equal_lr1e6_ep1.yaml
 configs/egocross_dpo_answer_only_lora_all_equal_lr1e6_ep1.yaml
 configs/egocross_answer_only_full_all_equal_lr2e6_ep1.yaml
 ```
 
-显存限制下，full DPO 容易 OOM；基础 SFT 更容易跑。当前最佳来自外部 GRPO 模型推理优化，不是本地 DPO。
-
-生成全域 answer-only SFT 数据：
-
+鏄惧瓨闄愬埗涓嬶紝full DPO 瀹规槗 OOM锛涘熀纭€ SFT 鏇村鏄撹窇銆傚綋鍓嶆渶浣虫潵鑷閮?GRPO 妯″瀷鎺ㄧ悊浼樺寲锛屼笉鏄湰鍦?DPO銆?
+鐢熸垚鍏ㄥ煙 answer-only SFT 鏁版嵁锛?
 ```bash
 python scripts/prepare_egocross_weighted_answer_only.py \
   --data-dir /share/home/group9/data/egocross \
@@ -575,8 +594,7 @@ python scripts/prepare_egocross_weighted_answer_only.py \
   --seed 2026
 ```
 
-生成全域 DPO preference 数据：
-
+鐢熸垚鍏ㄥ煙 DPO preference 鏁版嵁锛?
 ```bash
 python scripts/prepare_egocross_preference_answer_only.py \
   --data-dir /share/home/group9/data/egocross \
@@ -584,44 +602,29 @@ python scripts/prepare_egocross_preference_answer_only.py \
   --fold-output-dir /share/home/group9/data/egocross/pref_answer_only_all_equal_folds
 ```
 
-## 10. vLLM 和环境坑点
-
-推荐启动参数：
-
+## 10. vLLM 鍜岀幆澧冨潙鐐?
+鎺ㄨ崘鍚姩鍙傛暟锛?
 ```text
 VLLM_USE_V1=0
 --enforce-eager
 --mm-processor-cache-gb 0
 ```
 
-原因：
-
+鍘熷洜锛?
 ```text
-1. Qwen3-VL 多图输入曾遇到 deepstack token 对齐问题。
-2. vLLM v1 多模态路径和 mm processor cache 曾出现 mm_hash/cache 问题。
-3. 关闭 cache 和 old engine 更慢，但更稳。
-```
+1. Qwen3-VL 澶氬浘杈撳叆鏇鹃亣鍒?deepstack token 瀵归綈闂銆?2. vLLM v1 澶氭ā鎬佽矾寰勫拰 mm processor cache 鏇惧嚭鐜?mm_hash/cache 闂銆?3. 鍏抽棴 cache 鍜?old engine 鏇存參锛屼絾鏇寸ǔ銆?```
 
-VID006：
-
+VID006锛?
 ```text
-ExtrameSportFPV_VID006 是长样本，视觉 token 多。
-当前 GRPO tail_dense 最强候选使用 --frame-route VID006=4。
-如果出现 context length 或 vLLM 错误，可尝试更低 VID006=2，但不要用 hidden 反馈做细调。
-```
+ExtrameSportFPV_VID006 鏄暱鏍锋湰锛岃瑙?token 澶氥€?褰撳墠 GRPO tail_dense 鏈€寮哄€欓€変娇鐢?--frame-route VID006=4銆?濡傛灉鍑虹幇 context length 鎴?vLLM 閿欒锛屽彲灏濊瘯鏇翠綆 VID006=2锛屼絾涓嶈鐢?hidden 鍙嶉鍋氱粏璋冦€?```
 
-训练/推理 config：
-
+璁粌/鎺ㄧ悊 config锛?
 ```text
-transformers 训练阶段可能需要 text_config.rope_scaling={"rope_type":"default"}。
-vLLM 推理阶段历史上 null rope_scaling 更稳。
-切换前检查模型 config，避免训练版/推理版混用。
-```
+transformers 璁粌闃舵鍙兘闇€瑕?text_config.rope_scaling={"rope_type":"default"}銆?vLLM 鎺ㄧ悊闃舵鍘嗗彶涓?null rope_scaling 鏇寸ǔ銆?鍒囨崲鍓嶆鏌ユā鍨?config锛岄伩鍏嶈缁冪増/鎺ㄧ悊鐗堟贩鐢ㄣ€?```
 
-## 11. 文件保护规则
+## 11. 鏂囦欢淇濇姢瑙勫垯
 
-不要覆盖：
-
+涓嶈瑕嗙洊锛?
 ```text
 submission_template.json
 saves/egocross/qwen3vl4b/full_sft_32k_200k
@@ -631,25 +634,18 @@ egocross_outputs/router_baseline_strong_weighted_weak_direct_max8_vid006_2f
 egocross_outputs/why_grpo_direct_tail_dense_max12_vid006_4f
 ```
 
-每个新实验必须新建 output dir，命名包含模型、prompt、sampling、max_frames、VID006 设置。
-
-## 12. 建议的后续工作
-
-当前建议先停在：
+姣忎釜鏂板疄楠屽繀椤绘柊寤?output dir锛屽懡鍚嶅寘鍚ā鍨嬨€乸rompt銆乻ampling銆乵ax_frames銆乂ID006 璁剧疆銆?
+## 12. 寤鸿鐨勫悗缁伐浣?
+褰撳墠寤鸿鍏堝仠鍦細
 
 ```text
 egocross_outputs/why_grpo_direct_tail_dense_max12_vid006_4f/submission.zip
 ```
 
-如果后续继续探索，优先在 support/validation 上预先验证固定策略，再提交 hidden test。建议顺序：
+濡傛灉鍚庣画缁х画鎺㈢储锛屼紭鍏堝湪 support/validation 涓婇鍏堥獙璇佸浐瀹氱瓥鐣ワ紝鍐嶆彁浜?hidden test銆傚缓璁『搴忥細
 
 ```text
-1. 支持集验证不同 frame_sampling，而不是用 hidden 分数调。
-2. 保持 direct prompt，不优先加 CoT/few-shot/type prompt。
-3. 若要改 VID006 帧数，先基于 context length / error rate 等鲁棒性信号，不基于 hidden 分数。
-4. ctx65536 + max12 no VID006 route 已与当前最佳同分，可作为工程对照，但无提分；最终提交优先保留更简单稳定的原 max12 + VID006=4。
-5. 不建议继续温度采样或高温投票；temperature=0.2 与 temperature=0.7 + vote 均低于 deterministic direct。
-```
+1. 鏀寔闆嗛獙璇佷笉鍚?frame_sampling锛岃€屼笉鏄敤 hidden 鍒嗘暟璋冦€?2. 淇濇寔 direct prompt锛屼笉浼樺厛鍔?CoT/few-shot/type prompt銆?3. 鑻ヨ鏀?VID006 甯ф暟锛屽厛鍩轰簬 context length / error rate 绛夐瞾妫掓€т俊鍙凤紝涓嶅熀浜?hidden 鍒嗘暟銆?4. ctx65536 + max12 no VID006 route 宸蹭笌褰撳墠鏈€浣冲悓鍒嗭紝鍙綔涓哄伐绋嬪鐓э紝浣嗘棤鎻愬垎锛涙渶缁堟彁浜や紭鍏堜繚鐣欐洿绠€鍗曠ǔ瀹氱殑鍘?max12 + VID006=4銆?5. 涓嶅缓璁户缁俯搴﹂噰鏍锋垨楂樻俯鎶曠エ锛泃emperature=0.2 涓?temperature=0.7 + vote 鍧囦綆浜?deterministic direct銆?```
 
 ## 13. Conservative LoRA DPO From External GRPO
 
