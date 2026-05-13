@@ -1,0 +1,271 @@
+{
+  "errors": [],
+  "folds": {
+    "fold0": {
+      "eval_answer_counts": {
+        "A": 6,
+        "B": 3,
+        "C": 6,
+        "D": 5
+      },
+      "eval_domain_counts": {
+        "animal": 5,
+        "industry": 5,
+        "surgery": 5,
+        "xsports": 5
+      },
+      "eval_sources": 20,
+      "leakage": 0,
+      "train": {
+        "assistant_text_counts": {
+          "A": 240,
+          "ANSWER: A BECAUSE THE VISUAL EVIDENCE SUPPORTS THIS OPTION.": 56,
+          "ANSWER: B BECAUSE THE VISUAL EVIDENCE SUPPORTS THIS OPTION.": 65,
+          "ANSWER: C BECAUSE THE VISUAL EVIDENCE SUPPORTS THIS OPTION.": 54,
+          "ANSWER: D BECAUSE THE VISUAL EVIDENCE SUPPORTS THIS OPTION.": 65,
+          "B": 240,
+          "C": 240,
+          "D": 240,
+          "FINAL ANSWER: A": 56,
+          "FINAL ANSWER: B": 65,
+          "FINAL ANSWER: C": 54,
+          "FINAL ANSWER: D": 65
+        },
+        "domain_counts": {
+          "animal": 360,
+          "industry": 360,
+          "surgery": 360,
+          "xsports": 360
+        },
+        "feedback_counts": {
+          "negative_format": 480,
+          "negative_wrong_letter": 720,
+          "positive_exact": 240
+        },
+        "gold_answer_counts": {
+          "A": 336,
+          "B": 390,
+          "C": 324,
+          "D": 390
+        },
+        "kto_tag_counts": {
+          "False": 1200,
+          "True": 240
+        },
+        "rows": 1440,
+        "source_augmentations": 240,
+        "unique_sources": 60
+      }
+    },
+    "fold1": {
+      "eval_answer_counts": {
+        "A": 6,
+        "B": 7,
+        "C": 2,
+        "D": 5
+      },
+      "eval_domain_counts": {
+        "animal": 5,
+        "industry": 5,
+        "surgery": 5,
+        "xsports": 5
+      },
+      "eval_sources": 20,
+      "leakage": 0,
+      "train": {
+        "assistant_text_counts": {
+          "A": 240,
+          "ANSWER: A BECAUSE THE VISUAL EVIDENCE SUPPORTS THIS OPTION.": 60,
+          "ANSWER: B BECAUSE THE VISUAL EVIDENCE SUPPORTS THIS OPTION.": 65,
+          "ANSWER: C BECAUSE THE VISUAL EVIDENCE SUPPORTS THIS OPTION.": 58,
+          "ANSWER: D BECAUSE THE VISUAL EVIDENCE SUPPORTS THIS OPTION.": 57,
+          "B": 240,
+          "C": 240,
+          "D": 240,
+          "FINAL ANSWER: A": 60,
+          "FINAL ANSWER: B": 65,
+          "FINAL ANSWER: C": 58,
+          "FINAL ANSWER: D": 57
+        },
+        "domain_counts": {
+          "animal": 360,
+          "industry": 360,
+          "surgery": 360,
+          "xsports": 360
+        },
+        "feedback_counts": {
+          "negative_format": 480,
+          "negative_wrong_letter": 720,
+          "positive_exact": 240
+        },
+        "gold_answer_counts": {
+          "A": 360,
+          "B": 390,
+          "C": 348,
+          "D": 342
+        },
+        "kto_tag_counts": {
+          "False": 1200,
+          "True": 240
+        },
+        "rows": 1440,
+        "source_augmentations": 240,
+        "unique_sources": 60
+      }
+    },
+    "fold2": {
+      "eval_answer_counts": {
+        "A": 4,
+        "B": 4,
+        "C": 7,
+        "D": 5
+      },
+      "eval_domain_counts": {
+        "animal": 5,
+        "industry": 5,
+        "surgery": 5,
+        "xsports": 5
+      },
+      "eval_sources": 20,
+      "leakage": 0,
+      "train": {
+        "assistant_text_counts": {
+          "A": 240,
+          "ANSWER: A BECAUSE THE VISUAL EVIDENCE SUPPORTS THIS OPTION.": 59,
+          "ANSWER: B BECAUSE THE VISUAL EVIDENCE SUPPORTS THIS OPTION.": 63,
+          "ANSWER: C BECAUSE THE VISUAL EVIDENCE SUPPORTS THIS OPTION.": 53,
+          "ANSWER: D BECAUSE THE VISUAL EVIDENCE SUPPORTS THIS OPTION.": 65,
+          "B": 240,
+          "C": 240,
+          "D": 240,
+          "FINAL ANSWER: A": 59,
+          "FINAL ANSWER: B": 63,
+          "FINAL ANSWER: C": 53,
+          "FINAL ANSWER: D": 65
+        },
+        "domain_counts": {
+          "animal": 360,
+          "industry": 360,
+          "surgery": 360,
+          "xsports": 360
+        },
+        "feedback_counts": {
+          "negative_format": 480,
+          "negative_wrong_letter": 720,
+          "positive_exact": 240
+        },
+        "gold_answer_counts": {
+          "A": 354,
+          "B": 378,
+          "C": 318,
+          "D": 390
+        },
+        "kto_tag_counts": {
+          "False": 1200,
+          "True": 240
+        },
+        "rows": 1440,
+        "source_augmentations": 240,
+        "unique_sources": 60
+      }
+    },
+    "fold3": {
+      "eval_answer_counts": {
+        "A": 3,
+        "B": 6,
+        "C": 3,
+        "D": 8
+      },
+      "eval_domain_counts": {
+        "animal": 5,
+        "industry": 5,
+        "surgery": 5,
+        "xsports": 5
+      },
+      "eval_sources": 20,
+      "leakage": 0,
+      "train": {
+        "assistant_text_counts": {
+          "A": 240,
+          "ANSWER: A BECAUSE THE VISUAL EVIDENCE SUPPORTS THIS OPTION.": 62,
+          "ANSWER: B BECAUSE THE VISUAL EVIDENCE SUPPORTS THIS OPTION.": 59,
+          "ANSWER: C BECAUSE THE VISUAL EVIDENCE SUPPORTS THIS OPTION.": 60,
+          "ANSWER: D BECAUSE THE VISUAL EVIDENCE SUPPORTS THIS OPTION.": 59,
+          "B": 240,
+          "C": 240,
+          "D": 240,
+          "FINAL ANSWER: A": 62,
+          "FINAL ANSWER: B": 59,
+          "FINAL ANSWER: C": 60,
+          "FINAL ANSWER: D": 59
+        },
+        "domain_counts": {
+          "animal": 360,
+          "industry": 360,
+          "surgery": 360,
+          "xsports": 360
+        },
+        "feedback_counts": {
+          "negative_format": 480,
+          "negative_wrong_letter": 720,
+          "positive_exact": 240
+        },
+        "gold_answer_counts": {
+          "A": 372,
+          "B": 354,
+          "C": 360,
+          "D": 354
+        },
+        "kto_tag_counts": {
+          "False": 1200,
+          "True": 240
+        },
+        "rows": 1440,
+        "source_augmentations": 240,
+        "unique_sources": 60
+      }
+    }
+  },
+  "ok": true,
+  "summary": {
+    "assistant_text_counts": {
+      "A": 320,
+      "ANSWER: A BECAUSE THE VISUAL EVIDENCE SUPPORTS THIS OPTION.": 79,
+      "ANSWER: B BECAUSE THE VISUAL EVIDENCE SUPPORTS THIS OPTION.": 84,
+      "ANSWER: C BECAUSE THE VISUAL EVIDENCE SUPPORTS THIS OPTION.": 75,
+      "ANSWER: D BECAUSE THE VISUAL EVIDENCE SUPPORTS THIS OPTION.": 82,
+      "B": 320,
+      "C": 320,
+      "D": 320,
+      "FINAL ANSWER: A": 79,
+      "FINAL ANSWER: B": 84,
+      "FINAL ANSWER: C": 75,
+      "FINAL ANSWER: D": 82
+    },
+    "domain_counts": {
+      "animal": 480,
+      "industry": 480,
+      "surgery": 480,
+      "xsports": 480
+    },
+    "feedback_counts": {
+      "negative_format": 640,
+      "negative_wrong_letter": 960,
+      "positive_exact": 320
+    },
+    "gold_answer_counts": {
+      "A": 474,
+      "B": 504,
+      "C": 450,
+      "D": 492
+    },
+    "kto_tag_counts": {
+      "False": 1600,
+      "True": 320
+    },
+    "rows": 1920,
+    "source_augmentations": 320,
+    "unique_sources": 80
+  },
+  "warnings": []
+}

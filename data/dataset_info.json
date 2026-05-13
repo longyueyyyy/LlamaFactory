@@ -1003,5 +1003,20 @@
       "prompt": "content"
     },
     "folder": "python"
+  },
+  "egocross_kto_answer_reward_perm24_wrong3_fmt1": {
+    "file_name": "egocross_kto_answer_reward_perm24_wrong3_fmt1_seed2026.json",
+    "formatting": "sharegpt",
+    "columns": {
+      "messages": "messages",
+      "images": "images",
+      "kto_tag": "kto_tag"
+    },
+    "tags": {
+      "role_tag": "role",
+      "content_tag": "content",
+      "user_tag": "user",
+      "assistant_tag": "assistant"
+    }
   }
 }
