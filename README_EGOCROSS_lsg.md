@@ -1,5 +1,36 @@
 ﻿# EgoCross Experiment README
 
+## Final Status, 2026-05-13
+
+This README is now a historical appendix. The project is finished and cleaned for report writing.
+
+Final kept candidate:
+
+```text
+model: /share/home/group9/why/rl_grpo_v2/output/egocross_grpo_answer_v7/v3-20260507-113212
+inference: direct + tail_dense + max12 + VID006=4 + temperature=0
+hidden fixed score: Overall 0.536050, coverage 1.0
+kept output: egocross_outputs/why_grpo_direct_tail_dense_max12_vid006_4f
+```
+
+Report-facing docs:
+
+```text
+docs/egocross/README.md
+docs/egocross/file_map.md
+egocross_outputs/final_report/experiment_record_20260513.md
+```
+
+Final challenger outcomes:
+
+```text
+DPO LoRA B fixed hidden Overall 0.526646; not promoted.
+KTO v1 perm4 support 0.887500, fixed hidden Overall 0.527691; not promoted.
+KTO v2 perm24 support 0.875000, fixed hidden Overall 0.533960; not promoted.
+```
+
+Hidden results are recorded as fixed evaluations only. Do not use them to tune prompt, router, frame sampling, checkpoint selection, reward, or training hyperparameters.
+
 ## 0. RL Training Handoff For New Codex
 
 This README is a historical appendix. It is intentionally long. For a new RL-training-focused Codex session:
@@ -8,13 +39,13 @@ This README is a historical appendix. It is intentionally long. For a new RL-tra
 2. Do **not** read this README end to end.
 3. Use `rg` to pull only the needed historical fragments.
 
-Current mission:
+Historical mission during active experimentation:
 
 ```text
-Focus on RL/model training from scratch or from a strong base.
-Do not continue hidden-test-driven inference tuning.
+Focus was RL/model training from scratch or from a strong base.
+Hidden-test-driven inference tuning was disallowed.
 The current best remains the external GRPO model with direct + tail_dense + max12 + VID006=4.
-Any new model must be selected by support/fold diagnostics before a single fixed hidden evaluation.
+Any future model must be selected by support/fold diagnostics before a single fixed hidden evaluation.
 ```
 
 Recommended selective searches:
